@@ -16,6 +16,8 @@ setup(
     version="1.0",
     description="Library for running and training MuZero and AlphaZero models.",
     author="Skyr",
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     package_data={
         "mu_alpha_zero": ["*.txt", "*.root"]
     }

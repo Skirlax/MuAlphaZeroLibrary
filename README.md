@@ -42,6 +42,7 @@ Finally, we can train the MuZero algorithm:
 ```python
 from mu_alpha_zero import MuZero
 from mu_alpha_zero import MuZeroNet
+from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MemBuffer
 mz = MuZero(DonkeyKongGame()) # Import your own game.
 memory = MemBuffer(config.max_buffer_size)
