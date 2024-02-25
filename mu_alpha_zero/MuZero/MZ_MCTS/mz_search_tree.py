@@ -128,17 +128,31 @@ class MuZeroSearchTree(SearchTree):
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
                            num_jobs: int):
         with Pool(num_jobs) as p:
-            p.starmap(p_self_play,
-                      [(
-                          nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory))
-                          for i in
-                          range(len(nets))])
-        # for result in results:
-        #     memory.add_list(result)
+            if not memory.is_disk:
+                results = p.starmap(p_self_play,
+                                    [(
+                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None)
+                                        for i in
+                                        range(len(nets))])
+            else:
+                results = p.starmap(p_self_play,
+                                    [(
+                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
+                                        copy.deepcopy(memory))
+                                        for i in
+                                        range(len(nets))])
+        for result in results:
+            memory.add_list(result)
 
         return None, None, None
 
 
 def p_self_play(net, tree, dev, num_g, mem):
+    data = []
     for _ in range(num_g):
-        mem.add_list(tree.play_one_game(net, dev))
+        game_results = tree.play_one_game(net, dev)
+        if mem is not None:
+            mem.add_list(game_results)
+        else:
+            data.extend(game_results)
+    return data
