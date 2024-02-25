@@ -12,7 +12,7 @@ This is a library for training and using the MuZero and AlphaZero algorithms. Th
 - Parallel self-play
 - Parallel hyperparameter search
 ## 📚 Documentation 📚
-To see the project documentation, check the [wiki](x) page.
+To see the project documentation, check the [wiki](https://github.com/Skirlax/MuAlphaZeroLibrary/wiki) page.
 
 ## ❗ Get started ❗
 ### Linux Dependencies

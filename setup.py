@@ -4,7 +4,7 @@ import subprocess
 
 
 def get_requirements():
-    with open("mu_alpha_zero/requirements.txt", "r") as file:
+    with open("requirements.txt", "r") as file:
         return file.read().strip().split("\n")
 
 
