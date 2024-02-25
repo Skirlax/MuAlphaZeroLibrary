@@ -12,7 +12,7 @@ def get_requirements():
 
 
 setup(
-    name="mu_alpha_zero_lib",
+    name="mu_alpha_zero_library",
     version="1.0",
     description="Library for running and training MuZero and AlphaZero models.",
     author="Skyr",
