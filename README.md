@@ -24,7 +24,7 @@ To see the entire list of dependencies, check the requirements.txt file.
 ### Installation
 After installing the dependencies, you can install the library using pip:
 ```bash 
-pip install mu_alpha_zero_lib
+pip install mu_alpha_zero_library
 ```
 ## ⚡ Quick example ⚡
 Here is a quick example of how to train a MuZero algorithm to play the atari game of DonkeyKong.
@@ -34,6 +34,7 @@ To define our custom game we can subsclass the abstract class MuZeroGame. See ex
 Then we can define a MuZeroConfig object to define the hyperparameters of the MuZero algorithm:
 ```python
 from mu_alpha_zero.config import MuZeroConfig
+
 config = MuZeroConfig()
 # You can change all the hyperparameters here, for example:
 config.num_simulations = 800
@@ -42,8 +43,8 @@ Finally, we can train the MuZero algorithm:
 ```python
 from mu_alpha_zero import MuZero
 from mu_alpha_zero import MuZeroNet
-from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MemBuffer
+
 mz = MuZero(DonkeyKongGame()) # Import your own game.
 memory = MemBuffer(config.max_buffer_size)
 mz.create_new(config,MuZeroNet,memory,headless=True)
