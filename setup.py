@@ -1,10 +1,11 @@
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
+from mu_alpha_zero.General.utils import find_project_root
 
 
 def get_requirements():
-    with open("requirements.txt", "r") as file:
+    with open(f"{find_project_root()}requirements.txt", "r") as file:
         return file.read().strip().split("\n")
 
 
