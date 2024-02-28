@@ -9,8 +9,8 @@ from mu_alpha_zero.General.utils import find_project_root
 
 
 class Logger:
-    def __init__(self, logdir: str = "Logs", token: str or None = None) -> None:
-        self.logdir = f"{find_project_root()}/{logdir}/ProgramLogs"
+    def __init__(self, logdir: str or None, token: str or None = None) -> None:
+        self.logdir = self.init_logdir(logdir)
         os.makedirs(self.logdir, exist_ok=True)
         self.logger = logging.getLogger("AlphaZeroLogger")
         self.logger.setLevel(logging.DEBUG)
@@ -27,6 +27,12 @@ class Logger:
 
     def log(self, msg: str, level: str = "debug") -> None:
         getattr(self.logger, level)(msg)
+
+    def init_logdir(self,logdir: str or None):
+        if logdir is None:
+            return f"{find_project_root()}/Logs/ProgramLogs"
+        else:
+            return logdir
 
     def init_api_token(self, token: str or None) -> None:
         if token is None:

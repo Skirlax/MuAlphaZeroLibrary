@@ -89,7 +89,7 @@ class MuZeroConfig(Config):
     pickle_dir: str = "Pickles/Data"
     target_resolution: tuple[int, int] = (96, 96)
     az_net_linear_input_size: int = 8192
-    log_dir: str = "Logs"
+    log_dir: str = None
     pushbullet_token: str = None
     show_tqdm: bool = False
 
@@ -122,5 +122,5 @@ class AlphaZeroConfig(Config):
     log_epsilon: float = 1e-9
     zero_tau_after: int = 5
     az_net_linear_input_size: int = 18432
-    log_dir: str = "Logs"
+    log_dir: str = None
     pushbullet_token: str = None
