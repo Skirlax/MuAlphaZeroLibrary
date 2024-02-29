@@ -26,10 +26,6 @@ class MuZeroSearchTree(SearchTree):
 
     def play_one_game(self, network_wrapper: MuZeroNet, device: th.device) -> list:
         num_steps = self.muzero_config.num_steps
-        # assert self.muzero_config.self_play_games * num_steps >= self.muzero_config.batch_size, (
-        #     "self_play_games * num_steps must "
-        #     "be greater than batch_size to "
-        #     "be able to properly sample.")
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
         state = resize_obs(state, self.muzero_config.target_resolution)
@@ -38,7 +34,6 @@ class MuZeroSearchTree(SearchTree):
         for step in range(num_steps):
             pi, (v, latent) = self.search(network_wrapper, state, None, device)
             move = self.game_manager.select_move(pi)
-            # state = match_action_with_obs(latent, scale_action(move, self.game_manager.get_num_actions()))
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, None, frame_skip=frame_skip)
             rew = scale_reward(rew)
@@ -64,7 +59,6 @@ class MuZeroSearchTree(SearchTree):
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
-        # might mask
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):

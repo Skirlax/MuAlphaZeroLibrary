@@ -87,15 +87,14 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, 
         arena = MzArena(game.make_fresh_instance(), muzero_config, device)
         trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player,
                                  headless=True, arena_override=arena, checkpointer_verbose=False)
-        trainer.train()
-        win_freq = trainer.get_arena_win_frequencies_mean()
-        trial.report(win_freq, trial.number)
-        print(f"Trial {trial.number} finished with win freq {win_freq}.")
+        mean = trainer.self_play_and_train()
+        trial.report(mean, trial.number)
+        print(f"Trial {trial.number} finished with win freq {mean}.")
         del trainer
         del network
         del tree
         del net_player
-        return win_freq
+        return mean
 
     from mu_alpha_zero.MuZero.MZ_Arena.arena import MzArena
     from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import MuZeroSearchTree

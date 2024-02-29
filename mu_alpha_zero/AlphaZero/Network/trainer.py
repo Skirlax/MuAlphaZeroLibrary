@@ -285,3 +285,12 @@ class Trainer:
             self.logger.log(LoggingMessageTemplates.LOADED("previous version checkpoint",
                                                            self.checkpointer.get_temp_path()))
         self.logger.pushbullet_log(LoggingMessageTemplates.ITER_FINISHED_PSB(i))
+
+    def self_play_and_train(self):
+        self.mcts.parallel_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
+                                     self.make_n_trees(self.muzero_alphazero_config.num_workers),
+                                     self.memory, self.device,
+                                     self.muzero_alphazero_config.self_play_games,
+                                     self.muzero_alphazero_config.num_workers)
+        mean,_ = self.network.train_net(self.memory,self.muzero_alphazero_config)
+        return mean
