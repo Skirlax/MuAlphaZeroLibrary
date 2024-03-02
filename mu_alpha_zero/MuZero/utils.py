@@ -58,7 +58,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, 
     def objective(trial):
         num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
         num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
-        num_epochs = trial.suggest_int("num_epochs", 100, 500)
+        num_epochs = trial.suggest_int("num_epochs", 100, 3000)
         lr = trial.suggest_float("lr", 1e-8, 1e-2, log=True)
         tau = trial.suggest_float("tau", 0.5, 1.5)
         arena_tau = trial.suggest_float("arena_tau", 0.01, 0.5)
