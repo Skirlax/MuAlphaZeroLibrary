@@ -46,7 +46,7 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
         self.v = nn.Linear(512, 1)  # value head
         atexit.register(self.clear_traces)
 
-    def forward(self, x, muzero=True):
+    def forward(self, x, muzero: bool = True):
         if not muzero:
             x = x.unsqueeze(1)
         x = F.relu(self.bn1(self.conv1(x)))
