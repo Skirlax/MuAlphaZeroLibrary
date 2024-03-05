@@ -53,8 +53,8 @@ def scale_reward(reward: float):
     return math.log(reward + 1, 5)
 
 
-def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, study_name: str, game,
-                               muzero_config: MuZeroConfig):
+def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str or None, study_name: str, game,
+                               muzero_config: MuZeroConfig, in_memory: bool = False):
     def objective(trial):
         num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
         num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
@@ -103,5 +103,10 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, 
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
 
     muzero_config.show_tqdm = False
-    study = optuna.load_study(study_name=study_name, storage=storage)
+    if in_memory:
+        study = optuna.create_study(study_name=study_name)
+    else:
+        if storage is None:
+            raise ValueError("Storage can't be None if in_memory is False.")
+        study = optuna.load_study(study_name=study_name, storage=storage)
     study.optimize(objective, n_trials=n_trials)
