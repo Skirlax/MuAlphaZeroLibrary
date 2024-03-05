@@ -86,7 +86,6 @@ class AlphaZeroNode:
         return utc
 
     def get_self_value(self):
-        # Not important for the algorithm, but might be useful for debugging.
         return self.total_value / self.times_visited if self.times_visited > 0 else 0
 
     def get_self_action_probabilities(self, tau=1.0, adjust=True):

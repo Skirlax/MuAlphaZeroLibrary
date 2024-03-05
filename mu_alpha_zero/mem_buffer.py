@@ -80,7 +80,7 @@ class MemBuffer(GeneralMemoryBuffer):
                 self.priorities = priorities
                 self.last_buffer_size = len(self.buffer)
             random_indexes = np.random.choice(np.arange(len(self.buffer) - K),
-                                              size=min(len(priorities) // K, max(batch_size // K, 1)),
+                                              size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
             batch = [[self.buffer[b] for b in range(i, i + K)] for i in random_indexes]
             pris = [self.priorities[i:i + K] for i in random_indexes]

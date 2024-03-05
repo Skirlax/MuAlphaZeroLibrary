@@ -5,7 +5,6 @@ import optuna
 import torch as th
 from PIL import Image
 
-
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -54,7 +53,8 @@ def scale_reward(reward: float):
     return math.log(reward + 1, 5)
 
 
-def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, study_name: str, game, muzero_config: MuZeroConfig):
+def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, study_name: str, game,
+                               muzero_config: MuZeroConfig):
     def objective(trial):
         num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
         num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
