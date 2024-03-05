@@ -10,7 +10,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.search_tree import SearchTree
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward,scale_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
@@ -29,6 +29,7 @@ class MuZeroSearchTree(SearchTree):
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
         state = resize_obs(state, self.muzero_config.target_resolution)
+        state = scale_state(state)
         self.buffer.init_buffer(state)
         data = []
         for step in range(num_steps):
@@ -38,6 +39,7 @@ class MuZeroSearchTree(SearchTree):
             state, rew, done = self.game_manager.frame_skip_step(move, None, frame_skip=frame_skip)
             rew = scale_reward(rew)
             state = resize_obs(state, self.muzero_config.target_resolution)
+            state = scale_state(state)
             if done:
                 break
             move = scale_action(move, self.game_manager.get_num_actions())

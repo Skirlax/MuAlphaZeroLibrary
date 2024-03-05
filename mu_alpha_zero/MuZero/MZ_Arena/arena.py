@@ -6,7 +6,7 @@ import torch as th
 from mu_alpha_zero.AlphaZero.Arena.players import Player
 from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.General.mz_game import MuZeroGame
-from mu_alpha_zero.MuZero.utils import resize_obs
+from mu_alpha_zero.MuZero.utils import resize_obs, scale_state
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -25,6 +25,7 @@ class MzArena(GeneralArena):
         else:
             num_games_per_player = num_games_to_play // 2
         noop_num = random.randint(0, 30)
+        players = {"1": player1, "-1": player2}
         for player in [1, -1]:
             kwargs = {"num_simulations": num_mc_simulations, "current_player": player, "device": self.device,
                       "tau": tau, "unravel": False}
@@ -34,14 +35,15 @@ class MzArena(GeneralArena):
                 state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), None,
                                                                 frame_skip=noop_num)
                 state = resize_obs(state, self.muzero_config.target_resolution)
+                state = scale_state(state)
                 for step in range(self.muzero_config.num_steps):
                     self.game_manager.render()
-                    if player == 1:
-                        move = player1.choose_move(state, **kwargs)
-                    else:
-                        move = player2.choose_move(state, **kwargs)
+                    move = players[str(player)].choose_move(state, **kwargs)
+
                     state, reward, done = self.game_manager.frame_skip_step(move, None)
                     state = resize_obs(state, self.muzero_config.target_resolution)
+                    state = scale_state(state)
+                    players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, move)
                     rewards[player].append(reward)
                     if done:
                         break

@@ -54,8 +54,6 @@ class RandomPlayer(Player):
 class NetPlayer(Player):
     def __init__(self, game_manager: TicTacToeGameManager, **kwargs):
         self.game_manager = game_manager
-        # self.network = network
-        # self.monte_carlo_tree_search = mc_tree_search
         self.name = self.__class__.__name__
         self.kwargs = kwargs
         self.init_kwargs(kwargs)

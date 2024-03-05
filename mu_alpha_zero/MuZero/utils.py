@@ -33,9 +33,7 @@ def resize_obs(observations: np.ndarray, size: tuple[int, int]) -> np.ndarray:
 
 def scale_state(state: np.ndarray):
     # scales the given state to be between 0 and 1
-    max_val = np.max(state)
-    min_val = np.min(state)
-    return (state - min_val) / (max_val - min_val)
+    return state / 255
 
 
 def scale_action(action: int, num_actions: int):
