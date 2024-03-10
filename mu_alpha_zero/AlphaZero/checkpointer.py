@@ -60,7 +60,11 @@ class CheckPointer:
         sys.modules['mem_buffer'] = sys.modules['mu_alpha_zero.mem_buffer']
         checkpoint = th.load(checkpoint_path)
         self.print_verbose(f"Restoring checkpoint {checkpoint_path} made at iteration {checkpoint['iteration']}.")
-        return checkpoint["net"], checkpoint["optimizer"], checkpoint["memory"], checkpoint["lr"], \
+        if "memory" in checkpoint:
+            memory = checkpoint["memory"]
+        else:
+            memory = None
+        return checkpoint["net"], checkpoint["optimizer"], memory, checkpoint["lr"], \
             DotDict(checkpoint["args"]), checkpoint["opponent_state_dict"]
 
     def load_checkpoint_from_num(self, checkpoint_num: int) -> tuple:
