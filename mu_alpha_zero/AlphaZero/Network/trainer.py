@@ -72,7 +72,8 @@ class Trainer:
             checkpoint_path)
         conf = Config.from_args(args)
         tree = tree_class(game.make_fresh_instance(), conf)
-        conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
+        if "fc1.weight" in network_dict:
+            conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
         network = net_class.make_from_config(conf)
         opponent_network = network.make_fresh_instance()
         optimizer = th.optim.Adam(network.parameters(), lr=lr)
