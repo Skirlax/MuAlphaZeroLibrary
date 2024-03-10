@@ -74,14 +74,15 @@ class Trainer:
         tree = tree_class(game.make_fresh_instance(), conf)
         if "fc1.weight" in network_dict:
             conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
-        network = net_class.make_from_config(conf)
-        opponent_network = network.make_fresh_instance()
+        network = net_class.make_from_config(conf).to(device)
+        opponent_network = network.make_fresh_instance().to(device)
         optimizer = th.optim.Adam(network.parameters(), lr=lr)
         # opponent_network = build_net_from_args(args, device)
         net_player = net_player_class(game.make_fresh_instance(),
                                       **{"network": network, "monte_carlo_tree_search": tree})
         network.load_state_dict(network_dict)
         opponent_network.load_state_dict(opponent_dict)
+
         try:
             optimizer.load_state_dict(optimizer_dict)
         except ValueError:
