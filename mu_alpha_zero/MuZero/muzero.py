@@ -74,7 +74,7 @@ class MuZero:
     def from_checkpoint(self, network_class: Type[GeneralNetwork], path: str, checkpoint_dir: str,
                         headless: bool = True,
                         checkpointer_verbose: bool = False):
-        self.trainer = Trainer.from_checkpoint(network_class, MuZeroSearchTree, NetPlayer, NetPlayer, path,
+        self.trainer = Trainer.from_checkpoint(network_class, MuZeroSearchTree, NetPlayer, path,
                                                checkpoint_dir,
                                                self.game_manager,
                                                headless=headless,

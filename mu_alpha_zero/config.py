@@ -5,8 +5,6 @@
 # 18432 for (8x8) board
 # 8192 for (6x6) atari
 
-import json
-
 from dataclasses import dataclass
 
 @dataclass
