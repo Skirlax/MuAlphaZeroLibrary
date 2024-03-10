@@ -82,7 +82,10 @@ class Trainer:
                                       **{"network": network, "monte_carlo_tree_search": tree})
         network.load_state_dict(network_dict)
         opponent_network.load_state_dict(opponent_dict)
-        optimizer.load_state_dict(optimizer_dict)
+        try:
+            optimizer.load_state_dict(optimizer_dict)
+        except ValueError:
+            print("Couldn't load optimizer dict.")
         if memory is None:
             memory = mem
         return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, device, headless=headless,
