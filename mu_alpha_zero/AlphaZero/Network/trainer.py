@@ -63,7 +63,8 @@ class Trainer:
                         checkpoint_path: str, checkpoint_dir: str,
                         game: AlphaZeroGame, headless: bool = True,
                         checkpointer_verbose: bool = False,
-                        arena_override: GeneralArena or None = None):
+                        arena_override: GeneralArena or None = None,
+                        mem: GeneralMemoryBuffer or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         checkpointer = CheckPointer(checkpoint_dir, verbose=checkpointer_verbose)
 
@@ -81,6 +82,8 @@ class Trainer:
         network.load_state_dict(network_dict)
         opponent_network.load_state_dict(opponent_dict)
         optimizer.load_state_dict(optimizer_dict)
+        if memory is None:
+            memory = mem
         return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, device, headless=headless,
                    arena_override=arena_override)
 

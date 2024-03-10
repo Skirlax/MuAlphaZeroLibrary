@@ -71,14 +71,16 @@ class MuZero:
                                       memory_override=memory, java_manager=java_manager)
         self.net = self.trainer.get_network()
 
-    def from_checkpoint(self, network_class: Type[GeneralNetwork], path: str, checkpoint_dir: str,
+    def from_checkpoint(self, network_class: Type[GeneralNetwork], memory: GeneralMemoryBuffer, path: str,
+                        checkpoint_dir: str,
                         headless: bool = True,
                         checkpointer_verbose: bool = False):
         self.trainer = Trainer.from_checkpoint(network_class, MuZeroSearchTree, NetPlayer, path,
                                                checkpoint_dir,
                                                self.game_manager,
                                                headless=headless,
-                                               checkpointer_verbose=checkpointer_verbose)
+                                               checkpointer_verbose=checkpointer_verbose,
+                                               mem=memory)
         self.net = self.trainer.get_network()
         self.tree = self.trainer.get_tree()
         self.args = self.trainer.get_args()
