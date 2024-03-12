@@ -54,7 +54,8 @@ class MemBuffer(GeneralMemoryBuffer):
             return deque(maxlen=self.max_size)
 
     def add_list(self, experience_list):
-        self.buffer.extend(experience_list)
+        for item in experience_list:
+            self.add(item)
 
     def sample(self, batch_size):
         return random.sample(self.buffer, batch_size)
