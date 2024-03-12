@@ -7,7 +7,7 @@ import os
 class LazyArray:
     def __init__(self, array: np.ndarray, directory_path: str):
         self.directory_path = directory_path
-        self.path = f"{directory_path}/array_{uuid.uuid4()}"
+        self.path = f"{directory_path}/array_{uuid.uuid4()}.npy"
         np.save(self.path, array)
         atexit.register(self.remove_array)
 
