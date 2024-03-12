@@ -76,6 +76,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             pis, vs, rews_moves, states = zip(*experience_batch)
             rews = [x[0] for x in rews_moves]
             moves = [x[1] for x in rews_moves]
+            states = [x.load_array() for x in states]
             states = th.tensor(np.array(states), dtype=th.float32, device=device) # .permute(0, 3, 1, 2) not used when using latent directly.
             pis = [list(x.values()) for x in pis]
             pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
