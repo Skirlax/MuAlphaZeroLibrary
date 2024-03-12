@@ -81,8 +81,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
             vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(1)
             rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(1)
-            # latent = self.representation_forward(states)
-            latent = states  # Already predicted during search, this is to save space in RAM.
+            latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
             latent = match_action_with_obs_batch(latent, moves)
             _, pred_rews = self.dynamics_forward(latent)

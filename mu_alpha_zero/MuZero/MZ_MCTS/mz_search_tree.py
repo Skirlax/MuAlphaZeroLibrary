@@ -43,7 +43,7 @@ class MuZeroSearchTree(SearchTree):
             if done:
                 break
             move = scale_action(move, self.game_manager.get_num_actions())
-            data.append((pi, v, (rew, move, float(pred_v[0])), latent.cpu().detach().numpy()))
+            data.append((pi, v, (rew, move, float(pred_v[0])), self.buffer.concat_frames().detach().cpu().numpy()))
             self.buffer.add_frame(state, move)
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
@@ -124,17 +124,17 @@ class MuZeroSearchTree(SearchTree):
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
                            num_jobs: int):
         with Pool(num_jobs) as p:
-            if not memory.is_disk:
+            if memory.is_disk and memory.full_disk:
                 results = p.starmap(p_self_play,
                                     [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None)
+                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
+                                        copy.deepcopy(memory))
                                         for i in
                                         range(len(nets))])
             else:
                 results = p.starmap(p_self_play,
                                     [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
-                                        copy.deepcopy(memory))
+                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None)
                                         for i in
                                         range(len(nets))])
         for result in results:
