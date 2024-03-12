@@ -41,8 +41,9 @@ class MemBuffer(GeneralMemoryBuffer):
             raise ValueError("Experience must be a tuple")
         if self.disk and not self.full_disk:
             frame = LazyArray(experience[-1], self.dir_path)
-            list(experience)[-1] = frame
-            experience = tuple(experience)
+            list_exp = list(experience)
+            list_exp[-1] = frame
+            experience = tuple(list_exp)
         self.buffer.append(experience)
 
     def init_buffer(self, dir_path: str or None):
