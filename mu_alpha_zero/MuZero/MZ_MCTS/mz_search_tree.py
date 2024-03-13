@@ -10,7 +10,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.search_tree import SearchTree
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward,scale_state
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
@@ -126,17 +126,12 @@ class MuZeroSearchTree(SearchTree):
                            num_jobs: int):
         with Pool(num_jobs) as p:
             if memory.is_disk and memory.full_disk:
-                results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
-                                        copy.deepcopy(memory))
-                                        for i in
-                                        range(len(nets))])
+                results = p.starmap(p_self_play, [
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory)) for i in
+                    range(len(nets))])
             else:
                 results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None)
-                                        for i in
+                                    [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None) for i in
                                         range(len(nets))])
         for result in results:
             memory.add_list(result)
