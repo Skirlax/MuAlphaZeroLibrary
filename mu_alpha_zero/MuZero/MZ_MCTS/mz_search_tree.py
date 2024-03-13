@@ -91,15 +91,16 @@ class MuZeroSearchTree(SearchTree):
         return action_probs, root_val_latent
 
     def backprop(self, v, path):
-        G = v
+        G = 0
         gamma = self.muzero_config.gamma
         for node in reversed(path):
-            G = node.reward + gamma * G
-            node.total_value += v
+            G = v + node.reward if G == 0 else G
+            node.total_value += G
             node.update_q(G)
             self.update_min_max_q(node.q)
             node.scale_q(self.min_max_q[0], self.min_max_q[1])
             node.times_visited += 1
+            G = node.reward + gamma * G
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:

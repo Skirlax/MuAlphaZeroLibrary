@@ -146,7 +146,7 @@ class Trainer:
                                                                                 self.memory, self.device,
                                                                                 self_play_games,
                                                                                 n_jobs)
-                    if isinstance(self.memory, MemBuffer) and self.memory.is_disk:
+                    if isinstance(self.memory, MemBuffer) and self.memory.is_disk and self.memory.full_disk:
                         self.memory = self.memory.make_fresh_instance()
                 else:
                     wins_p1, wins_p2, game_draws = self.mcts.self_play(self.network, self.device, self_play_games,
