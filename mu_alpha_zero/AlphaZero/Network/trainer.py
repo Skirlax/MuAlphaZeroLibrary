@@ -4,9 +4,7 @@ from mu_alpha_zero.General.utils import not_zero
 
 set_start_method('spawn', force=True)
 from copy import deepcopy
-
 from typing import Type
-
 import torch as th
 from tqdm import tqdm
 from mu_alpha_zero.AlphaZero.Arena.arena import Arena
