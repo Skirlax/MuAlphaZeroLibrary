@@ -3,7 +3,7 @@ from torch.utils import cpp_extension
 
 setup(name="mu_alpha_zero_library", version="1.0.5",
       description="Library for running and training MuZero and AlphaZero models.", author="Skyr", ext_modules=[
-        cpp_extension.CppExtension('CppSelfPlayDir.CppSelfPlay',
+        cpp_extension.CppExtension('CppSelfPlay',
                                    ['CppSelfPlayDir/Buffers/MuZeroFrameBuffer.cpp', 'CppSelfPlayDir/MCTS/Node.cpp',
                                     'CppSelfPlayDir/MCTS/MuzeroSearchTree.cpp', 'CppSelfPlayDir/utils.cpp',
                                     'CppSelfPlayDir/Network/MuZeroDefaultNet.cpp', 'CppSelfPlayDir/CppSelfPlay.cpp'],
