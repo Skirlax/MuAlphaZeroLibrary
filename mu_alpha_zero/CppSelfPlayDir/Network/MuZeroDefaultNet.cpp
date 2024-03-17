@@ -7,6 +7,7 @@
 
 MuZeroDefaultNet::MuZeroDefaultNet(std::string modelPath) {
     this->model = torch::jit::load(modelPath);
+    std::cout << "Model loaded" << std::endl;
 }
 
 std::tuple<torch::Tensor,torch::Tensor> MuZeroDefaultNet::dynamicsForward(torch::Tensor stateWithAction, bool predict) {
