@@ -15,6 +15,7 @@ namespace py = pybind11;
 MuzeroSearchTree::MuzeroSearchTree(py::object game_manager, std::map<std::string, py::object> config_args) {
     this->game_manager = game_manager;
     this->config_args = config_args;
+    std::cout << "Args and game manager created." << std::endl;
     this->frame_buffer = new MuZeroFrameBuffer(config_args["frameBufferSize"].cast<int>(),config_args["noopAction"].cast<int>(),config_args["actionSpaceSize"].cast<int>());
     this->minMaxQ = {-INFINITY,INFINITY};
     std::cout << "MuzeroSearchTree created." << std::endl;
