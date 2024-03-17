@@ -17,6 +17,7 @@ MuzeroSearchTree::MuzeroSearchTree(py::object game_manager, std::map<std::string
     this->config_args = config_args;
     this->frame_buffer = new MuZeroFrameBuffer(config_args["frameBufferSize"].cast<int>(),config_args["noopAction"].cast<int>(),config_args["actionSpaceSize"].cast<int>());
     this->minMaxQ = {-INFINITY,INFINITY};
+    std::cout << "MuzeroSearchTree created." << std::endl;
 }
 
 
