@@ -45,9 +45,7 @@ std::vector<std::tuple<PlayeOneStepReturn> > runParallelSelfPlay(string netPath,
 #pragma omp parallel default(none) shared(histories, numGamesPerProcess, numGames)
     {
         MuZeroDefaultNet net = MuZeroDefaultNet(netPath);
-        MuzeroSearchTree tree = MuzeroSearchTree(gameManager, configArgs);
-        std::cout << "Created instances" << std::endl;
-        std::cout << "Thread " << omp_get_thread_num() << " started." << std::endl;
+        MuzeroSearchTree tree = MuzeroSearchTree(move(gameManager), configArgs);
 
 #pragma omp for nowait
         for (int i = 0; i < numGames; ++i) {

@@ -16,7 +16,7 @@ MuzeroSearchTree::MuzeroSearchTree(py::object game_manager, std::map<std::string
     this->game_manager = game_manager;
     this->config_args = config_args;
     std::cout << "Args and game manager created." << std::endl;
-    this->frame_buffer = new MuZeroFrameBuffer(config_args["frameBufferSize"].cast<int>(),config_args["noopAction"].cast<int>(),config_args["actionSpaceSize"].cast<int>());
+    this->frame_buffer = new MuZeroFrameBuffer(config_args["frame_buffer_size"].cast<int>(),this->game_manager.attr("get_noop")().cast<int>(),config_args["net_action_size"].cast<int>());
     this->minMaxQ = {-INFINITY,INFINITY};
     std::cout << "MuzeroSearchTree created." << std::endl;
 }
@@ -25,6 +25,7 @@ MuzeroSearchTree::MuzeroSearchTree(py::object game_manager, std::map<std::string
 std::tuple<PlayeOneStepReturn> MuzeroSearchTree::playOneGame(MuZeroDefaultNet networkWrapper) {
     int numSteps = this->config_args["num_steps"].cast<int>();
     int frameSkip = this->config_args["frame_skip"].cast<int>();
+    // int noopAction = this->game_manager.attr("get_noop")().cast<int>();
     torch::Tensor state = utils::numpyToPytorch(this->game_manager.attr("reset")());
     state = utils::resizeObs(state,{96,96});
     state = utils::scaleState(state);
