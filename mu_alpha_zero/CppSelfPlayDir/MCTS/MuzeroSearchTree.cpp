@@ -67,6 +67,8 @@ SearchReturn MuzeroSearchTree::search(MuZeroDefaultNet networkWrapper, torch::Te
     auto c = this->config_args["c"].cast<double>();
     auto c2 = this->config_args["c2"].cast<double>();
     unique_ptr<Node> rootNode = make_unique<Node>(0, nullptr);
+    torch::Tensor st = this->frame_buffer->concatFrames().permute({2,0,1}).unsqueeze(0);
+    std::cout << "State shape: " << st.sizes() << std::endl;
     torch::Tensor state_ = networkWrapper.representationForward(this->frame_buffer->concatFrames().permute({2,0,1}).unsqueeze(0)).squeeze(0);
     std::tuple<torch::Tensor, torch::Tensor> pi_v = networkWrapper.predictionForward(state_.unsqueeze(0), true);
     std::vector<double> pi = utils::tensorToVector(std::get<0>(pi_v));
