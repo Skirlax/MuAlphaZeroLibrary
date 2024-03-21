@@ -39,6 +39,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.num_net_channels, config.net_latent_size, config.num_net_out_channels,
                    config.az_net_linear_input_size)
 
+    @th.jit.export
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             return self.dynamics_network.predict(x)
@@ -46,6 +47,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         reward = scale_reward_value(reward)
         return state, reward
 
+    @th.jit.export
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
@@ -55,6 +57,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         v = scale_reward_value(v)
         return pi, v
 
+    @th.jit.export
     def representation_forward(self, x: th.Tensor):
         x = self.representation_network(x)
         return x
