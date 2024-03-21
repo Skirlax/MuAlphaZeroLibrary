@@ -67,7 +67,7 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
 
         return pi, v
 
-    def predict(self, x, muzero=True):
+    def predict(self, x, muzero: bool = True):
         pi, v = self.forward(x, muzero=muzero)
         pi = th.exp(pi)
         return pi.detach().cpu().numpy(), v.detach().cpu().numpy()
