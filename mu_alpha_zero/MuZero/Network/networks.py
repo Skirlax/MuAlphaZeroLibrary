@@ -42,7 +42,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     @th.jit.export
     def dynamics_forward(self, x: th.Tensor):
         state, reward = self.dynamics_network(x)
-        state = state.view(self.out_channels, self.latent_size, self.latent_size)
+        state = state.view(self.num_out_channels, self.latent_size, self.latent_size)
         reward = self.scale_reward_value(reward)
         return state, reward
 
