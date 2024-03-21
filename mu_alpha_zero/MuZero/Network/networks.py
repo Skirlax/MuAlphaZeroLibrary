@@ -154,7 +154,7 @@ class DynamicsNet(nn.Module):
     def __init__(self, in_channels, num_channels, dropout, latent_size, out_channels):
         super(DynamicsNet, self).__init__()
         self.out_channels = out_channels
-        self.latent_size = int(torch.sqrt(latent_size))
+        self.latent_size = int(math.sqrt(latent_size))
 
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
