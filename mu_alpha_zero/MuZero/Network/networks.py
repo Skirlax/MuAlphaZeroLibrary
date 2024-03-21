@@ -202,7 +202,7 @@ class DynamicsNet(nn.Module):
         return traced_script_module
 
     @th.jit.ignore
-    def predict(self, x):
+    def predict(self, x) -> tuple[th.Tensor, th.Tensor]:
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         r = scale_reward_value(r)
