@@ -9,7 +9,7 @@ from torch.nn.functional import mse_loss
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -41,6 +41,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     @th.jit.export
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
+        from mu_alpha_zero.MuZero.utils import scale_reward_value
         if predict:
             return self.dynamics_network.predict(x)
         state, reward = self.dynamics_network(x)
@@ -49,6 +50,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     @th.jit.export
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
+        from mu_alpha_zero.MuZero.utils import scale_reward_value
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
             v = scale_reward_value(v[0][0])
@@ -200,6 +202,7 @@ class DynamicsNet(nn.Module):
 
     @th.no_grad()
     def predict(self, x):
+        from mu_alpha_zero.MuZero.utils import scale_reward_value
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         r = scale_reward_value(r)
