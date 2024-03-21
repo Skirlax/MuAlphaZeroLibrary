@@ -51,8 +51,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
-            v = self.scale_reward_value(v[0][0])
-            return pi, v
+            v = self.scale_reward_value(th.tensor(v))
+            return pi, v.detach().cpu().numpy().flatten()
         pi, v = self.prediction_network(x, muzero=True)
         v = self.scale_reward_value(v)
         return pi, v
@@ -106,10 +106,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def muzero_pi_loss(self, y_hat, y):
         return -th.sum(y * y_hat) / y.size()[0]
 
-    def scale_reward_value(value: th.Tensor, e: float = 0.001):
-        if isinstance(value, float) or isinstance(value, np.float32):
-            scaled_v = np.sign(value) * (np.sqrt(np.abs(value) + 1) - 1 + value * e)
-            return np.array([scaled_v])
+    def scale_reward_value(self, value: th.Tensor, e: float = 0.001):
         return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1 + value * e)
 
     def to_pickle(self, path: str):
