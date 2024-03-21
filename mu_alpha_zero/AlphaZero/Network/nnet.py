@@ -67,7 +67,6 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
 
         return pi, v
 
-    @th.no_grad()
     def predict(self, x, muzero=True):
         pi, v = self.forward(x, muzero=muzero)
         pi = th.exp(pi)
