@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-import torch as th
+import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.functional import mse_loss
@@ -13,19 +13,19 @@ from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
 from mu_alpha_zero.config import MuZeroConfig
 
 
-class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
+class MuZeroNet(torch.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: int,
                  num_out_channels: int, linear_input_size: int):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
         self.dropout = dropout
-        self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
         self.latent_size = latent_size
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
-        # self.action_embedding = th.nn.Embedding(action_size, 256)
+        # self.action_embedding = torch.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet()
         self.dynamics_network = DynamicsNet(in_channels=257, num_channels=num_channels, dropout=dropout,
                                             latent_size=latent_size, out_channels=num_out_channels)
@@ -39,16 +39,16 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.num_net_channels, config.net_latent_size, config.num_net_out_channels,
                    config.az_net_linear_input_size)
 
-    @th.jit.export
-    def dynamics_forward(self, x: th.Tensor, predict: bool = False):
+    @torch.jit.export
+    def dynamics_forward(self, x: torch.Tensor, predict: bool = False):
         if predict:
             return self.dynamics_network.predict(x)
         state, reward = self.dynamics_network(x)
         reward = self.scale_reward_value(reward)
         return state, reward
 
-    @th.jit.export
-    def prediction_forward(self, x: th.Tensor, predict: bool = False):
+    @torch.jit.export
+    def prediction_forward(self, x: torch.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
             v = self.scale_reward_value(v[0][0])
@@ -57,8 +57,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         v = self.scale_reward_value(v)
         return pi, v
 
-    @th.jit.export
-    def representation_forward(self, x: th.Tensor):
+    @torch.jit.export
+    def representation_forward(self, x: torch.Tensor):
         x = self.representation_network(x)
         return x
 
@@ -67,10 +67,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          self.num_out_channels, self.linear_input_size)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
-        device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         losses = []
         K = muzero_config.K
-        optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=muzero_config.lr)
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.batch_size, K,
                                                                                 alpha=muzero_config.alpha):
@@ -80,11 +80,11 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             rews = [x[0] for x in rews_moves]
             moves = [x[1] for x in rews_moves]
             states = [np.array(x) for x in states]
-            states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
+            states = torch.tensor(np.array(states), dtype=torch.float32, device=device).permute(0, 3, 1, 2)
             pis = [list(x.values()) for x in pis]
-            pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
-            vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(1)
-            rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(1)
+            pis = torch.tensor(np.array(pis), dtype=torch.float32, device=device)
+            vs = torch.tensor(np.array(vs), dtype=torch.float32, device=device).unsqueeze(1)
+            rews = torch.tensor(np.array(rews), dtype=torch.float32, device=device).unsqueeze(1)
             latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
             latent = match_action_with_obs_batch(latent, moves)
@@ -104,32 +104,32 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return sum(losses) / len(losses), losses
 
     def muzero_pi_loss(self, y_hat, y):
-        return -th.sum(y * y_hat) / y.size()[0]
+        return -torch.sum(y * y_hat) / y.size()[0]
 
-    def scale_reward_value(value: th.Tensor, e: float = 0.001):
+    def scale_reward_value(value: torch.Tensor, e: float = 0.001):
         if isinstance(value, float) or isinstance(value, np.float32):
             scaled_v = np.sign(value) * (np.sqrt(np.abs(value) + 1) - 1 + value * e)
             return np.array([scaled_v])
-        return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1 + value * e)
+        return torch.sign(value) * (torch.sqrt(torch.abs(value) + 1) - 1 + value * e)
 
     def to_pickle(self, path: str):
-        th.save(self, path)
+        torch.save(self, path)
 
 
-class RepresentationNet(th.nn.Module):
+class RepresentationNet(torch.nn.Module):
     def __init__(self):
         super(RepresentationNet, self).__init__()
-        self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        self.conv1 = th.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1)
-        self.residuals1 = th.nn.ModuleList([ResidualBlock(128) for _ in range(2)])
-        self.conv2 = th.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
-        self.residuals2 = th.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
-        self.pool1 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
-        self.residuals3 = th.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
-        self.pool2 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
-        self.relu = th.nn.ReLU()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.conv1 = torch.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1)
+        self.residuals1 = torch.nn.ModuleList([ResidualBlock(128) for _ in range(2)])
+        self.conv2 = torch.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
+        self.residuals2 = torch.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
+        self.pool1 = torch.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+        self.residuals3 = torch.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
+        self.pool2 = torch.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+        self.relu = torch.nn.ReLU()
 
-    def forward(self, x: th.Tensor):
+    def forward(self, x: torch.Tensor):
         # x.unsqueeze(0)
         x = x.to(self.device)
         x = self.relu(self.conv1(x))
@@ -145,8 +145,8 @@ class RepresentationNet(th.nn.Module):
         return x
 
     def trace(self):
-        data = th.rand((1, 128, 8, 8))
-        traced_script_module = th.jit.trace(self, data)
+        data = torch.rand((1, 128, 8, 8))
+        traced_script_module = torch.jit.trace(self, data)
         return traced_script_module
 
 
@@ -154,7 +154,7 @@ class DynamicsNet(nn.Module):
     def __init__(self, in_channels, num_channels, dropout, latent_size, out_channels):
         super(DynamicsNet, self).__init__()
         self.out_channels = out_channels
-        self.latent_size = int(math.sqrt(latent_size))
+        self.latent_size = int(torch.sqrt(latent_size))
 
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
@@ -199,28 +199,28 @@ class DynamicsNet(nn.Module):
 
         return state, r
 
-    def trace(self) -> th.jit.ScriptFunction:
-        data = th.rand((1, 257, 6, 6)).to("cuda:0")
-        traced_script_module = th.jit.trace(self, data)
+    def trace(self) -> torch.jit.ScriptFunction:
+        data = torch.rand((1, 257, 6, 6)).to("cuda:0")
+        traced_script_module = torch.jit.trace(self, data)
         return traced_script_module
 
-    @th.no_grad()
+    @torch.no_grad()
     def predict(self, x):
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         # r = scale_reward_value(r)
-        r = th.sign(r) * (th.sqrt(th.abs(r) + 1) - 1 + r * 0.001)
+        r = torch.sign(r) * (torch.sqrt(torch.abs(r) + 1) - 1 + r * 0.001)
         return state, r.detach().cpu().numpy()
 
 
-class ResidualBlock(th.nn.Module):
+class ResidualBlock(torch.nn.Module):
     def __init__(self, channels: int):
         super(ResidualBlock, self).__init__()
-        self.convolution1 = th.nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, padding=1)
-        self.bnorm1 = th.nn.BatchNorm2d(channels)
-        self.convolution2 = th.nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, padding=1)
-        self.bnorm2 = th.nn.BatchNorm2d(channels)
-        self.relu = th.nn.ReLU()
+        self.convolution1 = torch.nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, padding=1)
+        self.bnorm1 = torch.nn.BatchNorm2d(channels)
+        self.convolution2 = torch.nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, padding=1)
+        self.bnorm2 = torch.nn.BatchNorm2d(channels)
+        self.relu = torch.nn.ReLU()
 
     def forward(self, x):
         # x = x.unsqueeze(0)
