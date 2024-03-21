@@ -210,7 +210,11 @@ class DynamicsNet(nn.Module):
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         # r = scale_reward_value(r)
         r = th.sign(r) * (th.sqrt(th.abs(r) + 1) - 1 + r * 0.001)
-        return state, r.detach().cpu().numpy()
+        try:
+            r = r.detach().cpu().numpy()
+        except RuntimeError:
+            pass
+        return state, r
 
 
 class ResidualBlock(th.nn.Module):
