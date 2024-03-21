@@ -9,7 +9,7 @@ from torch.nn.functional import mse_loss
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -204,20 +204,12 @@ class DynamicsNet(nn.Module):
         traced_script_module = th.jit.trace(self, data)
         return traced_script_module
 
-    @th.jit.export
+    @th.jit.ignore
     def predict(self, x):
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
-        # r = scale_reward_value(r)
-        r = th.sign(r) * (th.sqrt(th.abs(r) + 1) - 1 + r * 0.001)
-        if self.is_torch_script_running():
-            return state, r
+        r = scale_reward_value(r)
         return state, r.detach().cpu().numpy()
-
-    def is_torch_script_running(self):
-        sentinel = object()
-        result = getattr(th, 'is_scripting', sentinel)
-        return result is not sentinel
 
 
 class ResidualBlock(th.nn.Module):
