@@ -204,7 +204,6 @@ class DynamicsNet(nn.Module):
         traced_script_module = th.jit.trace(self, data)
         return traced_script_module
 
-    @th.no_grad()
     @th.jit.export
     def predict(self, x):
         state, r = self.forward(x)
