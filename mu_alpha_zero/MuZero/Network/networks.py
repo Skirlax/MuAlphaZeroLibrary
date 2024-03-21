@@ -41,22 +41,20 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     @th.jit.export
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
-        from mu_alpha_zero.MuZero.utils import scale_reward_value
         if predict:
             return self.dynamics_network.predict(x)
         state, reward = self.dynamics_network(x)
-        reward = scale_reward_value(reward)
+        reward = self.scale_reward_value(reward)
         return state, reward
 
     @th.jit.export
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
-        from mu_alpha_zero.MuZero.utils import scale_reward_value
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
-            v = scale_reward_value(v[0][0])
+            v = self.scale_reward_value(v[0][0])
             return pi, v
         pi, v = self.prediction_network(x, muzero=True)
-        v = scale_reward_value(v)
+        v = self.scale_reward_value(v)
         return pi, v
 
     @th.jit.export
@@ -107,6 +105,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     def muzero_pi_loss(self, y_hat, y):
         return -th.sum(y * y_hat) / y.size()[0]
+
+    def scale_reward_value(value: th.Tensor, e: float = 0.001):
+        if isinstance(value, float) or isinstance(value, np.float32):
+            scaled_v = np.sign(value) * (np.sqrt(np.abs(value) + 1) - 1 + value * e)
+            return np.array([scaled_v])
+        return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1 + value * e)
 
     def to_pickle(self, path: str):
         th.save(self, path)
@@ -202,10 +206,10 @@ class DynamicsNet(nn.Module):
 
     @th.no_grad()
     def predict(self, x):
-        from mu_alpha_zero.MuZero.utils import scale_reward_value
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
-        r = scale_reward_value(r)
+        # r = scale_reward_value(r)
+        r = th.sign(r) * (th.sqrt(th.abs(r) + 1) - 1 + r * 0.001)
         return state, r.detach().cpu().numpy()
 
 
