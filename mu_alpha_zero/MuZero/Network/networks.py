@@ -23,6 +23,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.action_size = action_size
         self.num_channels = num_channels
         self.latent_size = latent_size
+        self.latent_size_sqrt = int(math.sqrt(latent_size))
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
         # self.action_embedding = th.nn.Embedding(action_size, 256)
@@ -42,7 +43,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     @th.jit.export
     def dynamics_forward(self, x: th.Tensor):
         state, reward = self.dynamics_network(x)
-        state = state.view(self.num_out_channels, self.latent_size, self.latent_size)
+        state = state.view(self.num_out_channels, self.latent_size_sqrt, self.latent_size_sqrt)
         reward = self.scale_reward_value(reward)
         return state, reward
 

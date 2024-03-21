@@ -36,6 +36,7 @@ class MuZeroSearchTree(SearchTree):
             pi, (v, latent) = self.search(network_wrapper, state, None, device)
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
+            pred_v = pred_v.detach().cpu().numpy()
             state, rew, done = self.game_manager.frame_skip_step(move, None, frame_skip=frame_skip)
             rew = scale_reward(rew)
             state = resize_obs(state, self.muzero_config.target_resolution)
