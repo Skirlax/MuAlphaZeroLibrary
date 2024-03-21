@@ -76,7 +76,6 @@ class MuZeroSearchTree(SearchTree):
 
             current_node_state_with_action = match_action_with_obs(current_node.parent().state, action)
             next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0))
-            next_state = next_state.detach().cpu().numpy()
             reward = reward.item()
             v = self.game_manager.game_result(current_node.current_player)
             if v is None or not v:
