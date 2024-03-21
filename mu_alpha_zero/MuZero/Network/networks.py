@@ -210,11 +210,14 @@ class DynamicsNet(nn.Module):
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         # r = scale_reward_value(r)
         r = th.sign(r) * (th.sqrt(th.abs(r) + 1) - 1 + r * 0.001)
-        try:
-            r = r.detach().cpu().numpy()
-        except RuntimeError:
-            pass
-        return state, r
+        if self.is_torch_script_running():
+            return state, r
+        return state, r.detach().cpu().numpy()
+
+    def is_torch_script_running(self):
+        sentinel = object()
+        result = getattr(th, 'is_scripting', sentinel)
+        return result is not sentinel
 
 
 class ResidualBlock(th.nn.Module):
