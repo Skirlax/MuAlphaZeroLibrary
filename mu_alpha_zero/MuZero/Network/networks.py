@@ -40,10 +40,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.az_net_linear_input_size)
 
     @th.jit.export
-    def dynamics_forward(self, x: th.Tensor, predict: bool = False):
-        if predict:
-            return self.dynamics_network.predict(x)
+    def dynamics_forward(self, x: th.Tensor):
         state, reward = self.dynamics_network(x)
+        state = state.view(self.out_channels, self.latent_size, self.latent_size)
         reward = self.scale_reward_value(reward)
         return state, reward
 
@@ -51,8 +50,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
-            v = self.scale_reward_value(th.tensor(v))
-            return pi, v.detach().cpu().numpy().flatten()
+            v = self.scale_reward_value(v)
+            return pi, v
         pi, v = self.prediction_network(x, muzero=True)
         v = self.scale_reward_value(v)
         return pi, v
@@ -206,7 +205,7 @@ class DynamicsNet(nn.Module):
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
         r = scale_reward_value(r)
-        return state, r.detach().cpu().numpy()
+        return state, r
 
 
 class ResidualBlock(th.nn.Module):

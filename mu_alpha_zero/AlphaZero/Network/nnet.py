@@ -70,7 +70,7 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
     def predict(self, x, muzero: bool = True):
         pi, v = self.forward(x, muzero=muzero)
         pi = th.exp(pi)
-        return pi.detach().cpu().numpy(), v.detach().cpu().numpy()
+        return pi, v
 
     def to_traced_script(self, board_size: int = 10):
         return th.jit.trace(self, th.rand(1, 256, board_size, board_size).cuda())

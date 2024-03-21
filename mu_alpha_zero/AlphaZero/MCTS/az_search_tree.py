@@ -86,7 +86,9 @@ class McSearchTree(SearchTree):
         state_ = self.game_manager.get_canonical_form(state, current_player)
         # state_ = make_channels_from_single(state_)
         state_ = th.tensor(state_, dtype=th.float32, device=device).unsqueeze(0)
-        probabilities, v = network.predict(state_, muzero=False)
+        probabilities, _ = network.predict(state_, muzero=False)
+        probabilities = probabilities.detach().cpu().numpy()
+        # v = v.detach().cpu().numpy()
 
         probabilities = mask_invalid_actions(probabilities, state.copy(), self.game_manager.board_size)
         probabilities = probabilities.flatten().tolist()
@@ -113,8 +115,9 @@ class McSearchTree(SearchTree):
                 # next_state_ = make_channels_from_single(next_state_)
                 next_state_ = th.tensor(next_state_, dtype=th.float32, device=device).unsqueeze(0)
                 probabilities, v = network.predict(next_state_, muzero=False)
+                probabilities = probabilities.detach().cpu().numpy()
                 probabilities = mask_invalid_actions(probabilities, next_state, self.game_manager.board_size)
-                v = v.flatten().tolist()[0]
+                v = v.detach().cpu().numpy().flatten().tolist()[0]
                 probabilities = probabilities.flatten().tolist()
                 current_node.expand(next_state, probabilities)
 

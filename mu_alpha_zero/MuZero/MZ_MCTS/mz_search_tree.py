@@ -60,8 +60,8 @@ class MuZeroSearchTree(SearchTree):
         root_node = MzAlphaZeroNode()
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
-        pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
-        pi = pi.flatten().tolist()
+        pi, _ = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
+        pi = pi.detach().cpu().numpy().flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):
             current_node = root_node
@@ -74,14 +74,16 @@ class MuZeroSearchTree(SearchTree):
             action = scale_action(action, self.game_manager.get_num_actions())
 
             current_node_state_with_action = match_action_with_obs(current_node.parent().state, action)
-            next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
-                                                                  predict=True)
-            reward = reward[0][0]
+            next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0))
+            next_state = next_state.detach().cpu().numpy()
+            reward = reward.item()
             v = self.game_manager.game_result(current_node.current_player)
             if v is None or not v:
                 pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
-                pi = pi.flatten().tolist()
-                v = v.flatten().tolist()[0]
+                pi = pi.detach().cpu().numpy().flatten().tolist()
+                v = v.detach().cpu().numpy().flatten().tolist()[0]
+                # pi = pi.flatten().tolist()
+                # v = v.flatten().tolist()[0]
                 current_node.expand_node(next_state, pi, reward)
             self.backprop(v, path)
 
