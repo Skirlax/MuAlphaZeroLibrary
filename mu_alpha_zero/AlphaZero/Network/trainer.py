@@ -1,3 +1,5 @@
+import time
+
 from torch.multiprocessing import set_start_method
 
 from mu_alpha_zero.General.utils import not_zero
@@ -147,8 +149,10 @@ class Trainer:
                     if isinstance(self.memory, MemBuffer) and self.memory.is_disk and self.memory.full_disk:
                         self.memory = self.memory.make_fresh_instance()
                 else:
+                    start = time.time()
                     wins_p1, wins_p2, game_draws = self.mcts.self_play(self.network, self.device, self_play_games,
                                                                        self.memory)
+                    print(f"Self-play time: {time.time() - start}")
                 self.logger.log(LoggingMessageTemplates.SELF_PLAY_END(wins_p1, wins_p2, game_draws, not_zero))
                 self.logger.pushbullet_log("Finished self-play.")
 
