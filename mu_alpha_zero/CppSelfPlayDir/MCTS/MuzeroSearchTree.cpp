@@ -23,7 +23,14 @@ MuzeroSearchTree::MuzeroSearchTree(py::object game_manager, std::map<std::string
 std::unique_ptr<std::vector<PlayeOneStepReturn>> MuzeroSearchTree::playOneGame(MuZeroDefaultNet* networkWrapper) {
     int numSteps = this->config_args["num_steps"].cast<int>();
     int frameSkip = this->config_args["frame_skip"].cast<int>();
+    torch::Device device = torch::kCPU;
+    if (torch::cuda::is_available())
+    {
+	    device = torch::kCUDA;
+    }
+    std::cout << "Using device: " << device << std::endl;
     // int noopAction = this->game_manager.attr("get_noop")().cast<int>();
+    networkWrapper->model->to(device);
     torch::Tensor state = utils::numpyToPytorch(this->game_manager.attr("reset")());
     std::tuple<int,int> targetSize = this->config_args["target_resolution"].cast<std::tuple<int,int>>();
     state = utils::resizeObs(state,{get<0>(targetSize),get<1>(targetSize)});
