@@ -14,6 +14,7 @@
 #include "pybind11/chrono.h"
 #include "pybind11/embed.h"
 #include "omp.h"
+using namespace std;
 namespace py = pybind11;
 
 vector<MuZeroDefaultNet> makeNetworks(int numNetworks, string networkPath) {
@@ -25,36 +26,28 @@ vector<MuZeroDefaultNet> makeNetworks(int numNetworks, string networkPath) {
     return networks;
 }
 
-vector<MuzeroSearchTree> makeTrees(int numTrees, py::object gameManager, map<string, py::object> configArgs,
-                                   int noopAction) {
-    vector<MuzeroSearchTree> trees;
-    for (int i = 0; i < numTrees; ++i) {
-        MuzeroSearchTree tree(gameManager, configArgs);
-        trees.push_back(tree);
-    }
-    return trees;
-}
 
-std::vector<std::tuple<PlayeOneStepReturn> > runParallelSelfPlay(string netPath, py::object gameManager,
+
+std::vector<std::vector<PlayeOneStepReturn> > runParallelSelfPlay(string netPath, py::object gameManager,
                                                                  map<string, py::object> configArgs, int numGames,
                                                                  int numProcesses, int noopAction) {
     std::cout << "Starting parallel self play." << std::endl;
     int numGamesPerProcess = static_cast<int>(numGames / numProcesses);
-    std::vector<std::tuple<PlayeOneStepReturn> > histories;
+    unique_ptr<vector<std::vector<PlayeOneStepReturn>>> histories = make_unique<vector<vector<PlayeOneStepReturn>>>();
     omp_set_num_threads(numProcesses);
 #pragma omp parallel default(none) shared(histories, numGamesPerProcess, numGames)
     {
-        MuZeroDefaultNet net = MuZeroDefaultNet(netPath);
-        MuzeroSearchTree tree = MuzeroSearchTree(move(gameManager), configArgs);
+        unique_ptr<MuZeroDefaultNet> net = std::make_unique<MuZeroDefaultNet>(netPath);
+        unique_ptr<MuzeroSearchTree> tree = std::make_unique<MuzeroSearchTree>(gameManager, configArgs);
 
 #pragma omp for nowait
         for (int i = 0; i < numGames; ++i) {
             try {
-                std::tuple<PlayeOneStepReturn> gameReturn = tree.playOneGame(net);
+                unique_ptr<vector<PlayeOneStepReturn>> gameReturn = tree->playOneGame(net.get());
 
 #pragma omp critical
                 {
-                    histories.push_back(gameReturn);
+                    histories->push_back(*gameReturn);
                 }
             } catch (const std::exception &e) {
                 std::cerr << "Caught exception in thread " << omp_get_thread_num() << ": " << e.what() << std::endl;
@@ -62,7 +55,7 @@ std::vector<std::tuple<PlayeOneStepReturn> > runParallelSelfPlay(string netPath,
         }
     }
     std::cout << "Finished parallel self play." << std::endl;
-    return histories;
+    return *histories;
 }
 
 

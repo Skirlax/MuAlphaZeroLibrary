@@ -17,7 +17,7 @@ public:
     static double scaleReward(double reward);
     static torch::Tensor scaleState(torch::Tensor state);
     static torch::Tensor addActionToObs(torch::Tensor observations,torch::Tensor actions,int dim);
-    static torch::Tensor matchActionWithObs(torch::Tensor observations,int action);
+    static torch::Tensor matchActionWithObs(const torch::Tensor& observations,double action);
     static torch::Tensor numpyToPytorch(py::array_t<float> inputArray);
     static torch::Tensor resizeObs(torch::Tensor obs,std::vector<int64_t> size);
     static std::map<int,double> tensorProbabilitiesToMap(torch::Tensor probabilities);

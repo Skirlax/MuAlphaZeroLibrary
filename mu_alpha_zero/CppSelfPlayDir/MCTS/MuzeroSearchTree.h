@@ -31,13 +31,13 @@ class MuzeroSearchTree {
 private:
     py::object game_manager;
     std::map<std::string,py::object> config_args;
-    MuZeroFrameBuffer* frame_buffer;
+    unique_ptr<MuZeroFrameBuffer> frame_buffer;
     std::vector<double> minMaxQ;
 
 public:
     MuzeroSearchTree(py::object game_manager, std::map<std::string,py::object> config_args);
-    std::tuple<PlayeOneStepReturn> playOneGame(MuZeroDefaultNet networkWrapper);
-    SearchReturn search(MuZeroDefaultNet networkWrapper, torch::Tensor state,double tau);
+    std::unique_ptr<std::vector<PlayeOneStepReturn>> playOneGame(MuZeroDefaultNet* networkWrapper);
+    SearchReturn search(MuZeroDefaultNet* networkWrapper, torch::Tensor state,double tau);
     void backprop(std::vector<Node*> path,double value);
     void updateMinMaxQ(double Q);
 

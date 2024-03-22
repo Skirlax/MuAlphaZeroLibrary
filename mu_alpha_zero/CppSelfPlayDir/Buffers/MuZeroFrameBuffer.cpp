@@ -26,9 +26,10 @@ void MuZeroFrameBuffer::addFrame(torch::Tensor frame, int action) {
 }
 
 torch::Tensor MuZeroFrameBuffer::concatFrames() {
-    unique_ptr<vector<torch::Tensor>> framesWithActions(new vector<torch::Tensor>);
-    for (auto [frame,action] : *this->buffer) {
-        framesWithActions->push_back(torch::cat((frame,torch::full((frame.size(0), frame.size(1),1),action)),2));
+    unique_ptr<vector<torch::Tensor>> framesWithActions = make_unique<vector<torch::Tensor>>();
+    for (auto& [frame,action] : *this->buffer) {
+        framesWithActions->push_back(torch::cat({frame,torch::full({frame.size(0), frame.size(1),1},action)},2));
+        // correct the above line
 
 
     }
@@ -37,7 +38,7 @@ torch::Tensor MuZeroFrameBuffer::concatFrames() {
 }
 
 void MuZeroFrameBuffer::initBuffer(torch::Tensor initState) {
-    for (int i = 0; i < this->frameBufferSize,i++;) {
+    for (int i = 0; i < this->frameBufferSize;i++) {
         this->addFrame(initState,this->noopAction);
     }
 }

@@ -10,7 +10,7 @@
 class MuZeroDefaultNet {
 public:
     MuZeroDefaultNet(std::string modelPath);
-    torch::jit::script::Module model;
+    std::shared_ptr<torch::jit::script::Module> model;
 
     std::tuple<torch::Tensor,torch::Tensor> dynamicsForward(torch::Tensor stateWithAction,bool predict);
     std::tuple<torch::Tensor,torch::Tensor> predictionForward(torch::Tensor state,bool predict);

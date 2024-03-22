@@ -47,6 +47,9 @@ double Node::calculate_uct_score(double c, double c2) const {
     }
 }
 void Node::scale_q(double minQ, double maxQ) {
+    if (minQ == maxQ) {
+        return;
+    }
     this->q = (this->q - minQ) / (maxQ - minQ);
 }
 
@@ -62,9 +65,9 @@ bool Node::was_visited() {
     return this->children.size() > 0;
 }
 std::map<int,double> Node::get_self_action_probabilities(double tau,bool adjust) {
-    std::map<int,double> action_probabilities;
+    std::map<int,double> action_probabilities = std::map<int,double>();
     for (auto& [action,child] : this->children) {
-        action_probabilities[action] = (double) child->times_visited / (double) this->times_visited;
+        action_probabilities.insert({action, static_cast<double>(child->times_visited) / static_cast<double>(this->times_visited)});
     }
     if (adjust) {
         return this->adjustProbabilities(action_probabilities,tau);
@@ -83,25 +86,25 @@ std::map<int,double> Node::adjustProbabilities(std::map<int,double> action_proba
                 max_key = key;
             }
         }
-        action_probabilities[max_key] = 1;
+        action_probabilities.insert({max_key,1});
         for (auto& [key, val] : action_probabilities) {
             if (key != max_key) {
-                action_probabilities[key] = 0;
+                action_probabilities.insert({key,0});
             }
         }
         return action_probabilities;
     }
 
-    std::vector<double> values;
+    std::vector<double> values = std::vector<double>();
     for (auto [key, val] : action_probabilities) {
         values.push_back(val);
     }
     torch::Tensor value_tensor = torch::tensor(values);
     value_tensor = value_tensor.pow(1 / inner_tau);
     value_tensor = value_tensor / value_tensor.sum();
-    std::map<int,double> new_action_probabilities;
+    std::map<int,double> new_action_probabilities = std::map<int,double>();
     for (int i = 0; i < values.size(); i++) {
-        new_action_probabilities[i] = value_tensor[i].item<double>();
+        new_action_probabilities.insert({i,value_tensor[i].item<double>()});
     }
     return new_action_probabilities;
 

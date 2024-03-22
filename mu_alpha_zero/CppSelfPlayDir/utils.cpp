@@ -3,8 +3,10 @@
 //
 
 #include "utils.h"
-#include "torch/torch.h"
 
+#include <utility>
+#include "torch/torch.h"
+namespace F = torch::nn::functional;
 
 double utils::scaleAction(int action, int num_actions) {
     return (double) action / (double)(num_actions - 1);
@@ -23,10 +25,15 @@ torch::Tensor utils::scaleState(torch::Tensor state) {
 }
 
 torch::Tensor utils::addActionToObs(torch::Tensor observations, torch::Tensor actions, int dim) {
-    return torch::cat((observations,actions),dim);
+    return torch::cat({observations,actions},dim);
 }
-torch::Tensor utils::matchActionWithObs(torch::Tensor observations, int action) {
-    return addActionToObs(observations, torch::full((1, observations.size(1), observations.size(2)), action), 0);
+torch::Tensor utils::matchActionWithObs(const torch::Tensor& observations, double action) {
+    try {
+        return addActionToObs(observations, torch::full({1, observations.size(1), observations.size(2)}, action), 0);
+    }
+    catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
 }
 
 torch::Tensor utils::numpyToPytorch(py::array_t<float> inputArray) {
@@ -35,7 +42,11 @@ torch::Tensor utils::numpyToPytorch(py::array_t<float> inputArray) {
 }
 
 torch::Tensor utils::resizeObs(torch::Tensor obs, std::vector<int64_t> size) {
-    return torch::nn::functional::interpolate(obs,torch::nn::functional::InterpolateFuncOptions().size(size).mode(torch::kNearest));
+    torch::Tensor output = F::interpolate(obs.permute({2,1,0}).unsqueeze(0),
+                   F::InterpolateFuncOptions().size(size).mode(torch::kNearest));
+
+    return output.reshape({size[0],size[1],3}).squeeze(0);
+
 }
 
 std::map<int, double> utils::tensorProbabilitiesToMap(torch::Tensor probabilities) {
@@ -50,9 +61,10 @@ std::map<int, double> utils::tensorProbabilitiesToMap(torch::Tensor probabilitie
 std::vector<double> utils::tensorToVector(torch::Tensor tensor)
 {
 	std::vector<double> vec;
-	for (int i = 0; i < tensor.size(0); i++)
+    torch::Tensor flattened = tensor.view({-1});
+	for (int i = 0; i < flattened.size(0); i++)
 	{
-		vec.push_back(tensor[i].item<double>());
+		vec.push_back(flattened[i].item<double>());
 	}
 	return vec;
 }
