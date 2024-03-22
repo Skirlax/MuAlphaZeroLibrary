@@ -26,9 +26,21 @@ vector<MuZeroDefaultNet> makeNetworks(int numNetworks, string networkPath) {
     return networks;
 }
 
+std::vector<std::tuple<std::map<int, double>,double, std::tuple<double, int, double>, std::string>> unpackToPython(vector<vector<PlayeOneStepReturn>> histories)
+{
+	std::vector<std::tuple<std::map<int, double>,double, std::tuple<double, int, double>, std::string>> unpackedHistories;
+	for (auto& history : histories)
+	{
+		for (auto& step : history){
+			unpackedHistories.push_back(std::make_tuple(step.probabilities,step.v,step.info,step.framePath));
+		}
+	}
+	return unpackedHistories;
+}
 
 
-std::vector<std::vector<PlayeOneStepReturn> > runParallelSelfPlay(string netPath, py::object gameManager,
+
+std::vector < std::tuple<std::map<int, double>, double, std::tuple<double, int, double>, std::string>> runParallelSelfPlay(string netPath, py::object gameManager,
                                                                  map<string, py::object> configArgs, int numGames,
                                                                  int numProcesses, int noopAction) {
     std::cout << "Starting parallel self play." << std::endl;
@@ -55,7 +67,7 @@ std::vector<std::vector<PlayeOneStepReturn> > runParallelSelfPlay(string netPath
         }
     }
     std::cout << "Finished parallel self play." << std::endl;
-    return *histories;
+    return unpackToPython(*histories);
 }
 
 
