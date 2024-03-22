@@ -49,6 +49,7 @@ std::vector < std::tuple<std::map<int, double>, double, std::tuple<double, int, 
     omp_set_num_threads(numProcesses);
 #pragma omp parallel default(none) shared(histories, numGamesPerProcess, numGames)
     {
+        cout << "Thread " << omp_get_thread_num() << " starting." << endl;
         unique_ptr<MuZeroDefaultNet> net = std::make_unique<MuZeroDefaultNet>(netPath);
         unique_ptr<MuzeroSearchTree> tree = std::make_unique<MuzeroSearchTree>(gameManager, configArgs);
 
