@@ -10,7 +10,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.search_tree import SearchTree
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward,scale_state
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
@@ -43,7 +43,7 @@ class MuZeroSearchTree(SearchTree):
             if done:
                 break
             move = scale_action(move, self.game_manager.get_num_actions())
-            data.append((pi, v, (rew, move, float(pred_v[0])), latent.cpu().detach().numpy()))
+            data.append((pi, v, (rew, move, float(pred_v[0])), self.buffer.concat_frames().detach().cpu().numpy()))
             self.buffer.add_frame(state, move)
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
@@ -91,15 +91,16 @@ class MuZeroSearchTree(SearchTree):
         return action_probs, root_val_latent
 
     def backprop(self, v, path):
-        G = v
+        G = 0
         gamma = self.muzero_config.gamma
         for node in reversed(path):
-            G = node.reward + gamma * G
-            node.total_value += v
+            G = v + node.reward if G == 0 else G
+            node.total_value += G
             node.update_q(G)
             self.update_min_max_q(node.q)
             node.scale_q(self.min_max_q[0], self.min_max_q[1])
             node.times_visited += 1
+            G = node.reward + gamma * G
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:
@@ -124,18 +125,13 @@ class MuZeroSearchTree(SearchTree):
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
                            num_jobs: int):
         with Pool(num_jobs) as p:
-            if not memory.is_disk:
-                results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None)
-                                        for i in
-                                        range(len(nets))])
+            if memory.is_disk and memory.full_disk:
+                results = p.starmap(p_self_play, [
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory)) for i in
+                    range(len(nets))])
             else:
                 results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
-                                        copy.deepcopy(memory))
-                                        for i in
+                                    [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None) for i in
                                         range(len(nets))])
         for result in results:
             memory.add_list(result)

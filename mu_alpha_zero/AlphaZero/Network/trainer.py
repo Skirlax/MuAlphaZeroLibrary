@@ -63,7 +63,8 @@ class Trainer:
                         checkpoint_path: str, checkpoint_dir: str,
                         game: AlphaZeroGame, headless: bool = True,
                         checkpointer_verbose: bool = False,
-                        arena_override: GeneralArena or None = None):
+                        arena_override: GeneralArena or None = None,
+                        mem: GeneralMemoryBuffer or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         checkpointer = CheckPointer(checkpoint_dir, verbose=checkpointer_verbose)
 
@@ -71,16 +72,23 @@ class Trainer:
             checkpoint_path)
         conf = Config.from_args(args)
         tree = tree_class(game.make_fresh_instance(), conf)
-        conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
-        network = net_class.make_from_config(conf)
-        opponent_network = network.make_fresh_instance()
+        if "fc1.weight" in network_dict:
+            conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
+        network = net_class.make_from_config(conf).to(device)
+        opponent_network = network.make_fresh_instance().to(device)
         optimizer = th.optim.Adam(network.parameters(), lr=lr)
         # opponent_network = build_net_from_args(args, device)
         net_player = net_player_class(game.make_fresh_instance(),
                                       **{"network": network, "monte_carlo_tree_search": tree})
         network.load_state_dict(network_dict)
         opponent_network.load_state_dict(opponent_dict)
-        optimizer.load_state_dict(optimizer_dict)
+
+        try:
+            optimizer.load_state_dict(optimizer_dict)
+        except ValueError:
+            print("Couldn't load optimizer dict.")
+        if memory is None:
+            memory = mem
         return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, device, headless=headless,
                    arena_override=arena_override)
 
@@ -138,7 +146,7 @@ class Trainer:
                                                                                 self.memory, self.device,
                                                                                 self_play_games,
                                                                                 n_jobs)
-                    if isinstance(self.memory, MemBuffer) and self.memory.is_disk:
+                    if isinstance(self.memory, MemBuffer) and self.memory.is_disk and self.memory.full_disk:
                         self.memory = self.memory.make_fresh_instance()
                 else:
                     wins_p1, wins_p2, game_draws = self.mcts.self_play(self.network, self.device, self_play_games,

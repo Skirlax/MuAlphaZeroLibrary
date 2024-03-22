@@ -7,7 +7,7 @@ import pymongo
 import torch as th
 from diskcache import Deque
 from torch.utils.data import Dataset, DataLoader
-
+from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.utils import find_project_root
 from mu_alpha_zero.MuZero.utils import scale_action
@@ -26,9 +26,10 @@ class MemDataset(Dataset):
 
 
 class MemBuffer(GeneralMemoryBuffer):
-    def __init__(self, max_size, disk: bool = False, dir_path: str = None):
+    def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None):
         self.max_size = max_size
         self.disk = disk
+        self.full_disk = full_disk
         self.dir_path = dir_path
         self.buffer = self.init_buffer(dir_path)
         self.last_buffer_size = 0
@@ -38,10 +39,15 @@ class MemBuffer(GeneralMemoryBuffer):
     def add(self, experience):
         if not isinstance(experience, tuple):
             raise ValueError("Experience must be a tuple")
+        if self.disk and not self.full_disk:
+            frame = LazyArray(experience[-1], self.dir_path)
+            list_exp = list(experience)
+            list_exp[-1] = frame
+            experience = tuple(list_exp)
         self.buffer.append(experience)
 
     def init_buffer(self, dir_path: str or None):
-        if self.disk:
+        if self.disk and self.full_disk:
             if dir_path is None:
                 dir_path = f"{find_project_root()}/Pickles/Data"
             return Deque(maxlen=self.max_size, directory=dir_path)
@@ -49,7 +55,8 @@ class MemBuffer(GeneralMemoryBuffer):
             return deque(maxlen=self.max_size)
 
     def add_list(self, experience_list):
-        self.buffer.extend(experience_list)
+        for item in experience_list:
+            self.add(item)
 
     def sample(self, batch_size):
         return random.sample(self.buffer, batch_size)
@@ -139,6 +146,7 @@ class MongoDBMemBuffer(GeneralMemoryBuffer):
         self.db = pymongo.MongoClient("localhost", 27017).muzero
         self.calculated_buffer_size = 0
         self.is_disk = False
+        self.full_disk = False
 
     def add(self, experience):
         if not isinstance(experience, dict):
@@ -202,6 +210,7 @@ class PickleMemBuffer(GeneralMemoryBuffer):
     def __init__(self, pickle_dir: str):
         self.pickle_dir = pickle_dir
         self.is_disk = True
+        self.full_disk = True
         self.pickler = DataPickler(pickle_dir)
 
     def add(self, experience):
@@ -244,5 +253,3 @@ class PickleMemBuffer(GeneralMemoryBuffer):
 
     def __len__(self):
         raise NotImplementedError("Length not implemented for PickleMemBuffer.")
-
-

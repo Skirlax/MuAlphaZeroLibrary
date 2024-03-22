@@ -43,7 +43,11 @@ class MzArena(GeneralArena):
                     state, reward, done = self.game_manager.frame_skip_step(move, None)
                     state = resize_obs(state, self.muzero_config.target_resolution)
                     state = scale_state(state)
-                    players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, move)
+                    try:
+                        players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, move)
+                    except AttributeError:
+                        # Player is probably not net player and doesn't have monte_carlo_tree_search.
+                        pass
                     rewards[player].append(reward)
                     if done:
                         break
