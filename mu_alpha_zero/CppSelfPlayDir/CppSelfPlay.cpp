@@ -44,7 +44,6 @@ std::vector < std::tuple<std::map<int, double>, double, std::tuple<double, int, 
                                                                  map<string, py::object> configArgs, int numGames,
                                                                  int numProcesses, int noopAction) {
     std::cout << "Starting parallel self play." << std::endl;
-    py::gil_scoped_release release;
     int numGamesPerProcess = static_cast<int>(numGames / numProcesses);
     unique_ptr<vector<std::vector<PlayeOneStepReturn>>> histories = make_unique<vector<vector<PlayeOneStepReturn>>>();
     omp_set_num_threads(numProcesses);
