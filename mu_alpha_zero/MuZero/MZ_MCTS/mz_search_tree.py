@@ -134,6 +134,7 @@ class MuZeroSearchTree(SearchTree):
                                     [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, memory) for i in
                                      range(len(nets))])
                 for result, mem in results:
+                    print(len(mem.buffer))
                     memory.add_list(mem.buffer)
 
         return None, None, None
