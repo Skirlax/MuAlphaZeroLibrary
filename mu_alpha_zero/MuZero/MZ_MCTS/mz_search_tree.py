@@ -135,9 +135,8 @@ class MuZeroSearchTree(SearchTree):
                                     [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, memory) for i in
                                      range(len(nets))])
                 for result, mem in results:
-                    memory.buffer.extend(mem.buffer)
-                with open(r"C:\Users\Skyr\PycharmProjects\MuAlphaZeroBuild\mem.pkl","wb") as file:
-                    pickle.dump(memory, file)
+                    print(len(mem.buffer))
+                    memory.buffer.extend(list(mem.buffer))
 
         return None, None, None
 
