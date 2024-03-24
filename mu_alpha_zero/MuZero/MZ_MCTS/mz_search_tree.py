@@ -1,5 +1,6 @@
 import copy
 import gc
+import pickle
 from multiprocessing import Pool
 
 import numpy as np
@@ -135,6 +136,8 @@ class MuZeroSearchTree(SearchTree):
                                      range(len(nets))])
                 for result, mem in results:
                     memory.buffer.extend(mem.buffer)
+                with open(r"C:\Users\Skyr\PycharmProjects\MuAlphaZeroBuild\mem.pkl","wb") as file:
+                    pickle.dump(memory, file)
 
         return None, None, None
 
