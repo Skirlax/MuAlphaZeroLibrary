@@ -154,6 +154,7 @@ class Trainer:
                 self.logger.log(LoggingMessageTemplates.SELF_PLAY_END(wins_p1, wins_p2, game_draws, not_zero))
                 self.logger.pushbullet_log("Finished self-play.")
 
+            print(len(self.memory))
             self.checkpointer.save_temp_net_checkpoint(self.network)
             self.logger.log(LoggingMessageTemplates.SAVED("temp checkpoint", self.checkpointer.get_temp_path()))
             self.checkpointer.load_temp_net_checkpoint(self.opponent_network)
