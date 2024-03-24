@@ -9,7 +9,6 @@ class LazyArray:
         self.directory_path = directory_path
         self.path = f"{directory_path}/array_{uuid.uuid4()}.npy"
         np.save(self.path, array)
-        atexit.register(self.remove_array)
 
     def load_array(self):
         return np.load(self.path)

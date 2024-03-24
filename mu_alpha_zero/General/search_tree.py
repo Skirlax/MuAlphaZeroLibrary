@@ -10,7 +10,7 @@ from mu_alpha_zero.General.network import GeneralNetwork
 class SearchTree(ABC):
 
     @abstractmethod
-    def play_one_game(self, network, device: th.device) -> tuple[list, int, int, int]:
+    def play_one_game(self, network, device: th.device,dir_path: str or None = None) -> tuple[list, int, int, int]:
         """
         Performs one game of the algorithm
         """
