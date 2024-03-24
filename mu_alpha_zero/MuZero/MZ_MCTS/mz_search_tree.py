@@ -136,6 +136,7 @@ class MuZeroSearchTree(SearchTree):
                     results = p.starmap(p_self_play,
                                         [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, mem[0]) for i in
                                          range(len(nets))])
+            memory = mem[0]
         for result in results:
             memory.add_list(result)
 
