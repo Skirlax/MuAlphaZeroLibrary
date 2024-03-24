@@ -137,6 +137,7 @@ class MuZeroSearchTree(SearchTree):
                                         [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, mem[0]) for i in
                                          range(len(nets))])
             memory = mem[0]
+            print("Memory size: ", len(memory))
         for result in results:
             memory.add_list(result)
 
