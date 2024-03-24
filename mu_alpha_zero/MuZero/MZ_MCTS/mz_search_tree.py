@@ -133,9 +133,11 @@ class MuZeroSearchTree(SearchTree):
                 results = p.starmap(p_self_play,
                                     [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, memory) for i in
                                      range(len(nets))])
-                for result, mem in results:
-                    print(len(mem.buffer))
-                    memory.add_list(list(mem.buffer))
+        for result, mem in results:
+            if mem is None:
+                break
+            print(len(mem.buffer))
+            memory.add_list(list(mem.buffer))
 
         return None, None, None
 
@@ -148,4 +150,4 @@ def p_self_play(net, tree, dev, num_g, mem):
             mem.add_list(game_results)
         else:
             data.extend(game_results)
-    return data, mem
+    return data, mem if not mem.full_disk else None
