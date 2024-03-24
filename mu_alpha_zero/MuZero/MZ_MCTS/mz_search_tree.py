@@ -13,7 +13,6 @@ from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
-from multiprocessing import Manager
 
 
 class MuZeroSearchTree(SearchTree):
@@ -125,21 +124,17 @@ class MuZeroSearchTree(SearchTree):
     @staticmethod
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
                            num_jobs: int):
-        with Manager() as manager:
-            mem = manager.list([memory])
-            with Pool(num_jobs) as p:
-                if memory.is_disk and memory.full_disk:
-                    results = p.starmap(p_self_play, [
-                        (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory)) for i in
-                        range(len(nets))])
-                else:
-                    results = p.starmap(p_self_play,
-                                        [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, mem[0]) for i in
-                                         range(len(nets))])
-            memory = mem[0]
-            print("Memory size: ", len(memory))
-        for result in results:
-            memory.add_list(result)
+        with Pool(num_jobs) as p:
+            if memory.is_disk and memory.full_disk:
+                results = p.starmap(p_self_play, [
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory)) for i in
+                    range(len(nets))])
+            else:
+                results = p.starmap(p_self_play,
+                                    [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, memory) for i in
+                                     range(len(nets))])
+                for result, mem in results:
+                    memory.add_list(mem.buffer)
 
         return None, None, None
 
@@ -152,4 +147,4 @@ def p_self_play(net, tree, dev, num_g, mem):
             mem.add_list(game_results)
         else:
             data.extend(game_results)
-    return data
+    return data, mem
