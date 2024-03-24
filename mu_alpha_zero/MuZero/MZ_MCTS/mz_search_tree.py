@@ -135,7 +135,7 @@ class MuZeroSearchTree(SearchTree):
                                      range(len(nets))])
                 for result, mem in results:
                     print(len(mem.buffer))
-                    memory.add_list(mem.buffer)
+                    memory.add_list(list(mem.buffer))
 
         return None, None, None
 
