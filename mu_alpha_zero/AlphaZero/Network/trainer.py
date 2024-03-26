@@ -182,7 +182,6 @@ class Trainer:
             "updateThreshold": self.muzero_alphazero_config.update_threshold,
             "mcSimulations": self.muzero_alphazero_config.num_simulations,
             "c": self.muzero_alphazero_config.c,
-            "maxDepth": self.muzero_alphazero_config.max_depth,
             "numPitGames": self.muzero_alphazero_config.num_pit_games
         }
 
@@ -294,13 +293,11 @@ class Trainer:
                                                            self.checkpointer.get_temp_path()))
         self.logger.pushbullet_log(LoggingMessageTemplates.ITER_FINISHED_PSB(i))
 
-    def self_play_and_train(self):
+    def self_play_get_r_mean(self):
         self.network.eval()
         self.mcts.parallel_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
                                      self.make_n_trees(self.muzero_alphazero_config.num_workers),
                                      self.memory, self.device,
                                      self.muzero_alphazero_config.self_play_games,
                                      self.muzero_alphazero_config.num_workers)
-        self.network.train()
-        mean,_ = self.network.train_net(self.memory,self.muzero_alphazero_config)
-        return mean
+        return sum([x[2][0] for x in self.memory.buffer]) / not_zero(len(self.memory.buffer))

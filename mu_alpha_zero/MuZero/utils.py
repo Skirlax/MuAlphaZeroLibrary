@@ -19,8 +19,8 @@ def match_action_with_obs(observations: th.Tensor, action: int):
 
 
 def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int]):
-    tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action,
-                       dtype=th.float32, device=observation_batch.device) for action in action_batch]
+    tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action, dtype=th.float32,
+                       device=observation_batch.device) for action in action_batch]
     actions = th.cat(tensors, dim=0)
     return add_actions_to_obs(observation_batch, actions, dim=1)
 
@@ -52,7 +52,7 @@ def scale_reward(reward: float):
 
 
 def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str or None, study_name: str, game,
-                               muzero_config: MuZeroConfig, in_memory: bool = False):
+                               muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize"):
     def objective(trial):
         num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
         num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
@@ -80,12 +80,11 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
         network = MuZeroNet.make_from_config(muzero_config).to(device)
         network.load_state_dict(th.load(init_net_path))
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
-        net_player = NetPlayer(game.make_fresh_instance(),
-                               **{"network": network, "monte_carlo_tree_search": tree})
+        net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
         arena = MzArena(game.make_fresh_instance(), muzero_config, device)
-        trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player,
-                                 headless=True, arena_override=arena, checkpointer_verbose=False)
-        mean = trainer.self_play_and_train()
+        trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player, headless=True,
+                                 arena_override=arena, checkpointer_verbose=False)
+        mean = trainer.self_play_get_r_mean()
         trial.report(mean, trial.number)
         print(f"Trial {trial.number} finished with win freq {mean}.")
         del trainer
@@ -102,7 +101,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
 
     muzero_config.show_tqdm = False
     if in_memory:
-        study = optuna.create_study(study_name=study_name)
+        study = optuna.create_study(study_name=study_name, direction=direction)
     else:
         if storage is None:
             raise ValueError("Storage can't be None if in_memory is False.")
