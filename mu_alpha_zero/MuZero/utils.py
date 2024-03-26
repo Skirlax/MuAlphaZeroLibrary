@@ -54,24 +54,24 @@ def scale_reward(reward: float):
 def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str or None, study_name: str, game,
                                muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize"):
     def objective(trial):
-        num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
-        num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
-        num_epochs = trial.suggest_int("num_epochs", 100, 3000)
+        # num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
+        # num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
+        # num_epochs = trial.suggest_int("num_epochs", 100, 3000)
         lr = trial.suggest_float("lr", 1e-8, 1e-2, log=True)
         tau = trial.suggest_float("tau", 0.5, 1.5)
-        arena_tau = trial.suggest_float("arena_tau", 0.01, 0.5)
+        # arena_tau = trial.suggest_float("arena_tau", 0.01, 0.5)
         c = trial.suggest_float("c", 0.5, 5)
         c2 = trial.suggest_categorical("c2", [19652, 10_000, 0.01, 10, 0.1])
         K = trial.suggest_int("K", 1, 10)
 
-        muzero_config.num_simulations = num_mc_simulations
-        muzero_config.self_play_games = num_self_play_games
-        muzero_config.epochs = num_epochs
+        muzero_config.num_simulations = 200
+        muzero_config.self_play_games = 20
+        muzero_config.epochs = 3600
         muzero_config.lr = lr
         muzero_config.tau = tau
         muzero_config.c = c
         muzero_config.c2 = c2
-        muzero_config.arena_tau = arena_tau
+        # muzero_config.arena_tau = arena_tau
         muzero_config.K = K
         muzero_config.num_iters = 5
 
