@@ -1,3 +1,4 @@
+import json
 import math
 
 import numpy as np
@@ -107,3 +108,5 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
             raise ValueError("Storage can't be None if in_memory is False.")
         study = optuna.load_study(study_name=study_name, storage=storage)
     study.optimize(objective, n_trials=n_trials)
+    with open(f"{muzero_config.checkpoint_dir}/study_params.json", "w") as file:
+        json.dump(study.best_params, file)
