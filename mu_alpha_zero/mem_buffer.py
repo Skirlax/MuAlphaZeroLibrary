@@ -40,7 +40,6 @@ class MemBuffer(GeneralMemoryBuffer):
         if not isinstance(experience, tuple):
             raise ValueError("Experience must be a tuple")
         if self.disk and not self.full_disk and not isinstance(experience[-1], LazyArray):
-            print("yes")
             frame = LazyArray(experience[-1], self.dir_path)
             list_exp = list(experience)
             list_exp[-1] = frame
