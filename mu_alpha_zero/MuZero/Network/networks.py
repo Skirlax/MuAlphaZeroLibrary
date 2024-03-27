@@ -90,6 +90,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             balance_term = 1
             w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
             w /= w.sum()
+            w = w.reshape(pred_vs.shape)
             loss_v = mse_loss(pred_vs, vs) * balance_term * w
             loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
             loss_r = mse_loss(pred_rews, rews) * balance_term * w

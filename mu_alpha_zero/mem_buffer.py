@@ -12,7 +12,7 @@ from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.utils import find_project_root
 from mu_alpha_zero.MuZero.utils import scale_action
 from mu_alpha_zero.MuZero.pickler import DataPickler
-
+import itertools
 
 class MemDataset(Dataset):
     def __init__(self, mem_buffer):
@@ -86,16 +86,16 @@ class MemBuffer(GeneralMemoryBuffer):
                 priorities = self.calculate_priorities(batch_size, alpha, K)
                 self.priorities = priorities
                 self.last_buffer_size = len(self.buffer)
-            random_indexes = np.random.choice(np.arange(len(self.buffer) - K),
+            random_indexes = np.random.choice(np.arange(len(self.buffer)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
-            batch = [[self.buffer[b] for b in range(i, i + K)] for i in random_indexes]
+            batch = [list(itertools.islice(self.buffer,i,i+K)) for i in random_indexes]
             pris = [self.priorities[i:i + K] for i in random_indexes]
             yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
 
     def calculate_priorities(self, batch_size, alpha, K):
         ps = [abs(self.buffer[i][1] - self.buffer[i][2][2]) for i in
-              range(len(self.buffer))][:-K]
+              range(len(self.buffer))]
         ps = np.array(ps)
         ps = ps ** alpha
         ps = ps / ps.sum()
