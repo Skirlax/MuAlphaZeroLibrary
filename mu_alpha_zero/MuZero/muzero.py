@@ -17,7 +17,7 @@ from mu_alpha_zero.MuZero.MZ_Arena.arena import MzArena
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import MuZeroSearchTree
 from mu_alpha_zero.mem_buffer import PickleMemBuffer
 from mu_alpha_zero.config import MuZeroConfig
-
+from mu_alpha_zero.Hooks.hook_manager import HookManager
 
 class MuZero:
     """
@@ -50,13 +50,14 @@ class MuZero:
         self.muzero_config = None
 
     def create_new(self, muzero_config: MuZeroConfig, network_class: Type[GeneralNetwork], memory: GeneralMemoryBuffer,
+                   hook_manager: HookManager or None = None,
                    headless: bool = True,
                    checkpointer_verbose: bool = False):
         muzero_config.net_action_size = int(self.game_manager.get_num_actions())
         if not os.path.isabs(muzero_config.pickle_dir):
             muzero_config.pickle_dir = find_project_root() + "/" + muzero_config.pickle_dir
         self.muzero_config = muzero_config
-        network = network_class.make_from_config(muzero_config).to(self.device)
+        network = network_class.make_from_config(muzero_config,hook_manager=hook_manager).to(self.device)
         self.tree = MuZeroSearchTree(self.game_manager.make_fresh_instance(), muzero_config)
 
         net_player = NetPlayer(self.game_manager.make_fresh_instance(),
@@ -68,17 +69,20 @@ class MuZero:
                                       net_player,
                                       headless=headless,
                                       checkpointer_verbose=checkpointer_verbose, arena_override=arena,
+                                      hook_manager=hook_manager,
                                       memory_override=memory, java_manager=java_manager)
         self.net = self.trainer.get_network()
 
     def from_checkpoint(self, network_class: Type[GeneralNetwork], memory: GeneralMemoryBuffer, path: str,
                         checkpoint_dir: str,
                         headless: bool = True,
+                        hook_manager: HookManager or None = None,
                         checkpointer_verbose: bool = False):
         self.trainer = Trainer.from_checkpoint(network_class, MuZeroSearchTree, NetPlayer, path,
                                                checkpoint_dir,
                                                self.game_manager,
                                                headless=headless,
+                                               hook_manager=hook_manager,
                                                checkpointer_verbose=checkpointer_verbose,
                                                mem=memory)
         self.net = self.trainer.get_network()

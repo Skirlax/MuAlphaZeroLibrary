@@ -9,13 +9,15 @@ from torch.nn.functional import mse_loss
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value
 from mu_alpha_zero.config import MuZeroConfig
 
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: int,
-                 num_out_channels: int, linear_input_size: int):
+                 num_out_channels: int, linear_input_size: int, hook_manager: HookManager or None = None):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
         self.dropout = dropout
@@ -25,6 +27,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.latent_size = latent_size
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # self.action_embedding = th.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet()
         self.dynamics_network = DynamicsNet(in_channels=257, num_channels=num_channels, dropout=dropout,
@@ -34,10 +37,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                 action_size=action_size, linear_input_size=linear_input_size)
 
     @classmethod
-    def make_from_config(cls, config: MuZeroConfig):
-        return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size,
-                   config.num_net_channels, config.net_latent_size, config.num_net_out_channels,
-                   config.az_net_linear_input_size)
+    def make_from_config(cls, config: MuZeroConfig, hook_manager: HookManager or None = None):
+        return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
+                   config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
+                   hook_manager=hook_manager)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
@@ -61,7 +64,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     def make_fresh_instance(self):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
-                         self.num_out_channels, self.linear_input_size)
+                         self.num_out_channels, self.linear_input_size, hook_manager=self.hook_manager)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
@@ -99,6 +102,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
+                experience_batch, loss.item(), loss_v.sum().item(), loss_pi.sum().item(), loss_r.sum().item()))
+        self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL,
+                                                args=(memory_buffer, losses))
         return sum(losses) / len(losses), losses
 
     def muzero_pi_loss(self, y_hat, y):
@@ -106,6 +113,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     def to_pickle(self, path: str):
         th.save(self, path)
+
+    def run_on_training_end(self):
+        self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
 
 
 class RepresentationNet(th.nn.Module):

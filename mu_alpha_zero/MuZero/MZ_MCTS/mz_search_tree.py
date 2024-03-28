@@ -8,19 +8,22 @@ import torch as th
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.search_tree import SearchTree
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state,scale_hidden_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
 
 class MuZeroSearchTree(SearchTree):
 
-    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig):
+    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig, hook_manager: HookManager or None = None):
         self.game_manager = game_manager
         self.muzero_config = muzero_config
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.buffer = MuZeroFrameBuffer(self.muzero_config.frame_buffer_size, self.game_manager.get_noop(),
                                         self.muzero_config.net_action_size)
         self.min_max_q = [float("inf"), -float("inf")]
@@ -63,6 +66,7 @@ class MuZeroSearchTree(SearchTree):
         root_node = MzAlphaZeroNode()
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
+        state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
@@ -79,6 +83,7 @@ class MuZeroSearchTree(SearchTree):
             current_node_state_with_action = match_action_with_obs(current_node.parent().state, action)
             next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
                                                                   predict=True)
+            next_state = scale_hidden_state(next_state)
             reward = reward[0][0]
             v = self.game_manager.game_result(current_node.current_player)
             if v is None or not v:
@@ -90,6 +95,8 @@ class MuZeroSearchTree(SearchTree):
 
         action_probs = root_node.get_self_action_probabilities(tau=tau)
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
+        self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
+                                                args=(action_probs, root_val_latent, root_node))
         root_node = None
         return action_probs, root_val_latent
 
@@ -114,7 +121,8 @@ class MuZeroSearchTree(SearchTree):
         return None, None, None
 
     def make_fresh_instance(self):
-        return MuZeroSearchTree(self.game_manager.make_fresh_instance(), copy.deepcopy(self.muzero_config))
+        return MuZeroSearchTree(self.game_manager.make_fresh_instance(), copy.deepcopy(self.muzero_config),
+                                hook_manager=self.hook_manager)
 
     def step_root(self, action: int or None):
         # I am never reusing the tree in MuZero.
@@ -130,16 +138,19 @@ class MuZeroSearchTree(SearchTree):
         with Pool(num_jobs) as p:
             if memory.is_disk and memory.full_disk:
                 results = p.starmap(p_self_play, [
-                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory),None) for i in
-                    range(len(nets))])
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory), None) for i
+                    in range(len(nets))])
             else:
-                results = p.starmap(p_self_play,
-                                    [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None,memory.dir_path) for i in
-                                     range(len(nets))])
+                results = p.starmap(p_self_play, [
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None, memory.dir_path) for i in
+                    range(len(nets))])
         for result in results:
             memory.add_list(result)
 
         return None, None, None
+
+    def run_on_training_end(self):
+        self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
 
 
 def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):

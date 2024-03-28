@@ -6,14 +6,18 @@ import torch as th
 from mu_alpha_zero.AlphaZero.Arena.players import Player
 from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.General.mz_game import MuZeroGame
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.utils import resize_obs, scale_state
 from mu_alpha_zero.config import MuZeroConfig
 
 
 class MzArena(GeneralArena):
-    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig, device: th.device):
+    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig, device: th.device,
+                 hook_manager: HookManager or None = None):
         self.game_manager = game_manager
         self.muzero_config = muzero_config
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.device = device
 
     def pit(self, player1: Type[Player], player2: Type[Player], num_games_to_play: int, num_mc_simulations: int,
@@ -32,8 +36,7 @@ class MzArena(GeneralArena):
             for game in range(num_games_per_player):
                 self.game_manager.reset()
 
-                state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), None,
-                                                                frame_skip=noop_num)
+                state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), None, frame_skip=noop_num)
                 state = resize_obs(state, self.muzero_config.target_resolution)
                 state = scale_state(state)
                 for step in range(self.muzero_config.num_steps):
@@ -52,4 +55,8 @@ class MzArena(GeneralArena):
                     if done:
                         break
 
+        self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.TAIL, (rewards, kwargs))
         return sum(rewards[1]), sum(rewards[-1]), 0
+
+    def run_on_training_end(self):
+        self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)

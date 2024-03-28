@@ -5,7 +5,7 @@ import numpy as np
 import optuna
 import torch as th
 from PIL import Image
-
+from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -39,6 +39,10 @@ def scale_state(state: np.ndarray):
 
 def scale_action(action: int, num_actions: int):
     return action / (num_actions - 1)
+
+
+def scale_hidden_state(hidden_state: th.Tensor):
+    return (hidden_state - th.min(hidden_state)) / (th.max(hidden_state) - th.min(hidden_state))
 
 
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
@@ -83,8 +87,9 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
         arena = MzArena(game.make_fresh_instance(), muzero_config, device)
+        mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False, dir_path=muzero_config.pickle_dir)
         trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player, headless=True,
-                                 arena_override=arena, checkpointer_verbose=False)
+                                 arena_override=arena, checkpointer_verbose=False, memory_override=mem)
         mean = trainer.self_play_get_r_mean()
         trial.report(mean, trial.number)
         print(f"Trial {trial.number} finished with win freq {mean}.")

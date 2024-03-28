@@ -1,3 +1,4 @@
+import itertools
 import random
 from collections import deque
 from itertools import chain
@@ -7,12 +8,15 @@ import pymongo
 import torch as th
 from diskcache import Deque
 from torch.utils.data import Dataset, DataLoader
-from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
+
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.utils import find_project_root
-from mu_alpha_zero.MuZero.utils import scale_action
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
+from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.pickler import DataPickler
-import itertools
+from mu_alpha_zero.MuZero.utils import scale_action
+
 
 class MemDataset(Dataset):
     def __init__(self, mem_buffer):
@@ -26,11 +30,13 @@ class MemDataset(Dataset):
 
 
 class MemBuffer(GeneralMemoryBuffer):
-    def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None):
+    def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None,
+                 hook_manager: HookManager or None = None):
         self.max_size = max_size
         self.disk = disk
         self.full_disk = full_disk
         self.dir_path = dir_path
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.buffer = self.init_buffer(dir_path)
         self.last_buffer_size = 0
         self.priorities = None
@@ -89,16 +95,19 @@ class MemBuffer(GeneralMemoryBuffer):
             random_indexes = np.random.choice(np.arange(len(self.buffer)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
-            batch = [list(itertools.islice(self.buffer,i,i+K)) for i in random_indexes]
+            batch = [list(itertools.islice(self.buffer, i, i + K)) for i in random_indexes]
             pris = [self.priorities[i:i + K] for i in random_indexes]
+            self.hook_manager.process_hook_executes(self, self.batch_with_priorities.__name__, __file__, HookAt.ALL,
+                                                    args=(batch, pris))
             yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
 
     def calculate_priorities(self, batch_size, alpha, K):
-        ps = [abs(self.buffer[i][1] - self.buffer[i][2][2]) for i in
-              range(len(self.buffer))]
+        ps = [abs(self.buffer[i][1] - self.buffer[i][2][2]) for i in range(len(self.buffer))]
         ps = np.array(ps)
         ps = ps ** alpha
         ps = ps / ps.sum()
+        self.hook_manager.process_hook_executes(self, self.calculate_priorities.__name__, __file__, HookAt.ALL,
+                                                args=(ps,))
         return ps
 
     def make_fresh_instance(self):
@@ -106,6 +115,9 @@ class MemBuffer(GeneralMemoryBuffer):
 
     def to_dataloader(self, batch_size):
         return DataLoader(MemDataset(self.buffer), batch_size=batch_size, shuffle=True, collate_fn=lambda x: x)
+
+    def run_on_training_end(self):
+        self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
 
     def save(self):
         if not self.disk:
@@ -188,8 +200,7 @@ class MongoDBMemBuffer(GeneralMemoryBuffer):
             items = list(chain.from_iterable(items))
             items = tuple(
                 [(x["probabilities"], x["vs"], (x["t_reward"], x["game_move"], x["pred_reward"]), x["game_state"]) for x
-                 in
-                 items])
+                 in items])
             yield items, th.tensor(priorities, dtype=th.float32)
 
     def get_last_greatest_id(self):
@@ -218,8 +229,7 @@ class PickleMemBuffer(GeneralMemoryBuffer):
                                   "entire bach with add_list method")
 
     def add_list(self, experience_list):
-        self.pickler.pickle_buffer(experience_list)
-        # self.pickler.push_to_consumer(experience_list)
+        self.pickler.pickle_buffer(experience_list)  # self.pickler.push_to_consumer(experience_list)
 
     def batch(self, batch_size):
         raise NotImplementedError("Batch method not implemented for PickleMemBuffer, please use batch_with_priorities")
@@ -237,8 +247,8 @@ class PickleMemBuffer(GeneralMemoryBuffer):
         ps_probs = np.array(list(priorities.values()))
         for _ in range(epochs):
             random_indexes = np.random.choice(np.arange(len(priorities)),
-                                              size=min(len(priorities) // K, max(batch_size // K, 1)),
-                                              replace=False, p=list(ps_probs)).tolist()
+                                              size=min(len(priorities) // K, max(batch_size // K, 1)), replace=False,
+                                              p=list(ps_probs)).tolist()
             batch = self.pickler.load_all(batch_size, random_indexes, K)
             pris = [list(priorities.values())[i:i + K] for i in random_indexes]
             tmp = list(chain.from_iterable(pris))

@@ -9,19 +9,22 @@ import torch.nn.functional as F
 from torch.nn.functional import mse_loss
 
 from mu_alpha_zero.General.network import GeneralAlphZeroNetwork
-from mu_alpha_zero.mem_buffer import MemBuffer
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig
+from mu_alpha_zero.mem_buffer import MemBuffer
 
 
 class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
-    def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int, linear_input_size: int):
+    def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int, linear_input_size: int,
+                 hook_manager: HookManager or None = None):
         super(AlphaZeroNet, self).__init__()
         self.in_channels = in_channels
         self.num_channels = num_channels
         self.dropout_p = dropout
         self.action_size = action_size
         self.linear_input_size = linear_input_size
-
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
         self.bn1 = nn.BatchNorm2d(num_channels)
@@ -92,9 +95,9 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
                             self.linear_input_size)
 
     @staticmethod
-    def make_from_config(config: AlphaZeroConfig):
+    def make_from_config(config: AlphaZeroConfig, hook_manager: HookManager or None = None):
         return AlphaZeroNet(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
-                            config.net_action_size, config.az_net_linear_input_size)
+                            config.net_action_size, config.az_net_linear_input_size, hook_manager=hook_manager)
 
     def train_net(self, memory_buffer: MemBuffer, alpha_zero_config: AlphaZeroConfig):
         from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
@@ -119,7 +122,10 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE,
+                                                        args=(experience_batch, loss.item(), epoch))
 
+        self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL, args=(losses,))
         return sum(losses) / len(losses), losses
 
     def pi_loss(self, y_hat, y, masks, device: th.device):
@@ -130,6 +136,9 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
     def to_shared_memory(self):
         for param in self.parameters():
             param.share_memory_()
+
+    def run_at_training_end(self):
+        self.hook_manager.process_hook_executes(self, self.run_at_training_end.__name__, __file__, HookAt.ALL)
 
 
 class TicTacToeNetNoNorm(nn.Module):
