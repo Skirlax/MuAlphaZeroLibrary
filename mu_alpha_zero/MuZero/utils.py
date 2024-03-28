@@ -83,8 +83,9 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
         arena = MzArena(game.make_fresh_instance(), muzero_config, device)
+        mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False, dir_path=muzero_config.pickle_dir)
         trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player, headless=True,
-                                 arena_override=arena, checkpointer_verbose=False)
+                                 arena_override=arena, checkpointer_verbose=False, memory_override=mem)
         mean = trainer.self_play_get_r_mean()
         trial.report(mean, trial.number)
         print(f"Trial {trial.number} finished with win freq {mean}.")
@@ -99,6 +100,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
     from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
     from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
+    from mu_alpha_zero.mem_buffer import MemBuffer
 
     muzero_config.show_tqdm = False
     if in_memory:
