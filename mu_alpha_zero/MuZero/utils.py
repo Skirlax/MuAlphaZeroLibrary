@@ -5,7 +5,6 @@ import numpy as np
 import optuna
 import torch as th
 from PIL import Image
-from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -104,6 +103,8 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
     from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
     from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
+    from mu_alpha_zero.mem_buffer import MemBuffer
+
 
     muzero_config.show_tqdm = False
     if in_memory:

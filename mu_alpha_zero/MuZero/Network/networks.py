@@ -71,6 +71,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         losses = []
         K = muzero_config.K
         optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr)
+        iteration = 0
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.batch_size, K,
                                                                                 alpha=muzero_config.alpha):
@@ -103,7 +104,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             loss.backward()
             optimizer.step()
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
-                experience_batch, loss.item(), loss_v.sum().item(), loss_pi.sum().item(), loss_r.sum().item()))
+                experience_batch, loss.item(), loss_v, loss_pi, loss_r,
+                iteration))
+            iteration += 1
         self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL,
                                                 args=(memory_buffer, losses))
         return sum(losses) / len(losses), losses
