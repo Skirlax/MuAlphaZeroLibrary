@@ -1,6 +1,6 @@
 import copy
 import gc
-from multiprocessing import Pool
+from torch.multiprocessing import Pool
 
 import numpy as np
 import torch as th

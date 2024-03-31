@@ -18,3 +18,4 @@ JPype1
 py4j
 torchvision
 torchaudio
+torch
