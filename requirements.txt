@@ -15,7 +15,7 @@ portalocker
 diskcache
 pushbullet-python
 JPype1
-py4j
 torchvision
 torchaudio
 torch
+py4j
