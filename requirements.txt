@@ -16,6 +16,5 @@ diskcache
 pushbullet-python
 JPype1
 py4j
-torch
 torchvision
 torchaudio

@@ -32,6 +32,4 @@ class LazyArray:
     def make_persistent(self):
         self.persistent = True
 
-    def __del__(self):
-        if not self.persistent:
-            self.remove_array()
+
