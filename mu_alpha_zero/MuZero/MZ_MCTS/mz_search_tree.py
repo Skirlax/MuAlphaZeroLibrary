@@ -66,7 +66,6 @@ class MuZeroSearchTree(SearchTree):
         root_node = MzAlphaZeroNode()
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
-        print(network_wrapper.representation_network.state_dict())
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         pi = pi.flatten().tolist()
