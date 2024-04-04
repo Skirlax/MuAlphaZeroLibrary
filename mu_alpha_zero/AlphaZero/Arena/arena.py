@@ -4,18 +4,22 @@ from typing import Type
 from mu_alpha_zero.AlphaZero.Arena.players import Player
 from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager as GameManager
 from mu_alpha_zero.General.arena import GeneralArena
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig
 
 
 class Arena(GeneralArena):
-    def __init__(self, game_manager: GameManager, alpha_zero_config: AlphaZeroConfig, device):
+    def __init__(self, game_manager: GameManager, alpha_zero_config: AlphaZeroConfig, device,
+                 hook_manager: HookManager or None = None):
         self.game_manager = game_manager
         self.device = device
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.alpha_zero_config = alpha_zero_config
 
-    def pit(self, player1: Type[Player], player2: Type[Player],
-            num_games_to_play: int, num_mc_simulations: int, one_player: bool = False,
-            start_player: int = 1, add_to_kwargs: dict or None = None, debug: bool = False) -> tuple[int, int, int]:
+    def pit(self, player1: Type[Player], player2: Type[Player], num_games_to_play: int, num_mc_simulations: int,
+            one_player: bool = False, start_player: int = 1, add_to_kwargs: dict or None = None, debug: bool = False) -> \
+            tuple[int, int, int]:
         """
         Pit two players against each other for a given number of games and gather the results.
         :param start_player: Which player should start the game.
@@ -55,12 +59,12 @@ class Arena(GeneralArena):
                 self.game_manager.render()
                 if current_player == 1:
                     # p1_time = time.time()
-                    move = player1.choose_move(state, **kwargs)
-                    # net_player_times.append(time.time() - p1_time)
+                    move = player1.choose_move(state, **kwargs)  # net_player_times.append(time.time() - p1_time)
                 else:
                     # p2_time = time.time()
-                    move = player2.choose_move(state, **kwargs)
-                    # minimax_player_times.append(time.time() - p2_time)
+                    move = player2.choose_move(state, **kwargs)  # minimax_player_times.append(time.time() - p2_time)
+                self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
+                                                        args=(move, kwargs,current_player))
                 self.game_manager.play(current_player, move)
                 state = self.game_manager.get_board()
                 status = self.game_manager.game_result(current_player, state)
@@ -96,6 +100,7 @@ class Arena(GeneralArena):
         # print(f"Net player times: {net_player_times}")
         # print(f"Minimax player times: {minimax_player_times}")
         return results["wins_p1"], results["wins_p2"], results["draws"]
+
 
     def wait_keypress(self):
         inpt = input("Press any key to continue...")

@@ -12,6 +12,7 @@ from mu_alpha_zero.General.az_game import AlphaZeroGame
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralNetwork
 from mu_alpha_zero.General.utils import net_not_none, find_project_root
+from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.config import AlphaZeroConfig
 
 
@@ -25,23 +26,23 @@ class AlphaZero:
         self.tree: McSearchTree = None
 
     def create_new(self, alpha_zero_config: AlphaZeroConfig, network_class: Type[GeneralNetwork],
-                   memory: GeneralMemoryBuffer,
-                   headless: bool = True,
+                   memory: GeneralMemoryBuffer, headless: bool = True, hook_manager: HookManager or None = None,
                    checkpointer_verbose: bool = False):
-        network = network_class.make_from_config(alpha_zero_config).to(self.device)
+        network = network_class.make_from_config(alpha_zero_config,hook_manager=hook_manager).to(self.device)
         tree = McSearchTree(self.game.make_fresh_instance(), alpha_zero_config)
         self.tree = tree
         net_player = NetPlayer(self.game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
         self.alpha_zero_config = alpha_zero_config
         self.trainer = Trainer.create(alpha_zero_config, self.game, network, tree, net_player, headless=headless,
-                                      checkpointer_verbose=checkpointer_verbose, memory_override=memory)
+                                      checkpointer_verbose=checkpointer_verbose, memory_override=memory,
+                                      hook_manager=hook_manager)
         self.net = self.trainer.get_network()
 
     def load_checkpoint(self, network_class: Type[GeneralNetwork], path: str, checkpoint_dir: str,
-                        headless: bool = True,
+                        headless: bool = True, hook_manager: HookManager or None = None,
                         checkpointer_verbose: bool = False):
         self.trainer = Trainer.from_checkpoint(network_class, McSearchTree, NetPlayer, path, checkpoint_dir, self.game,
-                                               headless=headless,
+                                               headless=headless, hook_manager=hook_manager,
                                                checkpointer_verbose=checkpointer_verbose)
         self.net = self.trainer.get_network()
         self.tree = self.trainer.get_tree()
@@ -53,9 +54,9 @@ class AlphaZero:
 
     def predict(self, x: np.ndarray, tau: float = 0) -> int:
         net_not_none(self.net)
-        assert x.shape == (self.args["board_size"], self.args["board_size"], self.args["num_net_in_channels"]), \
-            "Input shape is not correct. Expected (board_size, board_size, num_net_in_channels)." \
-            "Got: " + str(x.shape)
+        assert x.shape == (self.args["board_size"], self.args["board_size"], self.args[
+            "num_net_in_channels"]), "Input shape is not correct. Expected (board_size, board_size, num_net_in_channels)." \
+                                     "Got: " + str(x.shape)
         pi, _ = self.tree.search(self.net, x, 1, self.device, tau=tau)
         return self.game.select_move(pi)
 
@@ -77,4 +78,3 @@ class AlphaZero:
         p1_w, p2_w, ds = arena.pit(p1, p2, num_games, alpha_zero_config.num_simulations, one_player=not switch_players,
                                    start_player=starts, add_to_kwargs=kwargs)
         print(f"Results: Player 1 wins: {p1_w}, Player 2 wins: {p2_w}, Draws: {ds}")
-

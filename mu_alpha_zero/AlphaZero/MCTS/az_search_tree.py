@@ -9,13 +9,17 @@ from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralNetwork
 from mu_alpha_zero.General.search_tree import SearchTree
+from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig
 
 
 class McSearchTree(SearchTree):
-    def __init__(self, game_manager: TicTacToeGameManager, alpha_zero_config: AlphaZeroConfig):
+    def __init__(self, game_manager: TicTacToeGameManager, alpha_zero_config: AlphaZeroConfig,
+                 hook_manager: HookManager or None = None):
         self.game_manager = game_manager
         self.alpha_zero_config = alpha_zero_config
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.root_node = None
 
     def play_one_game(self, network: GeneralNetwork, device: th.device) -> tuple[list, int, int, int]:
@@ -66,6 +70,8 @@ class McSearchTree(SearchTree):
 
         # game_history = make_channels(game_history)
         game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
+        self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
+                                                args=(game_history, results))
         return game_history, results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
@@ -120,6 +126,8 @@ class McSearchTree(SearchTree):
 
             self.backprop(v, path)
 
+        self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
+                                                args=(tau, self.root_node))
         return self.root_node.get_self_action_probabilities(tau=tau), None
 
     def backprop(self, v, path):
@@ -172,18 +180,12 @@ class McSearchTree(SearchTree):
         with Pool(num_jobs) as p:
             if not memory.is_disk:
                 results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
-                                        None)
-                                        for i in
-                                        range(len(nets))])
+                                    [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None) for i in
+                                     range(len(nets))])
             else:
-                results = p.starmap(p_self_play,
-                                    [(
-                                        nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs,
-                                        copy.deepcopy(memory))
-                                        for i in
-                                        range(len(nets))])
+                results = p.starmap(p_self_play, [
+                    (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory)) for i in
+                    range(len(nets))])
         wins_p1, wins_p2, draws = 0, 0, 0
         for result in results:
             wins_p1 += result[0]

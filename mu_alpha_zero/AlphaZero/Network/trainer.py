@@ -10,7 +10,7 @@ from typing import Type
 import torch as th
 from tqdm import tqdm
 from mu_alpha_zero.AlphaZero.Arena.arena import Arena
-from mu_alpha_zero.AlphaZero.Arena.players import RandomPlayer, Player,NetPlayer
+from mu_alpha_zero.AlphaZero.Arena.players import RandomPlayer, Player, NetPlayer
 from mu_alpha_zero.AlphaZero.MCTS.az_search_tree import McSearchTree
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet
 from mu_alpha_zero.AlphaZero.checkpointer import CheckPointer
@@ -24,19 +24,14 @@ from mu_alpha_zero.General.search_tree import SearchTree
 from mu_alpha_zero.MuZero.JavaGateway.java_manager import JavaManager
 from mu_alpha_zero.config import Config
 from mu_alpha_zero.mem_buffer import MemBuffer
-
-
-# joblib.parallel.BACKENDS['multiprocessing'].use_dill = True
+from mu_alpha_zero.Hooks.hook_manager import HookManager
 
 
 class Trainer:
-    def __init__(self, network: GeneralNetwork, game: AlphaZeroGame,
-                 optimizer: th.optim, memory: GeneralMemoryBuffer,
-                 muzero_alphazero_config: Config, checkpointer: CheckPointer,
-                 search_tree: SearchTree, net_player: Player,
-                 device, headless: bool = True,
-                 opponent_network_override: th.nn.Module or None = None,
-                 arena_override: GeneralArena or None = None,
+    def __init__(self, network: GeneralNetwork, game: AlphaZeroGame, optimizer: th.optim, memory: GeneralMemoryBuffer,
+                 muzero_alphazero_config: Config, checkpointer: CheckPointer, search_tree: SearchTree,
+                 net_player: Player, hook_manager: HookManager or None, device, headless: bool = True,
+                 opponent_network_override: th.nn.Module or None = None, arena_override: GeneralArena or None = None,
                  java_manager: JavaManager = None) -> None:
         self.muzero_alphazero_config = muzero_alphazero_config
         self.device = device
@@ -49,8 +44,9 @@ class Trainer:
         self.optimizer = optimizer
         self.memory = memory
         self.java_manager = java_manager
+        self.hook_manager = hook_manager
         self.arena = Arena(self.game_manager, self.muzero_alphazero_config,
-                           self.device) if arena_override is None else arena_override
+                           self.device,hook_manager=self.hook_manager) if arena_override is None else arena_override
         self.checkpointer = checkpointer
         self.logger = Logger(logdir=self.muzero_alphazero_config.log_dir,
                              token=self.muzero_alphazero_config.pushbullet_token)
@@ -59,11 +55,9 @@ class Trainer:
 
     @classmethod
     def from_checkpoint(cls, net_class: Type[GeneralNetwork], tree_class: Type[SearchTree],
-                        net_player_class: Type[Player],
-                        checkpoint_path: str, checkpoint_dir: str,
-                        game: AlphaZeroGame, headless: bool = True,
-                        checkpointer_verbose: bool = False,
-                        arena_override: GeneralArena or None = None,
+                        net_player_class: Type[Player], checkpoint_path: str, checkpoint_dir: str, game: AlphaZeroGame,
+                        headless: bool = True, hook_manager: HookManager or None = None,
+                        checkpointer_verbose: bool = False, arena_override: GeneralArena or None = None,
                         mem: GeneralMemoryBuffer or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         checkpointer = CheckPointer(checkpoint_dir, verbose=checkpointer_verbose)
@@ -71,10 +65,10 @@ class Trainer:
         network_dict, optimizer_dict, memory, lr, args, opponent_dict = checkpointer.load_checkpoint_from_path(
             checkpoint_path)
         conf = Config.from_args(args)
-        tree = tree_class(game.make_fresh_instance(), conf)
+        tree = tree_class(game.make_fresh_instance(), conf, hook_manager=hook_manager)
         if "fc1.weight" in network_dict:
             conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
-        network = net_class.make_from_config(conf).to(device)
+        network = net_class.make_from_config(conf, hook_manager=hook_manager).to(device)
         opponent_network = network.make_fresh_instance().to(device)
         optimizer = th.optim.Adam(network.parameters(), lr=lr)
         # opponent_network = build_net_from_args(args, device)
@@ -89,38 +83,32 @@ class Trainer:
             print("Couldn't load optimizer dict.")
         if memory is None:
             memory = mem
-        return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, device, headless=headless,
-                   arena_override=arena_override)
+        return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, hook_manager, device,
+                   headless=headless, arena_override=arena_override)
 
     @classmethod
     def create(cls, muzero_alphazero_config: Config, game: AlphaZeroGame, network: GeneralNetwork,
-               search_tree: SearchTree,
-               net_player: Player,
-               headless: bool = True,
-               checkpointer_verbose: bool = False,
-               arena_override: GeneralArena or None = None,
-               memory_override: GeneralMemoryBuffer or None = None,
-               java_manager: JavaManager or None = None):
+               search_tree: SearchTree, net_player: Player, headless: bool = True, checkpointer_verbose: bool = False,
+               hook_manager: HookManager or None = None, arena_override: GeneralArena or None = None,
+               memory_override: GeneralMemoryBuffer or None = None, java_manager: JavaManager or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         _, optimizer, mem = build_all_from_config(muzero_alphazero_config, device)
         memory = mem if memory_override is None else memory_override
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
         return cls(network, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player,
-                   device,
-                   headless=headless, arena_override=arena_override, java_manager=java_manager)
+                   hook_manager, device, headless=headless, arena_override=arena_override, java_manager=java_manager)
 
     @classmethod
     def from_state_dict(cls, path: str, muzero_alphazero_config: Config, game: AlphaZeroGame, search_tree: SearchTree,
-                        headless: bool = True,
+                        headless: bool = True, hook_manager: HookManager or None = None,
                         checkpointer_verbose: bool = False, java_manager: JavaManager or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         net, optimizer, memory = build_all_from_config(muzero_alphazero_config, device)
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
         net.load_state_dict(th.load(path))
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": net, "monte_carlo_tree_search": search_tree})
-        return cls(net, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player, device,
-                   headless=headless,
-                   java_manager=java_manager)
+        return cls(net, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player,
+                   hook_manager, device, headless=headless, java_manager=java_manager)
 
     def train(self) -> AlphaZeroNet:
         self.opponent_network.to(self.device)
@@ -142,10 +130,8 @@ class Trainer:
 
                 if self.muzero_alphazero_config.num_workers > 1:
                     wins_p1, wins_p2, game_draws = self.mcts.parallel_self_play(self.make_n_networks(n_jobs),
-                                                                                self.make_n_trees(n_jobs),
-                                                                                self.memory, self.device,
-                                                                                self_play_games,
-                                                                                n_jobs)
+                                                                                self.make_n_trees(n_jobs), self.memory,
+                                                                                self.device, self_play_games, n_jobs)
                     if isinstance(self.memory, MemBuffer) and self.memory.is_disk and self.memory.full_disk:
                         self.memory = self.memory.make_fresh_instance()
                 else:
@@ -175,15 +161,13 @@ class Trainer:
             self.check_model(p1_wins, wins_total, update_threshold, i)
             self.run_pitting_random(num_simulations, num_games, i)
 
-        important_args = {
-            "numIters": self.muzero_alphazero_config.num_iters,
-            "numSelfPlayGames": self.muzero_alphazero_config.self_play_games,
-            "tau": self.muzero_alphazero_config.tau,
-            "updateThreshold": self.muzero_alphazero_config.update_threshold,
-            "mcSimulations": self.muzero_alphazero_config.num_simulations,
-            "c": self.muzero_alphazero_config.c,
-            "numPitGames": self.muzero_alphazero_config.num_pit_games
-        }
+        important_args = {"numIters": self.muzero_alphazero_config.num_iters,
+                          "numSelfPlayGames": self.muzero_alphazero_config.self_play_games,
+                          "tau": self.muzero_alphazero_config.tau,
+                          "updateThreshold": self.muzero_alphazero_config.update_threshold,
+                          "mcSimulations": self.muzero_alphazero_config.num_simulations,
+                          "c": self.muzero_alphazero_config.c,
+                          "numPitGames": self.muzero_alphazero_config.num_pit_games}
 
         self.logger.log(LoggingMessageTemplates.TRAINING_END(important_args))
         self.logger.pushbullet_log(LoggingMessageTemplates.TRAINING_END_PSB())
@@ -218,14 +202,9 @@ class Trainer:
         state_dict = self.network.state_dict()
         opponent_state_dict = self.opponent_network.state_dict()
         optimizer_state_dict = self.optimizer.state_dict()
-        th.save({
-            'optimizer': optimizer_state_dict,
-            'memory': self.memory,
-            'lr': self.muzero_alphazero_config.lr,
-            'net': state_dict,
-            'opponent_state_dict': opponent_state_dict,
-            'args': self.muzero_alphazero_config.to_dict()
-        }, path)
+        th.save({'optimizer': optimizer_state_dict, 'memory': self.memory, 'lr': self.muzero_alphazero_config.lr,
+                 'net': state_dict, 'opponent_state_dict': opponent_state_dict,
+                 'args': self.muzero_alphazero_config.to_dict()}, path)
         print("Saved latest model data to {}".format(path))
 
     def make_tqdm_bar(self, iterable, desc, position, leave=True):
@@ -254,8 +233,7 @@ class Trainer:
         p1_wins, p2_wins, draws = self.arena.pit(p1, p2, num_games, num_mc_simulations=num_simulations,
                                                  one_player=False)
         wins_total = not_zero(p1_wins + p2_wins)
-        self.logger.log(LoggingMessageTemplates.PITTING_END(p1.name, p2.name, p1_wins,
-                                                            p2_wins, wins_total, draws))
+        self.logger.log(LoggingMessageTemplates.PITTING_END(p1.name, p2.name, p1_wins, p2_wins, wins_total, draws))
         self.arena_win_frequencies.append(p1_wins / num_games)
         return p1_wins, p2_wins, draws, wins_total
 
@@ -273,31 +251,27 @@ class Trainer:
                                                                           num_mc_simulations=num_simulations)
             wins_total = not_zero(p1_wins_random + p2_wins_random)
             self.logger.log(
-                LoggingMessageTemplates.PITTING_END(p1.name, random_player.name, p1_wins_random,
-                                                    p2_wins_random, wins_total, draws_random))
+                LoggingMessageTemplates.PITTING_END(p1.name, random_player.name, p1_wins_random, p2_wins_random,
+                                                    wins_total, draws_random))
 
     def check_model(self, p1_wins: int, wins_total: int, update_threshold: float, i: int):
         if p1_wins / wins_total > update_threshold:
-            self.logger.log(LoggingMessageTemplates.MODEL_ACCEPT(p1_wins / wins_total,
-                                                                 update_threshold))
+            self.logger.log(LoggingMessageTemplates.MODEL_ACCEPT(p1_wins / wins_total, update_threshold))
             self.checkpointer.save_checkpoint(self.network, self.opponent_network, self.optimizer,
-                                              self.muzero_alphazero_config.lr, i,
-                                              self.muzero_alphazero_config)
-            self.logger.log(LoggingMessageTemplates.SAVED("accepted model checkpoint",
-                                                          self.checkpointer.get_checkpoint_dir()))
+                                              self.muzero_alphazero_config.lr, i, self.muzero_alphazero_config)
+            self.logger.log(
+                LoggingMessageTemplates.SAVED("accepted model checkpoint", self.checkpointer.get_checkpoint_dir()))
         else:
-            self.logger.log(LoggingMessageTemplates.MODEL_REJECT(p1_wins / wins_total,
-                                                                 update_threshold))
+            self.logger.log(LoggingMessageTemplates.MODEL_REJECT(p1_wins / wins_total, update_threshold))
             self.checkpointer.load_temp_net_checkpoint(self.network)
-            self.logger.log(LoggingMessageTemplates.LOADED("previous version checkpoint",
-                                                           self.checkpointer.get_temp_path()))
+            self.logger.log(
+                LoggingMessageTemplates.LOADED("previous version checkpoint", self.checkpointer.get_temp_path()))
         self.logger.pushbullet_log(LoggingMessageTemplates.ITER_FINISHED_PSB(i))
 
     def self_play_get_r_mean(self):
         self.network.eval()
         self.mcts.parallel_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
-                                     self.make_n_trees(self.muzero_alphazero_config.num_workers),
-                                     self.memory, self.device,
-                                     self.muzero_alphazero_config.self_play_games,
+                                     self.make_n_trees(self.muzero_alphazero_config.num_workers), self.memory,
+                                     self.device, self.muzero_alphazero_config.self_play_games,
                                      self.muzero_alphazero_config.num_workers)
         return sum([x[2][0] for x in self.memory.buffer]) / not_zero(len(self.memory.buffer))
