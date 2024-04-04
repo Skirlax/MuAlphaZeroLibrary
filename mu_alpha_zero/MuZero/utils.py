@@ -5,7 +5,6 @@ import numpy as np
 import optuna
 import torch as th
 from PIL import Image
-
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -39,6 +38,10 @@ def scale_state(state: np.ndarray):
 
 def scale_action(action: int, num_actions: int):
     return action / (num_actions - 1)
+
+
+def scale_hidden_state(hidden_state: th.Tensor):
+    return (hidden_state - th.min(hidden_state)) / (th.max(hidden_state) - th.min(hidden_state))
 
 
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
@@ -101,6 +104,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
     from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
     from mu_alpha_zero.mem_buffer import MemBuffer
+
 
     muzero_config.show_tqdm = False
     if in_memory:
