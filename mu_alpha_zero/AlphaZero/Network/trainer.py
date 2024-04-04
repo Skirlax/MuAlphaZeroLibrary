@@ -46,7 +46,7 @@ class Trainer:
         self.java_manager = java_manager
         self.hook_manager = hook_manager
         self.arena = Arena(self.game_manager, self.muzero_alphazero_config,
-                           self.device,hook_manager=self.hook_manager) if arena_override is None else arena_override
+                           self.device, hook_manager=self.hook_manager) if arena_override is None else arena_override
         self.checkpointer = checkpointer
         self.logger = Logger(logdir=self.muzero_alphazero_config.log_dir,
                              token=self.muzero_alphazero_config.pushbullet_token)
@@ -146,7 +146,7 @@ class Trainer:
             self.logger.log(LoggingMessageTemplates.LOADED("opponent network", self.checkpointer.get_temp_path()))
             self.network.train()
             self.logger.log(LoggingMessageTemplates.NETWORK_TRAINING_START(epochs))
-            mean_loss, losses = self.network.train_net(self.memory, self.muzero_alphazero_config)
+            mean_loss, losses = self.network.train_net(self.memory, self.muzero_alphazero_config, i)
             self.logger.log(LoggingMessageTemplates.NETWORK_TRAINING_END(mean_loss))
             self.logger.pushbullet_log(f"Mean loss: {mean_loss}, Max loss: {max(losses)}, Min loss: {min(losses)}")
             self.losses.extend(losses)

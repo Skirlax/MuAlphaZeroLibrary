@@ -22,7 +22,7 @@ class GeneralNetwork(ABC):
         pass
 
     @abstractmethod
-    def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
+    def train_net(self, memory_buffer, muzero_alphazero_config: Config,i: int) -> tuple[float, list[float]]:
         """
         Trains the network for given number of epochs
         """

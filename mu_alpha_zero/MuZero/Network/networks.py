@@ -66,7 +66,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, hook_manager=self.hook_manager)
 
-    def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
+    def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig, i: int) -> tuple[
+        float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         losses = []
         K = muzero_config.K

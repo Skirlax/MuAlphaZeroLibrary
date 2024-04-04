@@ -99,7 +99,7 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
         return AlphaZeroNet(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
                             config.net_action_size, config.az_net_linear_input_size, hook_manager=hook_manager)
 
-    def train_net(self, memory_buffer: MemBuffer, alpha_zero_config: AlphaZeroConfig):
+    def train_net(self, memory_buffer: MemBuffer, alpha_zero_config: AlphaZeroConfig, i: int):
         from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         losses = []
