@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import torch
 import torch as th
 import torch.nn.functional as F
 from torch import nn
@@ -49,6 +50,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         reward = scale_reward_value(reward)
         return state, reward
 
+    def predict_dynamics_wrap(self, x: th.Tensor):
+        state, r = self.dynamics_forward(x, predict=False)
+        latent_dim_size = int(math.sqrt(self.latent_size))
+        state = state.view(self.num_out_channels, latent_dim_size, latent_dim_size)
+        return state, r
+
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
@@ -58,6 +65,11 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         v = scale_reward_value(v)
         return pi, v
 
+    def predict_prediction_wrap(self, x: th.Tensor):
+        pi, v = self.prediction_forward(x, predict=False)
+        pi = th.exp(pi)
+        return pi, v
+
     def representation_forward(self, x: th.Tensor):
         x = self.representation_network(x)
         return x
@@ -65,6 +77,14 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def make_fresh_instance(self):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, hook_manager=self.hook_manager)
+
+    def trace_all(self):
+        # module = th.jit.trace_module(self, {"representation_forward": th.rand(1, 128, 96, 96).to("cuda"), "predict_dynamics_wrap": th.rand(1, 257, 6, 6).to("cuda"),
+        #                                     "predict_prediction_wrap": th.rand(1, 256, 6, 6).to("cuda")})
+        rep_traced = th.jit.trace_module(self, {"representation_forward": th.rand(1, 128, 96, 96).to("cuda")})
+        dyn_traced = th.jit.trace_module(self, {"predict_dynamics_wrap": th.rand(1, 257, 6, 6).to("cuda")})
+        pred_traced = th.jit.trace_module(self, {"predict_prediction_wrap": th.rand(1, 256, 6, 6).to("cuda")})
+        return rep_traced, dyn_traced, pred_traced
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig, i: int) -> tuple[
         float, list[float]]:
