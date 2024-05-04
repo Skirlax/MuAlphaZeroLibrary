@@ -25,6 +25,7 @@ class Config:
     tau: float = 1
     arena_tau: float = 1e-2
     c: float = 1
+    dirichlet_alpha = 0.3
     checkpoint_dir: str = None
     update_threshold: float = 0.6
     num_workers: int = 5

@@ -1,6 +1,7 @@
 import copy
 from multiprocessing import Pool
 
+import numpy as np
 import torch as th
 
 from mu_alpha_zero.AlphaZero.MCTS.az_node import AlphaZeroNode
@@ -93,7 +94,8 @@ class McSearchTree(SearchTree):
         # state_ = make_channels_from_single(state_)
         state_ = th.tensor(state_, dtype=th.float32, device=device).unsqueeze(0)
         probabilities, v = network.predict(state_, muzero=False)
-
+        probabilities = probabilities + np.random.dirichlet(
+            [self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size).reshape(1,-1) # add noise to encourage the exploration of even the moves with probability close to 0.
         probabilities = mask_invalid_actions(probabilities, state.copy(), self.game_manager.board_size)
         probabilities = probabilities.flatten().tolist()
         self.root_node.expand(state, probabilities)

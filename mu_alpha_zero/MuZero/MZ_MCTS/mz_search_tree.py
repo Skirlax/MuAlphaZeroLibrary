@@ -13,7 +13,8 @@ from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state,scale_hidden_state
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state, \
+    scale_hidden_state, mask_invalid_actions
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
@@ -68,6 +69,8 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
+        pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
+        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):
@@ -88,6 +91,7 @@ class MuZeroSearchTree(SearchTree):
             v = self.game_manager.game_result(current_node.current_player)
             if v is None or not v:
                 pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
+                pi = mask_invalid_actions(self.game_manager.get_invalid_actions(), pi)
                 pi = pi.flatten().tolist()
                 v = v.flatten().tolist()[0]
                 current_node.expand_node(next_state, pi, reward)

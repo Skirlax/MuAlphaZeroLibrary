@@ -116,3 +116,8 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
     study.optimize(objective, n_trials=n_trials)
     with open(f"{muzero_config.checkpoint_dir}/study_params.json", "w") as file:
         json.dump(study.best_params, file)
+
+
+def mask_invalid_actions(invalid_actions: np.ndarray,pi: np.ndarray):
+    pi = pi.reshape(-1) * invalid_actions.reshape(-1)
+    return pi / pi.sum()

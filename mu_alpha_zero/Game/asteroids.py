@@ -6,6 +6,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 
 
 class Asteroids(MuZeroGame):
+
     def __init__(self):
         self.env = make("ALE/Asteroids-v5")
         self.done = False
@@ -44,3 +45,7 @@ class Asteroids(MuZeroGame):
 
     def get_random_valid_action(self,board: np.ndarray):
         return self.env.action_space.sample()
+
+    def get_invalid_actions(self):
+        return np.ones((self.get_num_actions()))
+

@@ -76,3 +76,11 @@ class MuZeroGame(ABC):
         """
         moves, probs = zip(*action_probs.items())
         return np.random.choice(moves, p=probs)
+
+    @abstractmethod
+    def get_invalid_actions(self):
+        """
+        Calculates and returns the invalid actions in the given state. :return: A numpy array containing the invalid
+        actions in the current state. In this array actions marked as valid will be one, while invalid actions will
+        be 0."""
+        pass
