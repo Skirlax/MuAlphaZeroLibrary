@@ -58,6 +58,7 @@ class MuZeroConfig(Config):
     num_net_channels: int = 512
     num_net_out_channels: int = 256
     num_net_in_channels: int = 1
+    rep_input_channels: int = 128  # for atari where input is 96x96x3
     net_dropout: float = 0.3
     net_action_size: int = 14
     net_latent_size: int = 36
