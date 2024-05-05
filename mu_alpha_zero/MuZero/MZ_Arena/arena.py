@@ -37,14 +37,14 @@ class MzArena(GeneralArena):
                 self.game_manager.reset()
 
                 state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), None, frame_skip=noop_num)
-                state = resize_obs(state, self.muzero_config.target_resolution)
+                state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
                 state = scale_state(state)
                 for step in range(self.muzero_config.num_steps):
                     self.game_manager.render()
                     move = players[str(player)].choose_move(state, **kwargs)
 
                     state, reward, done = self.game_manager.frame_skip_step(move, None)
-                    state = resize_obs(state, self.muzero_config.target_resolution)
+                    state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
                     state = scale_state(state)
                     try:
                         players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, move)

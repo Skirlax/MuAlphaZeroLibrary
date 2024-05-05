@@ -33,7 +33,7 @@ class MuZeroSearchTree(SearchTree):
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
-        state = resize_obs(state, self.muzero_config.target_resolution)
+        state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
         state = scale_state(state)
         self.buffer.init_buffer(state)
         data = []
@@ -43,7 +43,7 @@ class MuZeroSearchTree(SearchTree):
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, None, frame_skip=frame_skip)
             rew = scale_reward(rew)
-            state = resize_obs(state, self.muzero_config.target_resolution)
+            state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
             state = scale_state(state)
             if done:
                 break
@@ -52,6 +52,7 @@ class MuZeroSearchTree(SearchTree):
             data.append(
                 (pi, v, (rew, move, float(pred_v[0])), frame if dir_path is None else LazyArray(frame, dir_path)))
             self.buffer.add_frame(state, move)
+            player = player * (-1) if player is not None else None
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
         return data

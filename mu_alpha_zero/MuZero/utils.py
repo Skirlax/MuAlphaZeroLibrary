@@ -25,7 +25,9 @@ def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list
     return add_actions_to_obs(observation_batch, actions, dim=1)
 
 
-def resize_obs(observations: np.ndarray, size: tuple[int, int]) -> np.ndarray:
+def resize_obs(observations: np.ndarray, size: tuple[int, int], resize: bool) -> np.ndarray:
+    if not resize:
+        return observations
     obs = Image.fromarray(observations)
     obs = obs.resize(size)
     return np.array(obs)
@@ -105,7 +107,6 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
     from mu_alpha_zero.mem_buffer import MemBuffer
 
-
     muzero_config.show_tqdm = False
     if in_memory:
         study = optuna.create_study(study_name=study_name, direction=direction)
@@ -118,6 +119,6 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
         json.dump(study.best_params, file)
 
 
-def mask_invalid_actions(invalid_actions: np.ndarray,pi: np.ndarray):
+def mask_invalid_actions(invalid_actions: np.ndarray, pi: np.ndarray):
     pi = pi.reshape(-1) * invalid_actions.reshape(-1)
     return pi / pi.sum()

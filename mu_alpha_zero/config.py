@@ -7,6 +7,7 @@
 
 from dataclasses import dataclass
 
+
 @dataclass
 class Config:
     num_net_channels: int = 512
@@ -91,6 +92,7 @@ class MuZeroConfig(Config):
     log_dir: str = None
     pushbullet_token: str = None
     show_tqdm: bool = False
+    resize_images: bool = True
 
 
 @dataclass
