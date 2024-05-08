@@ -67,7 +67,7 @@ class Arena(GeneralArena):
                     state = self.game_manager.get_next_state(state, move, current_player)
                     status = self.game_manager.game_result(current_player, state)
                 else:
-                    state = self.game_manager.get_next_state(move, current_player)
+                    state = self.game_manager.get_next_state(move, current_player)[0]
                     status = self.game_manager.game_result(current_player)
                 self.game_manager.render()
 
