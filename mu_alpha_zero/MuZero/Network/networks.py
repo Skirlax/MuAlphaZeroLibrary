@@ -19,12 +19,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: int,
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
-                 hook_manager: HookManager or None = None):
+                 hook_manager: HookManager or None = None,use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
         self.rep_input_channels = rep_input_channels
         self.dropout = dropout
         self.use_original = use_original
+        self.use_pooling = use_pooling
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
@@ -60,7 +61,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
-                   hook_manager=hook_manager)
+                   hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
@@ -87,13 +88,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
                          hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
-                         num_blocks=self.num_blocks)
+                         num_blocks=self.num_blocks, use_pooling=self.use_pooling)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         losses = []
         K = muzero_config.K
-        optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr)
+        optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr, weight_decay=muzero_config.l2)
         iteration = 0
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.batch_size, K,
@@ -145,16 +146,21 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
 
 class RepresentationNet(th.nn.Module):
-    def __init__(self, rep_input_channels: int):
+    def __init__(self, rep_input_channels: int, use_pooling: bool = True):
         super(RepresentationNet, self).__init__()
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.conv1 = th.nn.Conv2d(in_channels=rep_input_channels, out_channels=128, kernel_size=3, stride=2, padding=1)
         self.residuals1 = th.nn.ModuleList([ResidualBlock(128) for _ in range(2)])
         self.conv2 = th.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
         self.residuals2 = th.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
-        self.pool1 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+
         self.residuals3 = th.nn.ModuleList([ResidualBlock(256) for _ in range(3)])
-        self.pool2 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+        if use_pooling:
+            self.pool1 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+            self.pool2 = th.nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
+        else:
+            self.pool1 = th.nn.Identity()
+            self.pool2 = th.nn.Identity()
         self.relu = th.nn.ReLU()
 
     def forward(self, x: th.Tensor):

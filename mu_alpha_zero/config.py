@@ -100,6 +100,7 @@ class MuZeroConfig(Config):
     resize_images: bool = True
     muzero: bool = True
     use_original: bool = True
+    use_pooling: bool = True
 
 
 

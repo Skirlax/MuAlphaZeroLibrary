@@ -19,6 +19,7 @@ from mu_alpha_zero.mem_buffer import PickleMemBuffer
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 
+
 class MuZero:
     """
     Class for managing the training and creation of a MuZero model.
@@ -57,7 +58,7 @@ class MuZero:
         if not os.path.isabs(muzero_config.pickle_dir):
             muzero_config.pickle_dir = find_project_root() + "/" + muzero_config.pickle_dir
         self.muzero_config = muzero_config
-        network = network_class.make_from_config(muzero_config,hook_manager=hook_manager).to(self.device)
+        network = network_class.make_from_config(muzero_config, hook_manager=hook_manager).to(self.device)
         self.tree = MuZeroSearchTree(self.game_manager.make_fresh_instance(), muzero_config)
 
         net_player = NetPlayer(self.game_manager.make_fresh_instance(),
