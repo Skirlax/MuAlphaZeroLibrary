@@ -39,6 +39,12 @@ class Arena(GeneralArena):
         else:
             num_games_per_player = num_games_to_play // 2
 
+        if not self.state_managed:
+            if player1.name == "NetworkPlayer":
+                player1.set_game_manager(self.game_manager)
+            if player2.name == "NetworkPlayer":
+                player2.set_game_manager(self.game_manager)
+
         for game in range(num_games_to_play):
             if game < num_games_per_player:
                 current_player = start_player

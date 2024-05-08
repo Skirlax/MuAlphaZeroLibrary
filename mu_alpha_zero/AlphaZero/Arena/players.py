@@ -85,6 +85,9 @@ class NetPlayer(Player):
     def set_network(self, network):
         self.network = network
 
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
+
 
 class TrainingNetPlayer(Player):
     def __init__(self, network: AlphaZeroNet, game_manager: TicTacToeGameManager, args: dict):
