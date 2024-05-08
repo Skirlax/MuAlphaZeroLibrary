@@ -91,7 +91,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
                          hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
-                         num_blocks=self.num_blocks, use_pooling=self.use_pooling)
+                         num_blocks=self.num_blocks, game_manager=self.game_manager,use_pooling=self.use_pooling)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
