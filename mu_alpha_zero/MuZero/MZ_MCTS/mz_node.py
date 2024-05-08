@@ -3,8 +3,8 @@ from mu_alpha_zero.AlphaZero.MCTS.az_node import AlphaZeroNode
 
 
 class MzAlphaZeroNode(AlphaZeroNode):
-    def __init__(self, select_probability=0, parent=None, times_visited_init=0):
-        super().__init__(0, select_probability, parent, times_visited_init)
+    def __init__(self, select_probability=0, parent=None, times_visited_init=0,current_player=1):
+        super().__init__(current_player, select_probability, parent, times_visited_init)
         self.reward = 0
 
     def get_best_child(self, c=1.5, c2=19652):
@@ -27,7 +27,7 @@ class MzAlphaZeroNode(AlphaZeroNode):
         self.state = state.clone()
         self.reward = im_reward
         for action, probability in enumerate(action_probabilities):
-            node = MzAlphaZeroNode(select_probability=probability, parent=self)
+            node = MzAlphaZeroNode(select_probability=probability, parent=self,current_player=self.current_player * (-1))
             self.children[action] = node
 
     def get_immediate_reward(self, dynamics_forward: callable, action: int):

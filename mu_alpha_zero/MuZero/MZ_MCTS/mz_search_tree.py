@@ -66,7 +66,7 @@ class MuZeroSearchTree(SearchTree):
         if tau is None:
             tau = self.muzero_config.tau
 
-        root_node = MzAlphaZeroNode()
+        root_node = MzAlphaZeroNode(current_player=current_player)
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames().permute(2, 0, 1).unsqueeze(0)).squeeze(0)
         state_ = scale_hidden_state(state_)
