@@ -46,7 +46,7 @@ class Arena(GeneralArena):
                 current_player = -start_player
 
             kwargs = {"num_simulations": num_mc_simulations, "current_player": current_player, "device": self.device,
-                      "tau": tau}
+                      "tau": tau, "unravel": self.alpha_zero_config.unravel}
             if add_to_kwargs is not None:
                 kwargs.update(add_to_kwargs)
             state = self.game_manager.reset()

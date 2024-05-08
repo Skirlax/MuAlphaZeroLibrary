@@ -39,6 +39,7 @@ class Config:
     l2: float = 1e-4
     net_latent_size: list[int] = field(default_factory=lambda:[6,6])
     support_size: int = 601
+    unravel: bool = True # unravel the to board in arena
 
     def to_dict(self):
         return self.__dict__
