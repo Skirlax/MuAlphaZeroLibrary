@@ -49,10 +49,9 @@ class McSearchTree(SearchTree):
             move = self.game_manager.select_move(pi)
             # self.step_root([move])
             self.step_root(None)
-            self.game_manager.play(current_player, self.game_manager.network_to_board(move))
             # pi = [x for x in pi.values()]
             game_history.append((state * current_player, pi, None, current_player))
-            state = self.game_manager.get_board()
+            state = self.game_manager.get_next_state(state,self.game_manager.network_to_board(move), current_player)
             r = self.game_manager.game_result(current_player, state)
             if r is not None:
                 if r == current_player:

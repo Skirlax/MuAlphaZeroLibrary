@@ -11,8 +11,9 @@ from mu_alpha_zero.config import AlphaZeroConfig
 
 class Arena(GeneralArena):
     def __init__(self, game_manager: GameManager, alpha_zero_config: AlphaZeroConfig, device,
-                 hook_manager: HookManager or None = None):
+                 hook_manager: HookManager or None = None, state_managed: bool = False):
         self.game_manager = game_manager
+        self.state_managed = state_managed
         self.device = device
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.alpha_zero_config = alpha_zero_config
@@ -30,8 +31,7 @@ class Arena(GeneralArena):
         :param num_mc_simulations:
         :return: number of wins for player1, number of wins for player2, number of draws
         """
-        # net_player_times = []
-        # minimax_player_times = []
+
         results = {"wins_p1": 0, "wins_p2": 0, "draws": 0}
         tau = self.alpha_zero_config.arena_tau
         if one_player:
@@ -58,21 +58,20 @@ class Arena(GeneralArena):
             while True:
                 self.game_manager.render()
                 if current_player == 1:
-                    # p1_time = time.time()
-                    move = player1.choose_move(state, **kwargs)  # net_player_times.append(time.time() - p1_time)
+                    move = player1.choose_move(state, **kwargs)
                 else:
-                    # p2_time = time.time()
-                    move = player2.choose_move(state, **kwargs)  # minimax_player_times.append(time.time() - p2_time)
+                    move = player2.choose_move(state, **kwargs)
                 self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
-                                                        args=(move, kwargs,current_player))
-                self.game_manager.play(current_player, move)
-                state = self.game_manager.get_board()
-                status = self.game_manager.game_result(current_player, state)
+                                                        args=(move, kwargs, current_player))
+                if not self.state_managed:
+                    state = self.game_manager.get_next_state(state, move, current_player)
+                    status = self.game_manager.game_result(current_player, state)
+                else:
+                    state = self.game_manager.get_next_state(move, current_player)
+                    status = self.game_manager.game_result(current_player)
                 self.game_manager.render()
 
                 if status is not None:
-                    # time.sleep(3)
-                    # print(state)
                     if status == 1:
                         if current_player == 1:
                             results["wins_p1"] += 1
@@ -95,12 +94,7 @@ class Arena(GeneralArena):
 
                 current_player *= -1
                 kwargs["current_player"] = current_player
-        # print(f"Average net player time: {sum(net_player_times) / len(net_player_times)}")
-        # print(f"Average minimax player time: {sum(minimax_player_times) / len(minimax_player_times)}")
-        # print(f"Net player times: {net_player_times}")
-        # print(f"Minimax player times: {minimax_player_times}")
         return results["wins_p1"], results["wins_p2"], results["draws"]
-
 
     def wait_keypress(self):
         inpt = input("Press any key to continue...")

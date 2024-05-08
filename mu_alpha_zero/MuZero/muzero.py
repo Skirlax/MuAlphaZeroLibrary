@@ -2,6 +2,7 @@ import os
 import sys
 
 import numpy as np
+from mu_alpha_zero.General.arena import GeneralArena
 
 sys.path.append(os.path.abspath("."))
 from typing import Type
@@ -53,18 +54,21 @@ class MuZero:
     def create_new(self, muzero_config: MuZeroConfig, network_class: Type[GeneralNetwork], memory: GeneralMemoryBuffer,
                    hook_manager: HookManager or None = None,
                    headless: bool = True,
+                   arena_override: GeneralArena or None = None,
                    checkpointer_verbose: bool = False):
         muzero_config.net_action_size = int(self.game_manager.get_num_actions())
         if not os.path.isabs(muzero_config.pickle_dir):
             muzero_config.pickle_dir = find_project_root() + "/" + muzero_config.pickle_dir
         self.muzero_config = muzero_config
-        network = network_class.make_from_config(muzero_config,self.game_manager, hook_manager=hook_manager).to(self.device)
+        network = network_class.make_from_config(muzero_config, self.game_manager, hook_manager=hook_manager).to(
+            self.device)
         self.tree = MuZeroSearchTree(self.game_manager.make_fresh_instance(), muzero_config)
 
         net_player = NetPlayer(self.game_manager.make_fresh_instance(),
                                **{"network": network, "monte_carlo_tree_search": self.tree})
 
-        arena = MzArena(self.game_manager.make_fresh_instance(), self.muzero_config, self.device)
+        arena = MzArena(self.game_manager.make_fresh_instance(), self.muzero_config,
+                        self.device) if arena_override is None else arena_override
         java_manager = None
         self.trainer = Trainer.create(self.muzero_config, self.game_manager.make_fresh_instance(), network, self.tree,
                                       net_player,
