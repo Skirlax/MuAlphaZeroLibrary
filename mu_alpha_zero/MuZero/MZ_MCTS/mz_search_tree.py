@@ -51,7 +51,7 @@ class MuZeroSearchTree(SearchTree):
             move = scale_action(move, self.game_manager.get_num_actions())
             frame = self.buffer.concat_frames().detach().cpu().numpy()
             data.append(
-                (pi, v, (rew, move, float(pred_v[0])), frame if dir_path is None else LazyArray(frame, dir_path)))
+                (pi, v, (rew, move, float(pred_v[0]),player), frame if dir_path is None else LazyArray(frame, dir_path)))
             self.buffer.add_frame(state, move)
             player = -player
 

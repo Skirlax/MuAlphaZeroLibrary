@@ -104,9 +104,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                                 alpha=muzero_config.alpha):
             if len(experience_batch) <= 1:
                 continue
-            pis, vs, rews_moves, states = zip(*experience_batch)
-            rews = [x[0] for x in rews_moves]
-            moves = [x[1] for x in rews_moves]
+            pis, vs, rews_moves_players, states = zip(*experience_batch)
+            rews = [x[0] for x in rews_moves_players]
+            moves = [x[1] for x in rews_moves_players]
+            players = [x[-1] for x in rews_moves_players]
             states = [np.array(x) for x in states]
             states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
             pis = [list(x.values()) for x in pis]
@@ -115,7 +116,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
             latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
-            masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, states)
+            masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
             latent = match_action_with_obs_batch(latent, moves)
             _, pred_rews = self.dynamics_forward(latent)
             priorities = priorities.to(device)
