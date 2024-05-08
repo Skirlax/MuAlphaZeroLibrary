@@ -37,6 +37,7 @@ class MuZeroSearchTree(SearchTree):
         state = scale_state(state)
         self.buffer.init_buffer(state)
         data = []
+        player = 1
         for step in range(num_steps):
             pi, (v, latent) = self.search(network_wrapper, state, None, device)
             move = self.game_manager.select_move(pi)
@@ -52,6 +53,7 @@ class MuZeroSearchTree(SearchTree):
             data.append(
                 (pi, v, (rew, move, float(pred_v[0])), frame if dir_path is None else LazyArray(frame, dir_path)))
             self.buffer.add_frame(state, move)
+            player = -player
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
         return data
@@ -70,7 +72,7 @@ class MuZeroSearchTree(SearchTree):
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
-        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(), pi)
+        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(pi,current_player), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):
