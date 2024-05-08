@@ -124,7 +124,7 @@ def mask_invalid_actions(invalid_actions: np.ndarray, pi: np.ndarray):
     pi_orig = pi.copy()
     pi = pi.reshape(-1) * invalid_actions.reshape(-1)
     if sum(pi) == 0:
-        print(pi_orig)
+        print(invalid_actions)
     return pi / pi.sum()
 
 

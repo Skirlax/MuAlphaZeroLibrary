@@ -81,6 +81,8 @@ class MuZeroSearchTree(SearchTree):
             action = None
             while current_node.was_visited():
                 current_node, action = current_node.get_best_child(c=self.muzero_config.c, c2=self.muzero_config.c2)
+                if current_node is None:
+                    print(current_player)
                 path.append(current_node)
 
             action = scale_action(action, self.game_manager.get_num_actions())
