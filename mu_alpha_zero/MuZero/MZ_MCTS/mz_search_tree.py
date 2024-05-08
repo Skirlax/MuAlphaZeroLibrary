@@ -13,8 +13,8 @@ from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
-from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_reward, scale_state, \
-    scale_hidden_state, mask_invalid_actions
+from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_state, \
+    scale_hidden_state, mask_invalid_actions, scale_reward_value
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 
@@ -43,7 +43,7 @@ class MuZeroSearchTree(SearchTree):
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
-            rew = scale_reward(rew)
+            rew = scale_reward_value(rew)
             state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
             state = scale_state(state)
             if done:

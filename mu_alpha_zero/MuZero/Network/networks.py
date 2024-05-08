@@ -1,18 +1,17 @@
-import math
-
 import numpy as np
 import torch as th
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.functional import mse_loss
+
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZerNetwork
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
+from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value, mask_invalid_actions_batch
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
 from mu_alpha_zero.config import MuZeroConfig
-from mu_alpha_zero.General.mz_game import MuZeroGame
 
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
