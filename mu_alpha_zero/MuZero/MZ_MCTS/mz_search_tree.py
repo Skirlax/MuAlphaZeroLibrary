@@ -39,7 +39,7 @@ class MuZeroSearchTree(SearchTree):
         data = []
         player = 1
         for step in range(num_steps):
-            pi, (v, latent) = self.search(network_wrapper, state, None, device)
+            pi, (v, latent) = self.search(network_wrapper, state, player, device)
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, None, frame_skip=frame_skip)
