@@ -74,7 +74,9 @@ class NetPlayer(Player):
             unravel = kwargs["unravel"]
         else:
             unravel = True
-        return self.game_manager.network_to_board(move) if unravel else move
+        if unravel:
+            return self.game_manager.network_to_board(move)
+        return move
 
     def make_fresh_instance(self):
         return NetPlayer(self.game_manager.make_fresh_instance(), **{"network": self.network,
