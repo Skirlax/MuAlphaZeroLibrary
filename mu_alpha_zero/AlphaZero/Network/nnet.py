@@ -145,7 +145,8 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
                  linear_input_size: list[int], support_size: int, latent_size: list[int] = [6, 6],
-                 hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,is_dynamics:bool=False):
+                 hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,
+                 is_dynamics: bool = False):
         super(OriginalAlphaZerNetwork, self).__init__()
         self.in_channels = in_channels
         self.num_channels = num_channels
@@ -167,7 +168,7 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         if is_dynamics:
             self.policy_head = StateHead(linear_input_size[2], num_channels, latent_size)
         else:
-            self.policy_head = PolicyHead(action_size, linear_input_size[1],num_channels)
+            self.policy_head = PolicyHead(action_size, linear_input_size[1], num_channels)
 
     def forward(self, x, muzero: bool = False):
         if not muzero:
@@ -198,11 +199,12 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def make_fresh_instance(self):
         return OriginalAlphaZerNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
-                                       self.linear_input_size, self.support_size,self.latent_size, hook_manager=self.hook_manager,
-                                       num_blocks=self.num_blocks, muzero=self.muzero,is_dynamics=self.is_dynamics)
+                                       self.linear_input_size, self.support_size, self.latent_size,
+                                       hook_manager=self.hook_manager,
+                                       num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
 
     @classmethod
-    def make_from_config(cls, config: Config, hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config, game_manager: None, hook_manager: HookManager or None = None):
         return OriginalAlphaZerNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
                                        config.net_action_size, config.az_net_linear_input_size,
                                        hook_manager=hook_manager,
@@ -278,7 +280,7 @@ class ValueHead(th.nn.Module):
 
 
 class PolicyHead(th.nn.Module):
-    def __init__(self, action_size: int, linear_input_size_policy: int,num_channels:int):
+    def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int):
         super(PolicyHead, self).__init__()
         self.conv = nn.Conv2d(num_channels, 2, 1)
         self.bn = nn.BatchNorm2d(2)

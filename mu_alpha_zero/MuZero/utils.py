@@ -1,5 +1,6 @@
 import json
 import math
+from typing import Callable
 
 import numpy as np
 import optuna
@@ -83,7 +84,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
 
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         trial.net_action_size = int(game.get_num_actions())
-        network = MuZeroNet.make_from_config(muzero_config).to(device)
+        network = MuZeroNet.make_from_config(muzero_config,game).to(device)
         network.load_state_dict(th.load(init_net_path))
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
@@ -122,3 +123,14 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
 def mask_invalid_actions(invalid_actions: np.ndarray, pi: np.ndarray):
     pi = pi.reshape(-1) * invalid_actions.reshape(-1)
     return pi / pi.sum()
+
+
+def mask_invalid_actions_batch(get_invalid_actions: Callable,pis: th.Tensor,states: th.Tensor):
+    invalid_actions_ts = th.empty(pis.shape)
+    for i,state in enumerate(states):
+        player = state.transpose(0,-1)[0][0][0]
+        invaid_actions = get_invalid_actions(pis[i],player)
+        invalid_actions_ts[i] = invaid_actions
+    return invalid_actions_ts
+
+

@@ -58,7 +58,7 @@ class MuZero:
         if not os.path.isabs(muzero_config.pickle_dir):
             muzero_config.pickle_dir = find_project_root() + "/" + muzero_config.pickle_dir
         self.muzero_config = muzero_config
-        network = network_class.make_from_config(muzero_config, hook_manager=hook_manager).to(self.device)
+        network = network_class.make_from_config(muzero_config,self.game_manager, hook_manager=hook_manager).to(self.device)
         self.tree = MuZeroSearchTree(self.game_manager.make_fresh_instance(), muzero_config)
 
         net_player = NetPlayer(self.game_manager.make_fresh_instance(),

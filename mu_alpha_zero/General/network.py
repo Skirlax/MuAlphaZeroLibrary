@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from mu_alpha_zero.General.mz_game import MuZeroGame
+
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.config import Config
 import torch as th
@@ -15,7 +17,7 @@ class GeneralNetwork(ABC):
 
     @classmethod
     @abstractmethod
-    def make_from_config(cls, config: Config,hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config,game_manager:MuZeroGame,hook_manager: HookManager or None = None):
         """
         Builds the network from the given arguments dict.
         """

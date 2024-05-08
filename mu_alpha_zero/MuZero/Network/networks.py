@@ -5,27 +5,29 @@ import torch as th
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.functional import mse_loss
-
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZerNetwork
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scale_reward_value, mask_invalid_actions_batch
 from mu_alpha_zero.config import MuZeroConfig
+from mu_alpha_zero.General.mz_game import MuZeroGame
 
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: list[int],
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
-                 hook_manager: HookManager or None = None,use_pooling: bool = True):
+                 game_manager: MuZeroGame,
+                 hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
         self.rep_input_channels = rep_input_channels
         self.dropout = dropout
         self.use_original = use_original
         self.use_pooling = use_pooling
+        self.game_manager = game_manager
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
@@ -38,7 +40,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # self.action_embedding = th.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
-            self.dynamics_network = OriginalAlphaZerNetwork(in_channels=257, num_channels=num_out_channels, dropout=dropout,
+            self.dynamics_network = OriginalAlphaZerNetwork(in_channels=257, num_channels=num_out_channels,
+                                                            dropout=dropout,
                                                             action_size=action_size,
                                                             linear_input_size=linear_input_size,
                                                             support_size=support_size, latent_size=latent_size,
@@ -57,15 +60,16 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                     action_size=action_size, linear_input_size=linear_input_size)
 
     @classmethod
-    def make_from_config(cls, config: MuZeroConfig, hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: MuZeroConfig, game_manager: MuZeroGame, hook_manager: HookManager or None = None):
         return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
+                   game_manager=game_manager,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
-            state,r = self.dynamics_network.forward(x,muzero=True)
+            state, r = self.dynamics_network.forward(x, muzero=True)
             state = state.view(self.num_out_channels, self.latent_size[0], self.latent_size[1])
             r = r.detach().cpu().numpy()
             return state, r
@@ -111,6 +115,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
             latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
+            masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, states)
             latent = match_action_with_obs_batch(latent, moves)
             _, pred_rews = self.dynamics_forward(latent)
             priorities = priorities.to(device)
@@ -119,7 +124,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             w /= w.sum()
             w = w.reshape(pred_vs.shape)
             loss_v = mse_loss(pred_vs, vs) * balance_term * w
-            loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
+            loss_pi = self.muzero_pi_loss(pred_pis, pis,masks) * balance_term * w
             loss_r = mse_loss(pred_rews, rews) * balance_term * w
             loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
             losses.append(loss.item())
@@ -134,7 +139,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                 args=(memory_buffer, losses))
         return sum(losses) / len(losses), losses
 
-    def muzero_pi_loss(self, y_hat, y):
+    def muzero_pi_loss(self, y_hat, y, masks):
+        masks = masks.reshape(y_hat.shape).to(self.device)
+        y_hat = masks * y_hat
         return -th.sum(y * y_hat) / y.size()[0]
 
     def to_pickle(self, path: str):
