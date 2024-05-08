@@ -52,7 +52,6 @@ class MuZeroSearchTree(SearchTree):
             data.append(
                 (pi, v, (rew, move, float(pred_v[0])), frame if dir_path is None else LazyArray(frame, dir_path)))
             self.buffer.add_frame(state, move)
-            player = player * (-1) if player is not None else None
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
         return data

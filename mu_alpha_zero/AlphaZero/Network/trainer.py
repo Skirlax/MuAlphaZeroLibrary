@@ -92,7 +92,8 @@ class Trainer:
                hook_manager: HookManager or None = None, arena_override: GeneralArena or None = None,
                memory_override: GeneralMemoryBuffer or None = None, java_manager: JavaManager or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        _, optimizer, mem = build_all_from_config(muzero_alphazero_config, device)
+        optimizer = th.optim.Adam(network.parameters(), lr=muzero_alphazero_config.lr,weight_decay=muzero_alphazero_config.l2)
+        mem = MemBuffer(max_size=muzero_alphazero_config.max_buffer_size)
         memory = mem if memory_override is None else memory_override
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
         return cls(network, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player,

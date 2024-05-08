@@ -32,9 +32,13 @@ class Config:
     num_workers: int = 5
     log_epsilon: float = 1e-9
     zero_tau_after: int = 5
-    az_net_linear_input_size: int = 8192
+    az_net_linear_input_size: int or list[int] = 8192
     log_dir: str = "Logs"
     pushbullet_token: str = None
+    num_blocks: int = 8
+    l2: float = 1e-4
+    net_latent_size: int = 36
+    support_size: int = 601
 
     def to_dict(self):
         return self.__dict__
@@ -89,11 +93,15 @@ class MuZeroConfig(Config):
     beta: int = 1
     pickle_dir: str = "Pickles/Data"
     target_resolution: tuple[int, int] = (96, 96)
-    az_net_linear_input_size: int = 8192
+    az_net_linear_input_size: int or list[int] = 8192
     log_dir: str = None
     pushbullet_token: str = None
     show_tqdm: bool = False
     resize_images: bool = True
+    muzero: bool = True
+    use_original: bool = True
+
+
 
 
 @dataclass
@@ -126,3 +134,4 @@ class AlphaZeroConfig(Config):
     az_net_linear_input_size: int = 18432
     log_dir: str = None
     pushbullet_token: str = None
+    muzero: bool = False

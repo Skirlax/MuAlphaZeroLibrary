@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch import nn
 from torch.nn.functional import mse_loss
 
-from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet
+from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZerNetwork
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
@@ -17,48 +17,66 @@ from mu_alpha_zero.config import MuZeroConfig
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: int,
-                 num_out_channels: int, linear_input_size: int, rep_input_channels: int,
+                 num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
+                 use_original: bool, support_size: int, num_blocks: int,
                  hook_manager: HookManager or None = None):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
         self.rep_input_channels = rep_input_channels
         self.dropout = dropout
+        self.use_original = use_original
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
         self.latent_size = latent_size
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
+        self.support_size = support_size
+        self.num_blocks = num_blocks
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # self.action_embedding = th.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet(rep_input_channels)
-        self.dynamics_network = DynamicsNet(in_channels=257, num_channels=num_channels, dropout=dropout,
-                                            latent_size=latent_size, out_channels=num_out_channels)
-        # prediction outputs 6x6 latent state
-        self.prediction_network = PredictionNet(in_channels=256, num_channels=num_channels, dropout=dropout,
-                                                action_size=action_size, linear_input_size=linear_input_size)
+        if use_original:
+            self.dynamics_network = OriginalAlphaZerNetwork(in_channels=257, num_channels=num_out_channels, dropout=dropout,
+                                                            action_size=action_size,
+                                                            linear_input_size=linear_input_size,
+                                                            support_size=support_size, latent_size=latent_size,
+                                                            num_blocks=num_blocks, muzero=True, is_dynamics=True)
+            self.prediction_network = OriginalAlphaZerNetwork(in_channels=256, num_channels=num_out_channels,
+                                                              dropout=dropout,
+                                                              action_size=action_size,
+                                                              linear_input_size=linear_input_size,
+                                                              support_size=support_size, latent_size=latent_size,
+                                                              num_blocks=num_blocks, muzero=True, is_dynamics=False)
+        else:
+            self.dynamics_network = DynamicsNet(in_channels=257, num_channels=num_channels, dropout=dropout,
+                                                latent_size=latent_size, out_channels=num_out_channels)
+            # prediction outputs 6x6 latent state
+            self.prediction_network = PredictionNet(in_channels=256, num_channels=num_channels, dropout=dropout,
+                                                    action_size=action_size, linear_input_size=linear_input_size)
 
     @classmethod
     def make_from_config(cls, config: MuZeroConfig, hook_manager: HookManager or None = None):
         return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
-                   config.rep_input_channels,
+                   config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    hook_manager=hook_manager)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
-            return self.dynamics_network.predict(x)
-        state, reward = self.dynamics_network(x)
-        reward = scale_reward_value(reward)
+            state,r = self.dynamics_network.forward(x,muzero=True)
+            lat_size = int(math.sqrt(self.latent_size))
+            state = state.view(self.num_out_channels, lat_size, lat_size)
+            r = r.detach().cpu().numpy()
+            return state, r
+        state, reward = self.dynamics_network(x, muzero=True)
         return state, reward
 
     def prediction_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
-            v = scale_reward_value(v[0][0])
             return pi, v
         pi, v = self.prediction_network(x, muzero=True)
-        v = scale_reward_value(v)
         return pi, v
 
     def representation_forward(self, x: th.Tensor):
@@ -68,7 +86,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def make_fresh_instance(self):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
-                         hook_manager=self.hook_manager)
+                         hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
+                         num_blocks=self.num_blocks)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
@@ -88,8 +107,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
             pis = [list(x.values()) for x in pis]
             pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
-            vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(1)
-            rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(1)
+            vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(0)
+            rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
             latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
             latent = match_action_with_obs_batch(latent, moves)
@@ -188,7 +207,7 @@ class DynamicsNet(nn.Module):
         self.state_head = nn.Linear(512, latent_size * out_channels)  # state head
         self.reward_head = nn.Linear(512, 1)  # reward head
 
-    def forward(self, x):
+    def forward(self, x, muzero=False):
         # x = x.unsqueeze(0)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
@@ -217,7 +236,6 @@ class DynamicsNet(nn.Module):
     def predict(self, x):
         state, r = self.forward(x)
         state = state.view(self.out_channels, self.latent_size, self.latent_size)
-        r = scale_reward_value(r)
         return state, r.detach().cpu().numpy()
 
 

@@ -11,7 +11,7 @@ from torch.nn.functional import mse_loss
 from mu_alpha_zero.General.network import GeneralAlphZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.config import AlphaZeroConfig
+from mu_alpha_zero.config import AlphaZeroConfig, Config
 from mu_alpha_zero.mem_buffer import MemBuffer
 
 
@@ -141,44 +141,171 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
         self.hook_manager.process_hook_executes(self, self.run_at_training_end.__name__, __file__, HookAt.ALL)
 
 
-class TicTacToeNetNoNorm(nn.Module):
-    def __init__(self, in_channels, num_channels, dropout, action_size):
-        super(TicTacToeNetNoNorm, self).__init__()
+class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
+
+    def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
+                 linear_input_size: list[int], support_size: int, latent_size: int = 36,
+                 hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,is_dynamics:bool=False):
+        super(OriginalAlphaZerNetwork, self).__init__()
+        self.in_channels = in_channels
+        self.num_channels = num_channels
+        self.dropout_p = dropout
+        self.action_size = action_size
+        self.linear_input_size = linear_input_size
+        self.support_size = support_size
+        self.num_blocks = num_blocks
+        self.muzero = muzero
+        self.latent_size = latent_size
+        self.is_dynamics = is_dynamics
+        self.hook_manager = hook_manager if hook_manager is not None else HookManager()
+
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
-        self.conv2 = nn.Conv2d(num_channels, num_channels, 3, padding=1)
-        self.conv3 = nn.Conv2d(num_channels, num_channels, 3, padding=1)
-        self.conv4 = nn.Conv2d(num_channels, num_channels, 3)
-
-        self.fc1 = nn.Linear(4608, 1024)
-        self.fc2 = nn.Linear(1024, 512)
-
+        self.bn1 = nn.BatchNorm2d(num_channels)
         self.dropout = nn.Dropout(dropout)
+        self.blocks = nn.ModuleList([OriginalAlphaZeroBlock(num_channels, num_channels) for _ in range(num_blocks)])
+        self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels)
+        if is_dynamics:
+            self.policy_head = StateHead(linear_input_size[2], num_channels, latent_size)
+        else:
+            self.policy_head = PolicyHead(action_size, linear_input_size[1],num_channels)
 
-        self.pi = nn.Linear(512, action_size)  # probability head
-        self.v = nn.Linear(512, 1)  # value head
+    def forward(self, x, muzero: bool = False):
+        if not muzero:
+            x = x.unsqueeze(1)
+        x = F.relu(self.bn1(self.conv1(x)))
+        for block in self.blocks:
+            x = block(x)
+        x = self.dropout(x)
+        val_h_output = self.value_head(x)
+        pol_h_output = self.policy_head(x)
+        if muzero:
+            # multiply arange by softmax probabilities
+            support_range = th.arange(-300, 301, 1, dtype=th.float32, device=x.device).unsqueeze(0)
+            output = th.sum(val_h_output * support_range, dim=1)
+            return pol_h_output, output.unsqueeze(0)
+        return pol_h_output, val_h_output
+
+    @th.no_grad()
+    def predict(self, x, muzero=True):
+        pi, v = self.forward(x, muzero=muzero)
+        pi = th.exp(pi)
+        return pi.detach().cpu().numpy(), v.detach().cpu().numpy()
+
+    def pi_loss(self, y_hat, y, masks, device: th.device):
+        masks = masks.reshape(y_hat.shape).to(device)
+        masked_y_hat = masks * y_hat
+        return -th.sum(y * masked_y_hat) / y.size()[0]
+
+    def make_fresh_instance(self):
+        return OriginalAlphaZerNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
+                                       self.linear_input_size, self.support_size,self.latent_size, hook_manager=self.hook_manager,
+                                       num_blocks=self.num_blocks, muzero=self.muzero,is_dynamics=self.is_dynamics)
+
+    @classmethod
+    def make_from_config(cls, config: Config, hook_manager: HookManager or None = None):
+        return OriginalAlphaZerNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
+                                       config.net_action_size, config.az_net_linear_input_size,
+                                       hook_manager=hook_manager,
+                                       num_blocks=config.num_blocks, muzero=config.muzero,
+                                       support_size=config.support_size, latent_size=config.net_latent_size)
+
+    def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
+        from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
+        device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        losses = []
+        optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
+                                  weight_decay=muzero_alphazero_config.l2)
+        memory_buffer.shuffle()
+        for epoch in range(muzero_alphazero_config.epochs):
+            for experience_batch in memory_buffer(muzero_alphazero_config.batch_size):
+                if len(experience_batch) <= 1:
+                    continue
+                states, pi, v = zip(*experience_batch)
+                states = th.tensor(np.array(states), dtype=th.float32, device=device)
+                pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
+                v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
+                pi_pred, v_pred = self.forward(states, muzero=muzero_alphazero_config.muzero)
+                masks = mask_invalid_actions_batch(states)
+                loss = mse_loss(v_pred, v) + self.pi_loss(pi_pred, pi, masks, device)
+                losses.append(loss.item())
+                # self.summary_writer.add_scalar("Loss", loss.item(), i * epochs + epoch)
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE,
+                                                        args=(experience_batch, loss.item(), epoch))
+
+        self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL, args=(losses,))
+        return sum(losses) / len(losses), losses
+
+
+class OriginalAlphaZeroBlock(th.nn.Module):
+    def __init__(self, in_channels: int, num_channels: int):
+        super(OriginalAlphaZeroBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
+        self.bn1 = nn.BatchNorm2d(num_channels)
+        self.conv2 = nn.Conv2d(num_channels, num_channels, 3, padding=1)
+        self.bn2 = nn.BatchNorm2d(num_channels)
 
     def forward(self, x):
-        x = x.unsqueeze(1)
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        x = F.relu(self.conv4(x))
+        x_skip = x
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = self.bn2(self.conv2(x))
+        x += x_skip
+        return F.relu(x)
 
-        x = x.view(x.size(0), -1)
 
+class ValueHead(th.nn.Module):
+    def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int):
+        super(ValueHead, self).__init__()
+        self.conv = nn.Conv2d(num_channels, 1, 1)
+        self.bn = nn.BatchNorm2d(1)
+        self.fc1 = nn.Linear(linear_input_size, 256)
+        if muzero:
+            self.fc2 = nn.Linear(256, support_size)
+            self.act = nn.Softmax(dim=1)
+        else:
+            self.fc2 = nn.Linear(256, 1)
+            self.act = nn.Tanh()
+
+    def forward(self, x):
+        x = F.relu(self.bn(self.conv(x)))
+        x = x.reshape(x.size(0), -1)
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
+        x = self.fc2(x)
+        return self.act(x)
 
+
+class PolicyHead(th.nn.Module):
+    def __init__(self, action_size: int, linear_input_size_policy: int,num_channels:int):
+        super(PolicyHead, self).__init__()
+        self.conv = nn.Conv2d(num_channels, 2, 1)
+        self.bn = nn.BatchNorm2d(2)
+        self.fc1 = nn.Linear(linear_input_size_policy, 256)
+        self.fc2 = nn.Linear(256, action_size)
+
+    def forward(self, x):
+        x = F.relu(self.bn(self.conv(x)))
+        x = x.reshape(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)
+
+
+class StateHead(th.nn.Module):
+    def __init__(self, linear_input_size: int, out_channels: int, latent_size: int):
+        super(StateHead, self).__init__()
+        self.conv = nn.Conv2d(out_channels, 4, 1)
+        self.bn = nn.BatchNorm2d(4)
+        self.fc1 = nn.Linear(linear_input_size, 256)
+        self.fc2 = nn.Linear(256, out_channels)
+        self.fc3 = nn.Linear(out_channels, latent_size * out_channels)
+
+    def forward(self, x):
+        x = F.relu(self.bn(self.conv(x)))
+        x = x.reshape(x.size(0), -1)
+        x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.dropout(x)
-
-        pi = F.softmax(self.pi(x), dim=1)
-        v = F.tanh(self.v(x))
-        # print(th.any(th.isnan(pi)))
-        # print(th.any(th.isnan(v)))
-
-        return pi, v
-
-    def predict(self, x):
-        pi, v = self.forward(x)
-        return pi.detach().cpu().numpy(), v.detach().cpu().numpy()
+        x = F.relu(self.fc3(x))
+        return x
