@@ -116,7 +116,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
             latent = self.representation_forward(states)
             pred_pis, pred_vs = self.prediction_forward(latent)
-            masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
+            # masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
             latent = match_action_with_obs_batch(latent, moves)
             _, pred_rews = self.dynamics_forward(latent)
             priorities = priorities.to(device)
@@ -125,7 +125,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             w /= w.sum()
             w = w.reshape(pred_vs.shape)
             loss_v = mse_loss(pred_vs, vs) * balance_term * w
-            loss_pi = self.muzero_pi_loss(pred_pis, pis,masks) * balance_term * w
+            loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
             loss_r = mse_loss(pred_rews, rews) * balance_term * w
             loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
             losses.append(loss.item())
@@ -140,9 +140,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                 args=(memory_buffer, losses))
         return sum(losses) / len(losses), losses
 
-    def muzero_pi_loss(self, y_hat, y, masks):
+    def muzero_pi_loss(self, y_hat, y, masks: th.Tensor or None = None):
         masks = masks.reshape(y_hat.shape).to(self.device)
-        y_hat = masks * y_hat
+        y_hat = masks * y_hat if masks is not None else y_hat
         return -th.sum(y * y_hat) / y.size()[0]
 
     def to_pickle(self, path: str):
