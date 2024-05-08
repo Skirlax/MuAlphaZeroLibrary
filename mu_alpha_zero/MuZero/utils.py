@@ -50,7 +50,7 @@ def scale_hidden_state(hidden_state: th.Tensor):
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
     if isinstance(value, float) or isinstance(value, np.float32):
         scaled_v = np.sign(value) * (np.sqrt(np.abs(value) + 1) - 1 + value * e)
-        return scaled_v[0]
+        return float(scaled_v)
     return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1 + value * e)
 
 
