@@ -141,8 +141,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return sum(losses) / len(losses), losses
 
     def muzero_pi_loss(self, y_hat, y, masks: th.Tensor or None = None):
-        masks = masks.reshape(y_hat.shape).to(self.device)
-        y_hat = masks * y_hat if masks is not None else y_hat
+        if masks is not None:
+            masks = masks.reshape(y_hat.shape).to(self.device)
+            y_hat = masks * y_hat
         return -th.sum(y * y_hat) / y.size()[0]
 
     def to_pickle(self, path: str):
