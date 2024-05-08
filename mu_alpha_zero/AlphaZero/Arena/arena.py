@@ -55,7 +55,10 @@ class Arena(GeneralArena):
                       "tau": tau, "unravel": self.alpha_zero_config.unravel}
             if add_to_kwargs is not None:
                 kwargs.update(add_to_kwargs)
-            state = self.game_manager.reset()
+            if not self.alpha_zero_config.requires_player_to_reset:
+                state = self.game_manager.reset()
+            else:
+                state = self.game_manager.reset(player=current_player)
             if player1.name == "NetworkPlayer":
                 player1.monte_carlo_tree_search.step_root(None)
             if player2.name == "NetworkPlayer":
