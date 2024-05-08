@@ -36,7 +36,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.num_blocks = num_blocks
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # self.action_embedding = th.nn.Embedding(action_size, 256)
-        self.representation_network = RepresentationNet(rep_input_channels)
+        self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
             self.dynamics_network = OriginalAlphaZerNetwork(in_channels=257, num_channels=num_out_channels, dropout=dropout,
                                                             action_size=action_size,
