@@ -5,7 +5,7 @@
 # 18432 for (8x8) board
 # 8192 for (6x6) atari
 
-from dataclasses import dataclass
+from dataclasses import dataclass,field
 
 
 @dataclass
@@ -65,7 +65,7 @@ class MuZeroConfig(Config):
     rep_input_channels: int = 128  # for atari where input is 96x96x3
     net_dropout: float = 0.3
     net_action_size: int = 14
-    net_latent_size: int = 36
+    net_latent_size: list[int] = field(default_factory=lambda:[6,6])
     num_simulations: int = 800
     self_play_games: int = 100
     K: int = 5

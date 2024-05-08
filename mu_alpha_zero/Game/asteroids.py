@@ -46,6 +46,6 @@ class Asteroids(MuZeroGame):
     def get_random_valid_action(self,board: np.ndarray):
         return self.env.action_space.sample()
 
-    def get_invalid_actions(self):
+    def get_invalid_actions(self,pi: np.ndarray,player:int):
         return np.ones((self.get_num_actions()))
 

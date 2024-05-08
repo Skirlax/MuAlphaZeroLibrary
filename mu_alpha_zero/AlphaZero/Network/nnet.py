@@ -144,7 +144,7 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
 class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
-                 linear_input_size: list[int], support_size: int, latent_size: int = 36,
+                 linear_input_size: list[int], support_size: int, latent_size: list[int] = [6, 6],
                  hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,is_dynamics:bool=False):
         super(OriginalAlphaZerNetwork, self).__init__()
         self.in_channels = in_channels
@@ -294,13 +294,13 @@ class PolicyHead(th.nn.Module):
 
 
 class StateHead(th.nn.Module):
-    def __init__(self, linear_input_size: int, out_channels: int, latent_size: int):
+    def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int]):
         super(StateHead, self).__init__()
         self.conv = nn.Conv2d(out_channels, 4, 1)
         self.bn = nn.BatchNorm2d(4)
         self.fc1 = nn.Linear(linear_input_size, 256)
         self.fc2 = nn.Linear(256, out_channels)
-        self.fc3 = nn.Linear(out_channels, latent_size * out_channels)
+        self.fc3 = nn.Linear(out_channels, latent_size[0] * latent_size[1] * out_channels)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))

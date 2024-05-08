@@ -16,7 +16,7 @@ from mu_alpha_zero.config import MuZeroConfig
 
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
-    def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: int,
+    def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: list[int],
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
                  hook_manager: HookManager or None = None,use_pooling: bool = True):
@@ -66,8 +66,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
         if predict:
             state,r = self.dynamics_network.forward(x,muzero=True)
-            lat_size = int(math.sqrt(self.latent_size))
-            state = state.view(self.num_out_channels, lat_size, lat_size)
+            state = state.view(self.num_out_channels, self.latent_size[0], self.latent_size[1])
             r = r.detach().cpu().numpy()
             return state, r
         state, reward = self.dynamics_network(x, muzero=True)
@@ -188,7 +187,7 @@ class DynamicsNet(nn.Module):
     def __init__(self, in_channels, num_channels, dropout, latent_size, out_channels):
         super(DynamicsNet, self).__init__()
         self.out_channels = out_channels
-        self.latent_size = int(math.sqrt(latent_size))
+        self.latent_size = latent_size
 
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
@@ -210,7 +209,7 @@ class DynamicsNet(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         # Output layers
-        self.state_head = nn.Linear(512, latent_size * out_channels)  # state head
+        self.state_head = nn.Linear(512, latent_size[0] * latent_size[1] * out_channels)  # state head
         self.reward_head = nn.Linear(512, 1)  # reward head
 
     def forward(self, x, muzero=False):
@@ -241,7 +240,7 @@ class DynamicsNet(nn.Module):
     @th.no_grad()
     def predict(self, x):
         state, r = self.forward(x)
-        state = state.view(self.out_channels, self.latent_size, self.latent_size)
+        state = state.view(self.out_channels, self.latent_size[0], self.latent_size[1])
         return state, r.detach().cpu().numpy()
 
 
