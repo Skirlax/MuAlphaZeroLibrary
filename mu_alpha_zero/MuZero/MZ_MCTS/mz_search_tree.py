@@ -92,13 +92,10 @@ class MuZeroSearchTree(SearchTree):
                                                                   predict=True)
             next_state = scale_hidden_state(next_state)
             reward = reward[0][0]
-            v = self.game_manager.game_result(current_node.current_player)
-            if v is None or not v:
-                pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
-                pi = mask_invalid_actions(self.game_manager.get_invalid_actions(pi,current_player), pi)
-                pi = pi.flatten().tolist()
-                v = v.flatten().tolist()[0]
-                current_node.expand_node(next_state, pi, reward)
+            pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
+            pi = pi.flatten().tolist()
+            v = v.flatten().tolist()[0]
+            current_node.expand_node(next_state, pi, reward)
             self.backprop(v, path)
 
         action_probs = root_node.get_self_action_probabilities(tau=tau)
