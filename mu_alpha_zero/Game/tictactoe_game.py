@@ -41,7 +41,7 @@ class TicTacToeGameManager(AlphaZeroGame):
         board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
         return board
 
-    def get_random_valid_action(self, observations: np.ndarray) -> list:
+    def get_random_valid_action(self, observations: np.ndarray, **kwargs) -> list:
         valid_moves = self.get_valid_moves(observations)
         if len(valid_moves) == 0:
             raise Exception("No valid moves")
@@ -90,7 +90,7 @@ class TicTacToeGameManager(AlphaZeroGame):
         # results.append(func(np.fliplr(arr).diagonal().reshape(-1)))
         return results
 
-    def eval_board(self, board: np.ndarray,check_end: bool = True) -> int | None:
+    def eval_board(self, board: np.ndarray, check_end: bool = True) -> int | None:
         if self.is_board_full(board):
             return 0
         score = 0

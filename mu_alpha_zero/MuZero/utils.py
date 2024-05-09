@@ -121,10 +121,7 @@ def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str o
 
 
 def mask_invalid_actions(invalid_actions: np.ndarray, pi: np.ndarray):
-    pi_orig = pi.copy()
     pi = pi.reshape(-1) * invalid_actions.reshape(-1)
-    if sum(pi) == 0:
-        print(invalid_actions)
     return pi / pi.sum()
 
 

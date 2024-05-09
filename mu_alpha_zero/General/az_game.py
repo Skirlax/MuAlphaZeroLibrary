@@ -101,3 +101,11 @@ class AlphaZeroGame(ABC):
         """
         Render the GUI of the game.
         """
+        pass
+
+    @abstractmethod
+    def get_random_valid_action(self,board:np.ndarray,**kwargs):
+        """
+        Returns a random valid action for the given board and optionally player.
+        """
+        pass
