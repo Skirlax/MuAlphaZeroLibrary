@@ -16,7 +16,7 @@ class Player(ABC):
     """
 
     @abstractmethod
-    def __init__(self, game_manager: AlphaZeroGame, **kwargs):
+    def __init__(self, game_manager, **kwargs):
         pass
 
     @abstractmethod
@@ -30,6 +30,10 @@ class Player(ABC):
     def init_kwargs(self, kwargs: dict):
         for key in kwargs.keys():
             setattr(self, key, kwargs[key])
+
+    @abstractmethod
+    def set_game_manager(self, game_manager):
+        pass
 
 
 class RandomPlayer(Player):
@@ -49,6 +53,9 @@ class RandomPlayer(Player):
 
     def make_fresh_instance(self):
         return RandomPlayer(self.game_manager.make_fresh_instance(), **self.kwargs)
+
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
 
 
 class NetPlayer(Player):
@@ -121,6 +128,9 @@ class TrainingNetPlayer(Player):
     def make_fresh_instance(self):
         raise NotImplementedError
 
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
+
 
 class HumanPlayer(Player):
     def __init__(self, game_manager: TicTacToeGameManager, **kwargs):
@@ -137,6 +147,9 @@ class HumanPlayer(Player):
 
     def make_fresh_instance(self):
         return HumanPlayer(self.game_manager.make_fresh_instance(), **self.kwargs)
+
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
 
 
 class JavaMinimaxPlayer(Player):
@@ -167,6 +180,9 @@ class JavaMinimaxPlayer(Player):
 
     def on_shutdown(self):
         jpype.shutdownJVM()
+
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
 
 
 class MinimaxPlayer(Player):
@@ -234,3 +250,6 @@ class MinimaxPlayer(Player):
 
     def make_fresh_instance(self):
         return MinimaxPlayer(self.game_manager.make_fresh_instance(), **self.kwargs)
+
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
