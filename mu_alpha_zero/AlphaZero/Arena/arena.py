@@ -18,7 +18,7 @@ class Arena(GeneralArena):
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.alpha_zero_config = alpha_zero_config
 
-    def pit(self, player1: Type[Player], player2: Type[Player], num_games_to_play: int, num_mc_simulations: int,
+    def pit(self, player1: Player, player2: Player, num_games_to_play: int, num_mc_simulations: int,
             one_player: bool = False, start_player: int = 1, add_to_kwargs: dict or None = None, debug: bool = False) -> \
             tuple[int, int, int]:
         """
@@ -44,6 +44,9 @@ class Arena(GeneralArena):
                 player1.monte_carlo_tree_search.game_manager = self.game_manager
             if player2.name == "NetPlayer":
                 player2.monte_carlo_tree_search.game_manager = self.game_manager
+
+            player1.set_game_manager(self.game_manager)
+            player2.set_game_manager(self.game_manager)
 
         for game in range(num_games_to_play):
             if game < num_games_per_player:
