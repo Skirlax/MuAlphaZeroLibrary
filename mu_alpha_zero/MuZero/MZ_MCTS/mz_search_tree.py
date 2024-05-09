@@ -144,7 +144,7 @@ class MuZeroSearchTree(SearchTree):
                 results = p.starmap(p_self_play, [
                     (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, copy.deepcopy(memory), None) for i
                     in range(len(nets))])
-            else:
+            elif memory.is_disk:
                 results = p.starmap(p_self_play, [
                     (nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, None, memory.dir_path) for i in
                     range(len(nets))])
