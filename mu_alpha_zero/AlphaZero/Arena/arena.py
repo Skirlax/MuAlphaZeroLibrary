@@ -1,6 +1,8 @@
 import time
 from typing import Type
 
+import numpy as np
+
 from mu_alpha_zero.AlphaZero.Arena.players import Player
 from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager as GameManager
 from mu_alpha_zero.General.arena import GeneralArena
@@ -69,10 +71,13 @@ class Arena(GeneralArena):
             # time.sleep(0.01)
             while True:
                 self.game_manager.render()
-                if current_player == 1:
-                    move = player1.choose_move(state, **kwargs)
+                if np.sum(self.game_manager.get_invalid_actions(state, current_player) == 1):
+                    move = self.game_manager.get_random_valid_action(state, **kwargs)
                 else:
-                    move = player2.choose_move(state, **kwargs)
+                    if current_player == 1:
+                        move = player1.choose_move(state, **kwargs)
+                    else:
+                        move = player2.choose_move(state, **kwargs)
                 self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
                                                         args=(move, kwargs, current_player))
                 if not self.state_managed:
