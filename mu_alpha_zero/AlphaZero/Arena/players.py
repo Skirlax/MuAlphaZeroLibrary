@@ -40,7 +40,7 @@ class RandomPlayer(Player):
         self.init_kwargs(kwargs)
 
     def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
-        move = self.game_manager.get_random_valid_action(board)
+        move = self.game_manager.get_random_valid_action(board, **kwargs)
         if "unravel" in kwargs.keys():
             unravel = kwargs["unravel"]
         else:
