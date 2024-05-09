@@ -418,6 +418,10 @@ class TicTacToeGameManager(AlphaZeroGame):
     def set_headless(self, val: bool):
         self.headless = val
 
+    def get_invalid_actions(self, state: np.ndarray, player: int):
+        mask = np.where(state == 0, 1, 0)
+        return mask
+
     def __str__(self):
         return str(self.board).replace('1', 'X').replace('-1', 'O')
 #

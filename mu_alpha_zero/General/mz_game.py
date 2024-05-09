@@ -78,7 +78,7 @@ class MuZeroGame(ABC):
         return np.random.choice(moves, p=probs)
 
     @abstractmethod
-    def get_invalid_actions(self, player: int):
+    def get_invalid_actions(self, state: np.ndarray, player: int):
         """
         Calculates and returns the invalid actions in the given state.
         :return: A numpy array containing the invalid

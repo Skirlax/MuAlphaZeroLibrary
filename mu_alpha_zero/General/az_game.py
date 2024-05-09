@@ -109,3 +109,10 @@ class AlphaZeroGame(ABC):
         Returns a random valid action for the given board and optionally player.
         """
         pass
+
+    @abstractmethod
+    def get_invalid_actions(self,state:np.ndarray, player: int):
+        """
+        Returns a list of invalid actions for the given player.
+        """
+        pass

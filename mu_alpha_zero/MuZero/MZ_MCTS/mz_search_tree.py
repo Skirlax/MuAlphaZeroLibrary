@@ -33,7 +33,7 @@ class MuZeroSearchTree(SearchTree):
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
-        state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
+        state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
         state = scale_state(state)
         self.buffer.init_buffer(state)
         data = []
@@ -44,14 +44,15 @@ class MuZeroSearchTree(SearchTree):
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             rew = scale_reward_value(float(rew))
-            state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
+            state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state)
             if done:
                 break
             move = scale_action(move, self.game_manager.get_num_actions())
             frame = self.buffer.concat_frames().detach().cpu().numpy()
             data.append(
-                (pi, v, (rew, move, float(pred_v[0]),player), frame if dir_path is None else LazyArray(frame, dir_path)))
+                (pi, v, (rew, move, float(pred_v[0]), player),
+                 frame if dir_path is None else LazyArray(frame, dir_path)))
             self.buffer.add_frame(state, move)
             player = -player
 
@@ -72,7 +73,7 @@ class MuZeroSearchTree(SearchTree):
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
-        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(current_player), pi)
+        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(state, current_player), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):

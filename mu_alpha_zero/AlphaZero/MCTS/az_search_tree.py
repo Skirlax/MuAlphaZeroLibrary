@@ -51,7 +51,7 @@ class McSearchTree(SearchTree):
             self.step_root(None)
             # pi = [x for x in pi.values()]
             game_history.append((state * current_player, pi, None, current_player))
-            state = self.game_manager.get_next_state(state,self.game_manager.network_to_board(move), current_player)
+            state = self.game_manager.get_next_state(state, self.game_manager.network_to_board(move), current_player)
             r = self.game_manager.game_result(current_player, state)
             if r is not None:
                 if r == current_player:
@@ -94,8 +94,11 @@ class McSearchTree(SearchTree):
         state_ = th.tensor(state_, dtype=th.float32, device=device).unsqueeze(0)
         probabilities, v = network.predict(state_, muzero=False)
         probabilities = probabilities + np.random.dirichlet(
-            [self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size).reshape(1,-1) # add noise to encourage the exploration of even the moves with probability close to 0.
-        probabilities = mask_invalid_actions(probabilities, state.copy(), self.game_manager.board_size)
+            [self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size).reshape(1,
+                                                                                                       -1)  # add noise to encourage the exploration of even the moves with probability close to 0.
+        probabilities = mask_invalid_actions(probabilities,
+                                             self.game_manager.get_invalid_actions(state.copy(), current_player),
+                                             self.game_manager.board_size)
         probabilities = probabilities.flatten().tolist()
         self.root_node.expand(state, probabilities)
         for simulation in range(num_simulations):
@@ -120,7 +123,9 @@ class McSearchTree(SearchTree):
                 # next_state_ = make_channels_from_single(next_state_)
                 next_state_ = th.tensor(next_state_, dtype=th.float32, device=device).unsqueeze(0)
                 probabilities, v = network.predict(next_state_, muzero=False)
-                probabilities = mask_invalid_actions(probabilities, next_state, self.game_manager.board_size)
+                probabilities = mask_invalid_actions(probabilities, self.game_manager.get_invalid_actions(next_state,
+                                                                                                          current_node.current_player),
+                                                     self.game_manager.board_size)
                 v = v.flatten().tolist()[0]
                 probabilities = probabilities.flatten().tolist()
                 current_node.expand(next_state, probabilities)

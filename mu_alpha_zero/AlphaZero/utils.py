@@ -67,11 +67,11 @@ def make_channels_from_single(state: np.ndarray):
     return np.stack([state, player_one_state, player_minus_one_state, empty_state], axis=0)
 
 
-def mask_invalid_actions(probabilities: np.ndarray, observations: np.ndarray, board_size) -> np.ndarray:
+def mask_invalid_actions(probabilities: np.ndarray, mask: np.ndarray, board_size) -> np.ndarray:
     to_print = ""  # for debugging
-    mask = np.where(observations != 0, -5, observations)
-    mask = np.where(mask == 0, 1, mask)
-    mask = np.where(mask == -5, 0, mask)
+    # mask = np.where(observations != 0, -5, observations)
+    # mask = np.where(mask == 0, 1, mask)
+    # mask = np.where(mask == -5, 0, mask)
     valids = probabilities.reshape(-1, board_size ** 2) * mask.reshape(-1, board_size ** 2)
     valids_sum = valids.sum()
     if valids_sum == 0:
