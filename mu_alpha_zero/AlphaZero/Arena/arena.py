@@ -81,14 +81,10 @@ class Arena(GeneralArena):
             # time.sleep(0.01)
             while True:
                 self.game_manager.render()
-                if np.sum(self.game_manager.get_invalid_actions(state, current_player)) == 2:
-                    print("Last action")
-                    move = self.game_manager.get_random_valid_action(state, **kwargs)
+                if current_player == 1:
+                    move = player1.choose_move(state, **kwargs)
                 else:
-                    if current_player == 1:
-                        move = player1.choose_move(state, **kwargs)
-                    else:
-                        move = player2.choose_move(state, **kwargs)
+                    move = player2.choose_move(state, **kwargs)
                 self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
                                                         args=(move, kwargs, current_player))
                 if not self.state_managed:
