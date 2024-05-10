@@ -8,7 +8,7 @@ from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import resize_obs, scale_state
+from mu_alpha_zero.MuZero.utils import resize_obs, scale_state, scale_action
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -36,18 +36,21 @@ class MzArena(GeneralArena):
             for game in range(num_games_per_player):
                 self.game_manager.reset()
 
-                state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), None, frame_skip=noop_num)
-                state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
-                state = scale_state(state)
+                state, _, _ = self.game_manager.frame_skip_step(self.game_manager.get_noop(), player,
+                                                                frame_skip=noop_num)
+                state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
+                state = scale_state(state,self.muzero_config.scale_state)
                 for step in range(self.muzero_config.num_steps):
                     self.game_manager.render()
                     move = players[str(player)].choose_move(state, **kwargs)
 
-                    state, reward, done = self.game_manager.frame_skip_step(move, None)
-                    state = resize_obs(state, self.muzero_config.target_resolution,self.muzero_config.resize_images)
-                    state = scale_state(state)
+                    state, reward, done = self.game_manager.frame_skip_step(move, player)
+                    state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
+                    state = scale_state(state,self.muzero_config.scale_state)
                     try:
-                        players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, move)
+                        players[str(player)].monte_carlo_tree_search.buffer.add_frame(state, scale_action(move,
+                                                                                                          self.game_manager.get_num_actions()),
+                                                                                      player)
                     except AttributeError:
                         # Player is probably not net player and doesn't have monte_carlo_tree_search.
                         pass

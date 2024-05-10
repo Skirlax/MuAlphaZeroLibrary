@@ -34,7 +34,9 @@ def resize_obs(observations: np.ndarray, size: tuple[int, int], resize: bool) ->
     return np.array(obs)
 
 
-def scale_state(state: np.ndarray):
+def scale_state(state: np.ndarray,scale: bool):
+    if not scale:
+        return state
     # scales the given state to be between 0 and 1
     return state / 255
 

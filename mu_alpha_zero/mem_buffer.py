@@ -133,24 +133,24 @@ class MuZeroFrameBuffer:
         self.max_size = frame_buffer_size
         self.noop_action = noop_action
         self.action_space_size = action_space_size
-        self.buffer = deque(maxlen=frame_buffer_size)
+        self.buffers = {1: deque(maxlen=frame_buffer_size), -1: deque(maxlen=frame_buffer_size)}
 
-    def add_frame(self, frame, action):
-        self.buffer.append((frame, action))
+    def add_frame(self, frame, action, player):
+        self.buffers[player].append((frame, action))
 
-    def concat_frames(self):
+    def concat_frames(self, player):
         frames_with_actions = [th.cat((th.tensor(frame, dtype=th.float32),
                                        th.full((frame.shape[0], frame.shape[1], 1), action, dtype=th.float32)), dim=2)
-                               for frame, action in self.buffer]
+                               for frame, action in self.buffers[player]]
         # return th.tensor(np.array(frames_with_actions), dtype=th.float32)
         return th.cat(frames_with_actions, dim=2)
 
-    def init_buffer(self, init_state):
+    def init_buffer(self, init_state, player):
         for _ in range(self.max_size):
-            self.add_frame(init_state, scale_action(self.noop_action, self.action_space_size))
+            self.add_frame(init_state, scale_action(self.noop_action, self.action_space_size), player)
 
-    def __len__(self):
-        return len(self.buffer)
+    def __len__(self, player):
+        return len(self.buffers[player])
 
 
 class MongoDBMemBuffer(GeneralMemoryBuffer):

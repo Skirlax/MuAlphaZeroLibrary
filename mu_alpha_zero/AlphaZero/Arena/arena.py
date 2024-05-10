@@ -8,6 +8,7 @@ from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager as GameManage
 from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
+from mu_alpha_zero.MuZero.utils import scale_action, resize_obs
 from mu_alpha_zero.config import AlphaZeroConfig
 
 
@@ -64,6 +65,15 @@ class Arena(GeneralArena):
                 state = self.game_manager.reset()
             else:
                 state = self.game_manager.reset(player=current_player)
+            if self.alpha_zero_config.arena_running_muzero:
+                try:
+                    player1.monte_carlo_tree_search.buffer.init_buffer(self.game_manager.get_state_for_player(state, 1),
+                                                                       current_player)
+                    player2.monte_carlo_tree_search.buffer.init_buffer(
+                        self.game_manager.get_state_for_player(state, -1), -current_player)
+                except AttributeError:
+                    pass
+
             if player1.name == "NetworkPlayer":
                 player1.monte_carlo_tree_search.step_root(None)
             if player2.name == "NetworkPlayer":
@@ -81,12 +91,23 @@ class Arena(GeneralArena):
                 self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
                                                         args=(move, kwargs, current_player))
                 if not self.state_managed:
-                    state = self.game_manager.get_next_state(state, move, current_player)
+                    state = self.game_manager.get_next_state(state, move, -current_player)
                     status = self.game_manager.game_result(current_player, state)
                 else:
-                    state = self.game_manager.get_next_state(move, current_player)[0]
+                    state = self.game_manager.get_next_state(move, -current_player)[0]
                     status = self.game_manager.game_result(current_player)
                 self.game_manager.render()
+                if self.alpha_zero_config.arena_running_muzero:
+                    move = scale_action(move, self.game_manager.get_num_actions()) if isinstance(move, int) else \
+                        scale_action(move[0] * state.shape[0] + move[1], self.game_manager.get_num_actions())
+                    try:
+                        if current_player == -1:
+                            player1.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
+                        else:
+                            player2.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
+                    except AttributeError:
+                        # Player is probably not a net player and doesn't have monte_carlo_tree_search.
+                        pass
 
                 if status is not None:
                     if status == 1:

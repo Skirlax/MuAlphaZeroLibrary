@@ -92,3 +92,10 @@ class MuZeroGame(ABC):
         Returns a random valid action in the given state and optionally the player.
         """
         pass
+
+    @abstractmethod
+    def get_state_for_player(self, state: np.ndarray, player: int):
+        """
+        Returns the state of the game for the given player. If your game state is not dependent on the player, return the state as is.
+        """
+        pass

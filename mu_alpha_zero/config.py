@@ -41,6 +41,7 @@ class Config:
     support_size: int = 601
     unravel: bool = True # unravel the to board in arena
     requires_player_to_reset: bool = False
+    arena_running_muzero: bool = False
 
     def to_dict(self):
         return self.__dict__
@@ -102,6 +103,8 @@ class MuZeroConfig(Config):
     muzero: bool = True
     use_original: bool = True
     use_pooling: bool = True
+    multiple_players: bool = False
+    scale_state: bool = True
 
 
 
