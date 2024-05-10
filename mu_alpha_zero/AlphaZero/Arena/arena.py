@@ -81,7 +81,7 @@ class Arena(GeneralArena):
             # time.sleep(0.01)
             while True:
                 self.game_manager.render()
-                if np.sum(self.game_manager.get_invalid_actions(state, current_player) == 1):
+                if np.sum(self.game_manager.get_invalid_actions(state, current_player)) == 1:
                     move = self.game_manager.get_random_valid_action(state, **kwargs)
                 else:
                     if current_player == 1:
