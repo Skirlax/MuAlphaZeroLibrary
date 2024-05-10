@@ -88,10 +88,10 @@ class Arena(GeneralArena):
                 self.hook_manager.process_hook_executes(self, self.pit.__name__, __file__, HookAt.MIDDLE,
                                                         args=(move, kwargs, current_player))
                 if not self.state_managed:
-                    state = self.game_manager.get_next_state(state, move, -current_player)
+                    state = self.game_manager.get_next_state(state, move, current_player)
                     status = self.game_manager.game_result(current_player, state)
                 else:
-                    state = self.game_manager.get_next_state(move, -current_player)[0]
+                    state = self.game_manager.get_next_state(move, current_player)[0]
                     status = self.game_manager.game_result(current_player)
                 self.game_manager.render()
                 if self.alpha_zero_config.arena_running_muzero:
