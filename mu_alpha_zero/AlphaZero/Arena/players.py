@@ -83,7 +83,7 @@ class NetPlayer(Player):
             unravel = True
         if unravel:
             return self.game_manager.network_to_board(move)
-        return move
+        return int(move)
 
     def make_fresh_instance(self):
         return NetPlayer(self.game_manager.make_fresh_instance(), **{"network": self.network,
