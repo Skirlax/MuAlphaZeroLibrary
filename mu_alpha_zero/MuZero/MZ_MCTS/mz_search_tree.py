@@ -4,7 +4,6 @@ from torch.multiprocessing import Pool
 
 import numpy as np
 import torch as th
-
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.search_tree import SearchTree

@@ -1,6 +1,7 @@
 import numpy as np
 import torch as th
 import torch.nn.functional as F
+import wandb
 from torch import nn
 from torch.nn.functional import mse_loss
 
@@ -30,6 +31,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
+        self.optimizer = None
         self.latent_size = latent_size
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
@@ -96,7 +98,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         losses = []
         K = muzero_config.K
-        optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr, weight_decay=muzero_config.l2)
+        if self.optimizer is None:
+            self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr, weight_decay=muzero_config.l2)
         iteration = 0
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.batch_size, K,
@@ -127,10 +130,11 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
             loss_r = mse_loss(pred_rews, rews) * balance_term * w
             loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
+            wandb.log({"loss": loss.item()})
             losses.append(loss.item())
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
                 experience_batch, loss.item(), loss_v, loss_pi, loss_r,
                 iteration))

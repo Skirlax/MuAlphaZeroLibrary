@@ -42,6 +42,7 @@ class Config:
     unravel: bool = True # unravel the to board in arena
     requires_player_to_reset: bool = False
     arena_running_muzero: bool = False
+    use_wandb: bool = False
 
     def to_dict(self):
         return self.__dict__

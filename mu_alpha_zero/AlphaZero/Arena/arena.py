@@ -2,6 +2,7 @@ import time
 from typing import Type
 
 import numpy as np
+import wandb
 
 from mu_alpha_zero.AlphaZero.Arena.players import Player
 from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager as GameManager
@@ -125,6 +126,8 @@ class Arena(GeneralArena):
                     #     self.wait_keypress()
                     if (player1.name == "HumanPlayer" or player2.name == "HumanPlayer") and debug:
                         time.sleep(0.2)
+
+                    wandb.log({"wins_p1": results["wins_p1"], "wins_p2": results["wins_p2"], "draws": results["draws"]})
                     break
 
                 current_player *= -1
