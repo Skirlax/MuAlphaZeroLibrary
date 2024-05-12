@@ -122,7 +122,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             latent = match_action_with_obs_batch(latent, moves)
             _, pred_rews = self.dynamics_forward(latent)
             priorities = priorities.to(device)
-            balance_term = 1/2
+            balance_term = muzero_config.balance_term
             w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
             w /= w.sum()
             w = w.reshape(pred_vs.shape)

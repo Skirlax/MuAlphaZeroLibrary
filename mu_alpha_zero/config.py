@@ -106,6 +106,7 @@ class MuZeroConfig(Config):
     use_pooling: bool = True
     multiple_players: bool = False
     scale_state: bool = True
+    balance_term: float = 0.5
 
 
 
