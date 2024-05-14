@@ -6,6 +6,8 @@ import numpy as np
 import optuna
 import torch as th
 from PIL import Image
+
+from mu_alpha_zero import GeneralArena
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -34,7 +36,7 @@ def resize_obs(observations: np.ndarray, size: tuple[int, int], resize: bool) ->
     return np.array(obs)
 
 
-def scale_state(state: np.ndarray,scale: bool):
+def scale_state(state: np.ndarray, scale: bool):
     if not scale:
         return state
     # scales the given state to be between 0 and 1
@@ -60,42 +62,45 @@ def scale_reward(reward: float):
     return math.log(reward + 1, 5)
 
 
-def mz_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str or None, study_name: str, game,
-                               muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize"):
-    def objective(trial):
-        # num_mc_simulations = trial.suggest_int("num_mc_simulations", 100, 1200)
-        # num_self_play_games = trial.suggest_int("num_self_play_games", 100, 500)
-        # num_epochs = trial.suggest_int("num_epochs", 100, 3000)
-        lr = trial.suggest_float("lr", 1e-8, 1e-2, log=True)
-        tau = trial.suggest_float("tau", 0.5, 1.5)
-        # arena_tau = trial.suggest_float("arena_tau", 0.01, 0.5)
-        c = trial.suggest_float("c", 0.5, 5)
-        c2 = trial.suggest_categorical("c2", [19652, 10_000, 0.01, 10, 0.1])
-        K = trial.suggest_int("K", 1, 10)
+def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: str, game,
+                               muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize",
+                               arena_override: GeneralArena = None, memory_override=None):
+    def objective(trial: optuna.Trial):
+        muzero_config.num_simulations = trial.suggest_int("num_mc_simulations", 60, 800)
+        muzero_config.lr = trial.suggest_float("lr", 1e-5, 5e-2, log=True)
+        muzero_config.tau = trial.suggest_float("temp", 0.5, 2)
+        muzero_config.arena_tau = trial.suggest_float("arena_temp", 0, 2)
+        muzero_config.c = trial.suggest_float("cpuct", 0.7, 2)
+        muzero_config.l2 = trial.suggest_float("l2_norm", 1e-6, 6e-2)
+        muzero_config.frame_buffer_size = trial.suggest_int("frame_buffer_size", 10, 40)
+        muzero_config.alpha = trial.suggest_float("alpha", 0.4, 2)
+        muzero_config.beta = trial.suggest_float("beta", 0.1, 1)
+        muzero_config.balance_term = trial.suggest_categorical("loss_scale", [1, 0.5])
+        muzero_config.num_blocks = trial.suggest_int("num_blocks", 5, 32)
+        muzero_config.K = trial.suggest_int("k", 2, 25)
+        muzero_config.epochs = trial.suggest_int("epochs", 200, 500)
 
-        muzero_config.num_simulations = 200
-        muzero_config.self_play_games = 20
-        muzero_config.epochs = 3600
-        muzero_config.lr = lr
-        muzero_config.tau = tau
-        muzero_config.c = c
-        muzero_config.c2 = c2
-        # muzero_config.arena_tau = arena_tau
-        muzero_config.K = K
-        muzero_config.num_iters = 5
+        muzero_config.self_play_games = 300
+        muzero_config.num_iters = 1
 
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         trial.net_action_size = int(game.get_num_actions())
         network = MuZeroNet.make_from_config(muzero_config, game).to(device)
-        network.load_state_dict(th.load(init_net_path))
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
-        arena = MzArena(game.make_fresh_instance(), muzero_config, device)
-        mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False, dir_path=muzero_config.pickle_dir)
+        if arena_override is None:
+            arena = MzArena(game.make_fresh_instance(), muzero_config, device)
+        else:
+            arena = arena_override
+        if memory_override is None:
+            mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False, dir_path=muzero_config.pickle_dir)
+        else:
+            mem = memory_override
         trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player, headless=True,
                                  arena_override=arena, checkpointer_verbose=False, memory_override=mem)
-        mean = trainer.self_play_get_r_mean()
-        trial.report(mean, trial.number)
+        trainer.train()
+        mean = trainer.get_arena_win_frequencies_mean()
+        trial.report(mean, muzero_config.num_iters)
         print(f"Trial {trial.number} finished with win freq {mean}.")
         del trainer
         del network

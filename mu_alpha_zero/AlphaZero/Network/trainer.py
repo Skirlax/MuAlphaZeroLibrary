@@ -235,7 +235,7 @@ class Trainer:
                                                  one_player=False)
         wins_total = not_zero(p1_wins + p2_wins)
         self.logger.log(LoggingMessageTemplates.PITTING_END(p1.name, p2.name, p1_wins, p2_wins, wins_total, draws))
-        self.arena_win_frequencies.append(p1_wins / num_games)
+        self.arena_win_frequencies.append(p1_wins / wins_total)
         return p1_wins, p2_wins, draws, wins_total
 
     def run_pitting_random(self, num_simulations: int, num_games: int, i: int):
