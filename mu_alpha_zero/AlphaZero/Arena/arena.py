@@ -100,11 +100,11 @@ class Arena(GeneralArena):
                         scale_action(move[0] * state.shape[0] + move[1], self.game_manager.get_num_actions())
                     try:
                         if current_player == -1:
-                            state_fp = self.game_manager.get_state_for_player(state, -1)
+                            state_fp = self.game_manager.get_state_for_player(state, -2)
                             player2.monte_carlo_tree_search.buffer.add_frame(state_fp, move, current_player)
                             player1.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
                         else:
-                            state_fp = self.game_manager.get_state_for_player(state, 1)
+                            state_fp = self.game_manager.get_state_for_player(state, 2)
                             player1.monte_carlo_tree_search.buffer.add_frame(state_fp, move, current_player)
                             player2.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
                     except AttributeError:
