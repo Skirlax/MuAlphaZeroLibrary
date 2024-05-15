@@ -45,6 +45,15 @@ class MuZeroSearchTree(SearchTree):
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
+            if self.muzero_config.multiple_players:
+                # We want to signify that player can see this state but their not the one acting based on it
+                # (this is important mainly if part of the observation is player specific).
+                # Without this the player buffer would contain only state at time step t and then t + 2, t + 4, ...
+                sign = np.sign(player)
+                player_observing_flag = sign * (sign * player + 1)
+                state = self.game_manager.get_state_for_player(state, player_observing_flag)
+                scaled_move = scale_action(move, self.game_manager.get_num_actions())
+                self.buffer.add_frame(state, scaled_move, player)
             rew = scale_reward_value(float(rew))
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
