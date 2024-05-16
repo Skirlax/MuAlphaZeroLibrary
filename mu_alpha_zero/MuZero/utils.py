@@ -7,7 +7,6 @@ import optuna
 import torch as th
 from PIL import Image
 
-from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.config import MuZeroConfig
 
 
@@ -64,7 +63,7 @@ def scale_reward(reward: float):
 
 def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: str, game,
                                muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize",
-                               arena_override: GeneralArena = None, memory_override=None):
+                               arena_override= None, memory_override=None):
     def objective(trial: optuna.Trial):
         muzero_config.num_simulations = trial.suggest_int("num_mc_simulations", 60, 800)
         muzero_config.lr = trial.suggest_float("lr", 1e-5, 5e-2, log=True)
