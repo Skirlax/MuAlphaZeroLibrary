@@ -37,7 +37,7 @@ class MuZeroSearchTree(SearchTree):
         player = 1
         self.buffer.init_buffer(state, player)
         if self.muzero_config.multiple_players:
-            self.buffer.init_buffer(self.game_manager.get_state_for_player(state, -1), -player)
+            self.buffer.init_buffer(self.game_manager.get_state_for_player(state, -2), -player)
         data = []
 
         for step in range(num_steps):

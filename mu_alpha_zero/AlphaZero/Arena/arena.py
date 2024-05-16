@@ -68,10 +68,10 @@ class Arena(GeneralArena):
                 state = self.game_manager.reset(player=current_player)
             if self.alpha_zero_config.arena_running_muzero:
                 try:
-                    player1.monte_carlo_tree_search.buffer.init_buffer(self.game_manager.get_state_for_player(state, 1),
+                    player1.monte_carlo_tree_search.buffer.init_buffer(self.game_manager.get_state_for_player(state, 1 if current_player == 1 else 2),
                                                                        current_player)
                     player2.monte_carlo_tree_search.buffer.init_buffer(
-                        self.game_manager.get_state_for_player(state, -1), -current_player)
+                        self.game_manager.get_state_for_player(state, -1 if current_player == -1 else -2), -current_player)
                 except AttributeError:
                     pass
 
