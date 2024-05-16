@@ -148,7 +148,7 @@ class MuZeroFrameBuffer:
 
     def init_buffer(self, init_state, player):
         for _ in range(self.max_size):
-            self.add_frame(init_state, scale_action(self.noop_action, self.action_space_size), player)
+            self.buffers[player].append((init_state,scale_action(self.noop_action, self.action_space_size)))
 
     def __len__(self, player):
         return len(self.buffers[player])
