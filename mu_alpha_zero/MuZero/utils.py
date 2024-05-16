@@ -7,7 +7,7 @@ import optuna
 import torch as th
 from PIL import Image
 
-from mu_alpha_zero import GeneralArena
+from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.config import MuZeroConfig
 
 
