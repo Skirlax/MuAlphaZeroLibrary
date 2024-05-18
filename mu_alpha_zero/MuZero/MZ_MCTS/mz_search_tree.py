@@ -86,9 +86,6 @@ class MuZeroSearchTree(SearchTree):
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
         pi = mask_invalid_actions(self.game_manager.get_invalid_actions(state, current_player), pi)
-        if np.any(np.isnan(pi)):
-            print(self.game_manager.game.board)
-            exit(1)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):
