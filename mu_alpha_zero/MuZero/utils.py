@@ -127,6 +127,8 @@ def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: 
 
 
 def mask_invalid_actions(invalid_actions: np.ndarray, pi: np.ndarray):
+    if np.sum(invalid_actions) == 0:
+        print("No valid actions left.")
     pi = pi.reshape(-1) * invalid_actions.reshape(-1)
     return pi / pi.sum()
 
