@@ -19,7 +19,6 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: list[int],
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
-                 game_manager: MuZeroGame,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -27,7 +26,6 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.dropout = dropout
         self.use_original = use_original
         self.use_pooling = use_pooling
-        self.game_manager = game_manager
         self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
         self.action_size = action_size
         self.num_channels = num_channels
@@ -60,11 +58,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                     action_size=action_size, linear_input_size=linear_input_size)
 
     @classmethod
-    def make_from_config(cls, config: MuZeroConfig, game_manager: MuZeroGame, hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: MuZeroConfig, hook_manager: HookManager or None = None):
         return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
-                   game_manager=game_manager,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False):
@@ -91,7 +88,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
                          hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
-                         num_blocks=self.num_blocks, game_manager=self.game_manager,use_pooling=self.use_pooling)
+                         num_blocks=self.num_blocks,use_pooling=self.use_pooling)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")

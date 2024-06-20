@@ -17,7 +17,7 @@ class GeneralNetwork(ABC):
 
     @classmethod
     @abstractmethod
-    def make_from_config(cls, config: Config,game_manager:MuZeroGame,hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config,hook_manager: HookManager or None = None):
         """
         Builds the network from the given arguments dict.
         """

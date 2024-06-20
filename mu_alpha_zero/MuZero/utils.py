@@ -84,7 +84,7 @@ def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: 
 
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         trial.net_action_size = int(game.get_num_actions())
-        network = MuZeroNet.make_from_config(muzero_config, game).to(device)
+        network = MuZeroNet.make_from_config(muzero_config).to(device)
         tree = MuZeroSearchTree(game.make_fresh_instance(), muzero_config)
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
         if arena_override is None:
