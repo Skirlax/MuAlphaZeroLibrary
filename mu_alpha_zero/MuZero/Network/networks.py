@@ -130,9 +130,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
             wandb.log({"loss": loss.item()})
             losses.append(loss.item())
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
                 experience_batch, loss.item(), loss_v, loss_pi, loss_r,
                 iteration))
