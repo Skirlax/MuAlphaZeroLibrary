@@ -30,6 +30,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.action_size = action_size
         self.num_channels = num_channels
         self.latent_size = latent_size
+        self.optimizer = None
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
         self.support_size = support_size
@@ -88,13 +89,15 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
                          hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
-                         num_blocks=self.num_blocks,use_pooling=self.use_pooling)
+                         num_blocks=self.num_blocks, use_pooling=self.use_pooling)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        if self.optimizer is None:
+            self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
+                                           weight_decay=muzero_config.l2)
         losses = []
         K = muzero_config.K
-        optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr, weight_decay=muzero_config.l2)
         iteration = 0
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.batch_size, K,
