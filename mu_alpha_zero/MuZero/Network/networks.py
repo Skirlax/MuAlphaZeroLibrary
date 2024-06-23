@@ -160,7 +160,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
         loss_r = mse_loss(pred_rews, rews) * balance_term * w
         loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
-        return loss, loss_v, loss_pi, loss_r
+        return loss, loss_v.sum(), loss_pi.sum(), loss_r.sum()
 
     def muzero_pi_loss(self, y_hat, y, masks: th.Tensor or None = None):
         if masks is not None:
