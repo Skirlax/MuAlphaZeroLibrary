@@ -158,8 +158,8 @@ class MuZeroSearchTree(SearchTree):
         num_nodes = 0
         if len(root_node.children) > 0:
             num_nodes = 1
-        num_children = len(root_node.children)
-        for child in root_node.children:
+        num_children = len(root_node.children.values())
+        for child in root_node.children.values():
             nn, nc = self.get_average_number_of_children(child)
             num_nodes += nn
             num_children += nc
