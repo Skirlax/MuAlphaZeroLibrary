@@ -71,7 +71,7 @@ def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: 
         muzero_config.arena_tau = trial.suggest_float("arena_temp", 0, 2)
         muzero_config.c = trial.suggest_float("cpuct", 0.7, 2)
         muzero_config.l2 = trial.suggest_float("l2_norm", 1e-6, 6e-2)
-        muzero_config.frame_buffer_size = trial.suggest_int("frame_buffer_size", 10, 40)
+        # muzero_config.frame_buffer_size = trial.suggest_int("frame_buffer_size", 10, 40)
         muzero_config.alpha = trial.suggest_float("alpha", 0.4, 2)
         muzero_config.beta = trial.suggest_float("beta", 0.1, 1)
         muzero_config.balance_term = trial.suggest_categorical("loss_scale", [1, 0.5])
