@@ -44,7 +44,7 @@ class MuZeroSearchTree(SearchTree):
 
         for step in range(num_steps):
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
-                    calculate_avg_num_children and step == num_steps - 1))
+                    calculate_avg_num_children and step == 0))
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
@@ -137,7 +137,7 @@ class MuZeroSearchTree(SearchTree):
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:
         for game in range(num_games):
-            game_results = self.play_one_game(net, device)
+            game_results = self.play_one_game(net, device,calculate_avg_num_children=game == num_games - 1)
             memory.add_list(game_results)
 
         return None, None, None
