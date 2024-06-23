@@ -117,8 +117,8 @@ class MuZeroSearchTree(SearchTree):
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(action_probs, root_val_latent, root_node))
         if calculate_avg_num_children:
-            avg_num_children = self.get_average_number_of_children(root_node)
-            wandb.log({"average_num_children_per_node": avg_num_children})
+            num_nodes = self.get_num_nodes(root_node)
+            wandb.log({"Number of non-leaf nodes": num_nodes})
         root_node = None
         return action_probs, root_val_latent
 
@@ -154,19 +154,15 @@ class MuZeroSearchTree(SearchTree):
         self.min_max_q[0] = min(self.min_max_q[0], q)
         self.min_max_q[1] = max(self.min_max_q[1], q)
 
-    def get_average_number_of_children(self, root_node: MzAlphaZeroNode):
+    def get_num_nodes(self, root_node: MzAlphaZeroNode):
         num_nodes = 0
         if len(root_node.children) > 0:
             num_nodes = 1
-        num_children = len(root_node.children.values())
         for child in root_node.children.values():
-            nn, nc = self.get_average_number_of_children(child)
+            nn = self.get_num_nodes(child)
             num_nodes += nn
-            num_children += nc
 
-        if root_node.select_probability == 0:
-            return num_children / num_nodes
-        return num_nodes, num_children
+        return num_nodes
 
     @staticmethod
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
