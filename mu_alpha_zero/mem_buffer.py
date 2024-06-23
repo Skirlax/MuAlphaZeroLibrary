@@ -101,7 +101,7 @@ class MemBuffer(GeneralMemoryBuffer):
         buf = self.buffer if not is_eval else self.eval_buffer
         for _ in range(epochs):
             if self.last_buffer_size < len(buf):
-                priorities = self.calculate_priorities(batch_size, alpha, K)
+                priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
                 self.priorities = priorities
                 self.last_buffer_size = len(buf)
             random_indexes = np.random.choice(np.arange(len(buf)),
@@ -113,8 +113,9 @@ class MemBuffer(GeneralMemoryBuffer):
                                                     args=(batch, pris))
             yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
 
-    def calculate_priorities(self, batch_size, alpha, K):
-        ps = [abs(self.buffer[i][1] - self.buffer[i][2][2]) for i in range(len(self.buffer))]
+    def calculate_priorities(self, batch_size, alpha, K, is_eval: bool = False):
+        buf = self.buffer if not is_eval else self.eval_buffer
+        ps = [abs(buf[i][1] - buf[i][2][2]) for i in range(len(buf))]
         ps = np.array(ps)
         ps = ps ** alpha
         ps = ps / ps.sum()
