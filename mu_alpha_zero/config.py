@@ -37,6 +37,7 @@ class Config:
     pushbullet_token: str = None
     num_blocks: int = 8
     l2: float = 1e-4
+    eval_epochs: int = 50
     net_latent_size: list[int] = field(default_factory=lambda:[6,6])
     support_size: int = 601
     unravel: bool = True # unravel the to board in arena

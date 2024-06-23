@@ -16,6 +16,7 @@ from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_
     scale_hidden_state, mask_invalid_actions, scale_reward_value
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
+import wandb
 
 
 class MuZeroSearchTree(SearchTree):
@@ -28,7 +29,8 @@ class MuZeroSearchTree(SearchTree):
                                         self.muzero_config.net_action_size)
         self.min_max_q = [float("inf"), -float("inf")]
 
-    def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None) -> list:
+    def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
+                      calculate_avg_num_children: bool = False) -> list:
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
@@ -41,7 +43,8 @@ class MuZeroSearchTree(SearchTree):
         data = []
 
         for step in range(num_steps):
-            pi, (v, latent) = self.search(network_wrapper, state, player, device)
+            pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
+                    calculate_avg_num_children and step == num_steps - 1))
             move = self.game_manager.select_move(pi)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
@@ -72,7 +75,7 @@ class MuZeroSearchTree(SearchTree):
         return data
 
     def search(self, network_wrapper, state: np.ndarray, current_player: int or None, device: th.device,
-               tau: float or None = None):
+               tau: float or None = None, calculate_avg_num_children: bool = False):
         if self.buffer.__len__(current_player) == 0:
             self.buffer.init_buffer(state, current_player)
         num_simulations = self.muzero_config.num_simulations
@@ -113,6 +116,9 @@ class MuZeroSearchTree(SearchTree):
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(action_probs, root_val_latent, root_node))
+        if calculate_avg_num_children:
+            avg_num_children = self.get_average_number_of_children(root_node)
+            wandb.log({"average_num_children_per_node": avg_num_children})
         root_node = None
         return action_probs, root_val_latent
 
@@ -148,6 +154,20 @@ class MuZeroSearchTree(SearchTree):
         self.min_max_q[0] = min(self.min_max_q[0], q)
         self.min_max_q[1] = max(self.min_max_q[1], q)
 
+    def get_average_number_of_children(self, root_node: MzAlphaZeroNode):
+        num_nodes = 0
+        if len(root_node.children) > 0:
+            num_nodes = 1
+        num_children = len(root_node.children)
+        for child in root_node.children:
+            nn, nc = self.get_average_number_of_children(child)
+            num_nodes += nn
+            num_children += nc
+
+        if root_node.select_probability == 0:
+            return num_children / num_nodes
+        return num_nodes, num_children
+
     @staticmethod
     def parallel_self_play(nets: list, trees: list, memory: GeneralMemoryBuffer, device: th.device, num_games: int,
                            num_jobs: int):
@@ -171,8 +191,8 @@ class MuZeroSearchTree(SearchTree):
 
 def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
     data = []
-    for _ in range(num_g):
-        game_results = tree.play_one_game(net, dev, dir_path=dir_path)
+    for game in range(num_g):
+        game_results = tree.play_one_game(net, dev, dir_path=dir_path, calculate_avg_num_children=game == num_g - 1)
         if mem is not None:
             mem.add_list(game_results)
         else:

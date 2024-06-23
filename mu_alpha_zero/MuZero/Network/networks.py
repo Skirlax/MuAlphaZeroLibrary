@@ -104,31 +104,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                                 alpha=muzero_config.alpha):
             if len(experience_batch) <= 1:
                 continue
-            pis, vs, rews_moves_players, states = zip(*experience_batch)
-            rews = [x[0] for x in rews_moves_players]
-            moves = [x[1] for x in rews_moves_players]
-            players = [x[-1] for x in rews_moves_players]
-            states = [np.array(x) for x in states]
-            states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
-            pis = [list(x.values()) for x in pis]
-            pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
-            vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(0)
-            rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
-            latent = self.representation_forward(states)
-            pred_pis, pred_vs = self.prediction_forward(latent)
-            # masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
-            latent = match_action_with_obs_batch(latent, moves)
-            _, pred_rews = self.dynamics_forward(latent)
-            priorities = priorities.to(device)
-            balance_term = muzero_config.balance_term
-            w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
-            w /= w.sum()
-            w = w.reshape(pred_vs.shape)
-            loss_v = mse_loss(pred_vs, vs) * balance_term * w
-            loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
-            loss_r = mse_loss(pred_rews, rews) * balance_term * w
-            loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
-            wandb.log({"loss": loss.item()})
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
+            wandb.log({"combined_loss": loss.item(), "loss_v": loss_v.item(), "loss_pi": loss_pi.item(),
+                       "loss_r": loss_r.item()})
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -140,6 +118,49 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL,
                                                 args=(memory_buffer, losses))
         return sum(losses) / len(losses), losses
+
+    def eval_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> None:
+        device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        if self.optimizer is None:
+            self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
+                                           weight_decay=muzero_config.l2)
+
+        K = muzero_config.K
+        for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.eval_epochs,
+                                                                                muzero_config.batch_size, K,
+                                                                                alpha=muzero_config.alpha,
+                                                                                is_eval=True):
+            if len(experience_batch) <= 1:
+                continue
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
+            wandb.log({"eval_combined_loss": loss.item(), "eval_loss_v": loss_v.item(), "eval_loss_pi": loss_pi.item(),
+                       "eval_loss_r": loss_r.item()})
+
+    def calculate_losses(self, experience_batch, priorities, device, muzero_config):
+        pis, vs, rews_moves_players, states = zip(*experience_batch)
+        rews = [x[0] for x in rews_moves_players]
+        moves = [x[1] for x in rews_moves_players]
+        states = [np.array(x) for x in states]
+        states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
+        pis = [list(x.values()) for x in pis]
+        pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
+        vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(0)
+        rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
+        latent = self.representation_forward(states)
+        pred_pis, pred_vs = self.prediction_forward(latent)
+        # masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
+        latent = match_action_with_obs_batch(latent, moves)
+        _, pred_rews = self.dynamics_forward(latent)
+        priorities = priorities.to(device)
+        balance_term = muzero_config.balance_term
+        w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
+        w /= w.sum()
+        w = w.reshape(pred_vs.shape)
+        loss_v = mse_loss(pred_vs, vs) * balance_term * w
+        loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
+        loss_r = mse_loss(pred_rews, rews) * balance_term * w
+        loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
+        return loss, loss_v, loss_pi, loss_r
 
     def muzero_pi_loss(self, y_hat, y, masks: th.Tensor or None = None):
         if masks is not None:

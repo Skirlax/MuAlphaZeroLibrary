@@ -6,7 +6,9 @@ import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
+import wandb
 from torch.nn.functional import mse_loss
+from torch.nn.modules.module import T
 
 from mu_alpha_zero.General.network import GeneralAlphZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
@@ -158,6 +160,7 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.muzero = muzero
         self.latent_size = latent_size
         self.is_dynamics = is_dynamics
+        self.optimizer = None
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
 
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
@@ -212,34 +215,53 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
                                        support_size=config.support_size, latent_size=config.net_latent_size)
 
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
-        from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
-        device = th.device("cuda" if th.cuda.is_available() else "cpu")
         losses = []
-        optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
-                                  weight_decay=muzero_alphazero_config.l2)
+        if self.optimizer is None:
+            self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
+                                           weight_decay=muzero_alphazero_config.l2)
         memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
             for experience_batch in memory_buffer(muzero_alphazero_config.batch_size):
                 if len(experience_batch) <= 1:
                     continue
-                states, pi, v = zip(*experience_batch)
-                states = th.tensor(np.array(states), dtype=th.float32, device=device)
-                pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
-                v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
-                pi_pred, v_pred = self.forward(states, muzero=muzero_alphazero_config.muzero)
-                masks = mask_invalid_actions_batch(states)
-                loss = mse_loss(v_pred, v) + self.pi_loss(pi_pred, pi, masks, device)
+                loss, v_loss, pi_loss = self.calculate_loss(experience_batch, muzero_alphazero_config)
                 losses.append(loss.item())
-                # self.summary_writer.add_scalar("Loss", loss.item(), i * epochs + epoch)
-
-                optimizer.zero_grad()
+                wandb.log({"combined_loss": loss.item(), "loss_v": v_loss.item(), "loss_pi": pi_loss.item()})
+                self.optimizer.zero_grad()
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
                 self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE,
                                                         args=(experience_batch, loss.item(), epoch))
 
         self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL, args=(losses,))
         return sum(losses) / len(losses), losses
+
+    def eval_net(self, memory_buffer, muzero_alphazero_config: Config) -> None:
+        if self.optimizer is None:
+            self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
+                                           weight_decay=muzero_alphazero_config.l2)
+        memory_buffer.shuffle(is_eval=True)
+        for epoch in range(muzero_alphazero_config.eval_epochs):
+            for experience_batch in memory_buffer(muzero_alphazero_config.batch_size, is_eval=True):
+                if len(experience_batch) <= 1:
+                    continue
+                loss, v_loss, pi_loss = self.calculate_loss(experience_batch, muzero_alphazero_config)
+                wandb.log(
+                    {"eval_combined_loss": loss.item(), "eval_loss_v": v_loss.item(), "eval_loss_pi": pi_loss.item()})
+
+    def calculate_loss(self, experience_batch, muzero_alphazero_config):
+        from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
+        device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        states, pi, v = zip(*experience_batch)
+        states = th.tensor(np.array(states), dtype=th.float32, device=device)
+        pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
+        v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
+        pi_pred, v_pred = self.forward(states, muzero=muzero_alphazero_config.muzero)
+        masks = mask_invalid_actions_batch(states)
+        v_loss = mse_loss(v_pred, v)
+        pi_loss = self.pi_loss(pi_pred, pi, masks, device)
+        loss = v_loss + pi_loss
+        return loss, v_loss, pi_loss
 
 
 class OriginalAlphaZeroBlock(th.nn.Module):

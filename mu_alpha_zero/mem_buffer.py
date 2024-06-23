@@ -38,11 +38,12 @@ class MemBuffer(GeneralMemoryBuffer):
         self.dir_path = dir_path
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.buffer = self.init_buffer(dir_path)
+        self.eval_buffer = self.init_buffer(dir_path)
         self.last_buffer_size = 0
         self.priorities = None
         self.is_disk = disk
 
-    def add(self, experience):
+    def add(self, experience, is_eval: bool = False):
         if not isinstance(experience, tuple):
             raise ValueError("Experience must be a tuple")
         if self.disk and not self.full_disk and not isinstance(experience[-1], LazyArray):
@@ -50,7 +51,11 @@ class MemBuffer(GeneralMemoryBuffer):
             list_exp = list(experience)
             list_exp[-1] = frame
             experience = tuple(list_exp)
-        self.buffer.append(experience)
+
+        if not is_eval:
+            self.buffer.append(experience)
+        else:
+            self.eval_buffer.append(experience)
 
     def init_buffer(self, dir_path: str or None):
         if self.disk and self.full_disk:
@@ -60,42 +65,49 @@ class MemBuffer(GeneralMemoryBuffer):
         else:
             return deque(maxlen=self.max_size)
 
-    def add_list(self, experience_list):
-        for item in experience_list:
+    def add_list(self, experience_list, percent_eval: int = 10):
+        train = experience_list[:int(len(experience_list) * 0.9)]
+        test = experience_list[int(len(experience_list) * 0.9):]
+        for item in train:
             self.add(item)
+        for item in test:
+            self.add(item, is_eval=True)
 
     def sample(self, batch_size):
         return random.sample(self.buffer, batch_size)
 
-    def shuffle(self):
-        # if self.disk:
-        #     raise NotImplementedError("Shuffle not implemented for disk buffer")
-        random.shuffle(self.buffer)  # in-place shuffle
+    def shuffle(self, is_eval: bool = False):
+        if is_eval:  # in-place shuffle
+            random.shuffle(self.eval_buffer)
+        else:
+            random.shuffle(self.buffer)
 
-    def batch(self, batch_size):
+    def batch(self, batch_size: int, is_eval: bool = False):
         batched_buffer = []
-        buffer_len = len(self.buffer)
+        buf = self.buffer if not is_eval else self.eval_buffer
+        buffer_len = len(buf)
         for idx in range(0, buffer_len, batch_size):
-            batched_buffer.append(list(self.buffer)[idx:min(idx + batch_size, buffer_len)])
+            batched_buffer.append(list(buf)[idx:min(idx + batch_size, buffer_len)])
 
         return batched_buffer
 
-    def __call__(self, batch_size) -> list:
-        return self.batch(batch_size)
+    def __call__(self, batch_size, is_eval: bool = False) -> list:
+        return self.batch(batch_size, is_eval=is_eval)
 
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, epochs, batch_size, K, alpha=1):
+    def batch_with_priorities(self, epochs, batch_size, K, alpha=1, is_eval: bool = False):
+        buf = self.buffer if not is_eval else self.eval_buffer
         for _ in range(epochs):
-            if self.last_buffer_size < len(self.buffer):
+            if self.last_buffer_size < len(buf):
                 priorities = self.calculate_priorities(batch_size, alpha, K)
                 self.priorities = priorities
-                self.last_buffer_size = len(self.buffer)
-            random_indexes = np.random.choice(np.arange(len(self.buffer)),
+                self.last_buffer_size = len(buf)
+            random_indexes = np.random.choice(np.arange(len(buf)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
-            batch = [list(itertools.islice(self.buffer, i, i + K)) for i in random_indexes]
+            batch = [list(itertools.islice(buf, i, i + K)) for i in random_indexes]
             pris = [self.priorities[i:i + K] for i in random_indexes]
             self.hook_manager.process_hook_executes(self, self.batch_with_priorities.__name__, __file__, HookAt.ALL,
                                                     args=(batch, pris))
@@ -148,7 +160,7 @@ class MuZeroFrameBuffer:
 
     def init_buffer(self, init_state, player):
         for _ in range(self.max_size):
-            self.buffers[player].append((init_state,scale_action(self.noop_action, self.action_space_size)))
+            self.buffers[player].append((init_state, scale_action(self.noop_action, self.action_space_size)))
 
     def __len__(self, player):
         return len(self.buffers[player])

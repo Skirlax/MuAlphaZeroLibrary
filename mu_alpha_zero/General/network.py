@@ -17,7 +17,7 @@ class GeneralNetwork(ABC):
 
     @classmethod
     @abstractmethod
-    def make_from_config(cls, config: Config,hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config, hook_manager: HookManager or None = None):
         """
         Builds the network from the given arguments dict.
         """
@@ -27,6 +27,16 @@ class GeneralNetwork(ABC):
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
         """
         Trains the network for given number of epochs
+        """
+        pass
+
+    @abstractmethod
+    def eval_net(self, memory_buffer, muzero_alphazero_config: Config) -> None:
+        """
+        Evaluates the network against the evaluation dataset and reports directly to wandb.
+        :param memory_buffer: The memory buffer where the datasets should be pulled from.
+        :param muzero_alphazero_config: The config for this algorithm.
+        :return: None, reports to wandb.
         """
         pass
 

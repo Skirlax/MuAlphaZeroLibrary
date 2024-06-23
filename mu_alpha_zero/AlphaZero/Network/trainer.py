@@ -46,7 +46,7 @@ class Trainer:
         self.java_manager = java_manager
         self.hook_manager = hook_manager
         self.arena = Arena(self.game_manager, self.muzero_alphazero_config,
-                           self.device,hook_manager=self.hook_manager) if arena_override is None else arena_override
+                           self.device, hook_manager=self.hook_manager) if arena_override is None else arena_override
         self.checkpointer = checkpointer
         self.logger = Logger(logdir=self.muzero_alphazero_config.log_dir,
                              token=self.muzero_alphazero_config.pushbullet_token)
@@ -92,7 +92,8 @@ class Trainer:
                hook_manager: HookManager or None = None, arena_override: GeneralArena or None = None,
                memory_override: GeneralMemoryBuffer or None = None, java_manager: JavaManager or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        optimizer = th.optim.Adam(network.parameters(), lr=muzero_alphazero_config.lr,weight_decay=muzero_alphazero_config.l2)
+        optimizer = th.optim.Adam(network.parameters(), lr=muzero_alphazero_config.lr,
+                                  weight_decay=muzero_alphazero_config.l2)
         mem = MemBuffer(max_size=muzero_alphazero_config.max_buffer_size)
         memory = mem if memory_override is None else memory_override
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
@@ -121,7 +122,6 @@ class Trainer:
         num_simulations = self.muzero_alphazero_config.num_simulations
         self_play_games = self.muzero_alphazero_config.self_play_games
         self.network.eval()
-        # self.logger.pushbullet_log(f"Cuda status: {th.cuda.is_available()}")
         for i in self.make_tqdm_bar(range(num_iters), "Training Progress", 0):
             if i >= self.muzero_alphazero_config.zero_tau_after:
                 self.muzero_alphazero_config.arena_tau = 0
@@ -155,6 +155,7 @@ class Trainer:
             self.checkpointer.save_checkpoint(self.network, self.opponent_network, self.optimizer,
                                               self.muzero_alphazero_config.lr, i, self.muzero_alphazero_config,
                                               name="latest_trained_net")
+            self.network.eval_net(self.memory, self.muzero_alphazero_config)
 
             num_games = self.muzero_alphazero_config.num_pit_games
             update_threshold = self.muzero_alphazero_config.update_threshold
