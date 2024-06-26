@@ -99,11 +99,10 @@ class MemBuffer(GeneralMemoryBuffer):
 
     def batch_with_priorities(self, epochs, batch_size, K, alpha=1, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
+        priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
+        self.priorities = priorities
         for _ in range(epochs):
-            if self.last_buffer_size < len(buf):
-                priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
-                self.priorities = priorities
-                self.last_buffer_size = len(buf)
+
             random_indexes = np.random.choice(np.arange(len(buf)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
