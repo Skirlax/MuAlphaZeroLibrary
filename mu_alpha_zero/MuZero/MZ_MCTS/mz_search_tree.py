@@ -116,9 +116,9 @@ class MuZeroSearchTree(SearchTree):
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(action_probs, root_val_latent, root_node))
-        if calculate_avg_num_children:
-            num_nodes = self.get_num_nodes(root_node)
-            wandb.log({"Number of non-leaf nodes": num_nodes})
+        # if calculate_avg_num_children:
+        #     num_nodes = self.get_num_nodes(root_node)
+        #     wandb.log({"Number of non-leaf nodes": num_nodes})
         root_node = None
         return action_probs, root_val_latent
 

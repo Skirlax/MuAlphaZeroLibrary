@@ -1,7 +1,5 @@
 import time
-from typing import Type
 
-import numpy as np
 import wandb
 
 from mu_alpha_zero.AlphaZero.Arena.players import Player
