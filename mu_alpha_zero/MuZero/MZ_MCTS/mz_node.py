@@ -48,6 +48,6 @@ class MzAlphaZeroNode(AlphaZeroNode):
         return utc
 
     def scale_q(self, min_q, max_q) -> float:
-        if min_q == max_q:
+        if min_q == max_q or (min_q == float("inf") or max_q == float("-inf")):
             return self.q
         return (self.q - min_q) / (max_q - min_q)
