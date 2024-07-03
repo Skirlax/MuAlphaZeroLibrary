@@ -36,11 +36,11 @@ class MzAlphaZeroNode(AlphaZeroNode):
 
     def calculate_utc_score(self, min_q: float, max_q: float, c=1.5, c2=19652):
         parent = self.parent()
-        q = self.scale_q(min_q, max_q)
         if self.q is None:
             # Inspiration taken from https://github.com/suragnair/alpha-zero-general/blob/master/MCTS.py
             utc = c * self.select_probability * math.sqrt(parent.times_visited + 1e-8)
         else:
+            q = self.scale_q(min_q, max_q)
             utc = q + self.select_probability * (
                     (math.sqrt(parent.times_visited)) / (1 + self.times_visited)) * (
                           c + math.log((parent.times_visited + c2 + 1) / c2))
