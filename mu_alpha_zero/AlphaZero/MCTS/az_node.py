@@ -88,39 +88,14 @@ class AlphaZeroNode:
     def get_self_value(self):
         return self.total_value / self.times_visited if self.times_visited > 0 else 0
 
-    def get_self_action_probabilities(self, tau=1.0, adjust=True):
-        def adjust_probabilities(action_probabilities: dict, inner_tau=1.0) -> dict:
-            """
-            Selects a move from the action probabilities using either greedy or stochastic policy.
-            The stochastic policy uses the tau parameter to adjust the probabilities. This is based on the
-            temperature parameter in DeepMind's AlphaZero paper.
-    
-            :param action_probabilities: A dictionary containing the action probabilities in the form of {action_index: probability}.
-            :param inner_tau: The temperature parameter. 0 for greedy, >0 for stochastic.
-            :return: The selected move as an integer (index).
-            """
-            if inner_tau == 0:  # select greedy
-                vals = [x for x in action_probabilities.values()]
-                max_idx = vals.index(max(vals))
-                probs = [0 for _ in range(len(vals))]
-                probs[max_idx] = 1
-                return dict(zip(action_probabilities.keys(), probs))
-            # select stochastic
-            moves, probabilities = zip(*action_probabilities.items())
-            adjusted_probs = [prob ** (1 / inner_tau) for prob in probabilities]
-            adjusted_probs_sum = sum(adjusted_probs)
-            normalized_probs = [prob / adjusted_probs_sum for prob in adjusted_probs]
-            return dict(zip(moves, normalized_probs))
+    def get_self_action_probabilities(self):
 
         total_times_visited = self.times_visited
         action_probs = {}
         for action, child in self.children.items():
             action_probs[action] = child.times_visited / total_times_visited
 
-        if adjust:
-            return adjust_probabilities(action_probs, inner_tau=tau)
-        else:
-            return action_probs
+        return action_probs
 
     def get_latent(self):
         return self.state

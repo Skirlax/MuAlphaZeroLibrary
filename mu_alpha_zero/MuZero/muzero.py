@@ -104,5 +104,5 @@ class MuZero:
             3,), "Input shape must match target resolution with 3 channels. Got: " + str(x.shape)
         self.net.eval()
         pi, (v, _) = self.tree.search(self.net, x, None, self.device, tau=tau)
-        move = self.game_manager.select_move(pi)
+        move = self.game_manager.select_move(pi,tau=self.muzero_config.tau)
         return move

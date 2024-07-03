@@ -45,7 +45,7 @@ class MuZeroSearchTree(SearchTree):
         for step in range(num_steps):
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))
-            move = self.game_manager.select_move(pi)
+            move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             if self.muzero_config.multiple_players:
@@ -96,7 +96,8 @@ class MuZeroSearchTree(SearchTree):
             path = [current_node]
             action = None
             while current_node.was_visited():
-                current_node, action = current_node.get_best_child(c=self.muzero_config.c, c2=self.muzero_config.c2)
+                current_node, action = current_node.get_best_child(self.min_max_q[0], self.min_max_q[1],
+                                                                   c=self.muzero_config.c, c2=self.muzero_config.c2)
                 path.append(current_node)
 
             action = scale_action(action, self.game_manager.get_num_actions())
@@ -112,7 +113,7 @@ class MuZeroSearchTree(SearchTree):
             current_node.expand_node(next_state, pi, reward)
             self.backprop(v, path)
 
-        action_probs = root_node.get_self_action_probabilities(tau=tau)
+        action_probs = root_node.get_self_action_probabilities()
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(action_probs, root_val_latent, root_node))
@@ -123,21 +124,19 @@ class MuZeroSearchTree(SearchTree):
         return action_probs, root_val_latent
 
     def backprop(self, v, path):
-        G = 0
-        gamma = self.muzero_config.gamma
+        G = v
         for node in reversed(path):
-            G = v + node.reward if G == 0 else G
+            gamma = 1 if G == v else self.muzero_config.gamma
+            G = node.reward + gamma * (-G)
             node.total_value += G
             node.update_q(G)
             self.update_min_max_q(node.q)
-            node.scale_q(self.min_max_q[0], self.min_max_q[1])
             node.times_visited += 1
-            G = node.reward + gamma * G
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:
         for game in range(num_games):
-            game_results = self.play_one_game(net, device,calculate_avg_num_children=game == num_games - 1)
+            game_results = self.play_one_game(net, device, calculate_avg_num_children=game == num_games - 1)
             memory.add_list(game_results)
 
         return None, None, None

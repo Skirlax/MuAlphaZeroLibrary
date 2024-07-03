@@ -75,7 +75,7 @@ class NetPlayer(Player):
                            "tau")
 
         pi, _ = self.monte_carlo_tree_search.search(self.network, board, current_player, device, tau=tau)
-        move = self.game_manager.select_move(pi)
+        move = self.game_manager.select_move(pi,tau=tau)
         self.monte_carlo_tree_search.step_root(None)
         if "unravel" in kwargs.keys():
             unravel = kwargs["unravel"]
@@ -122,7 +122,7 @@ class TrainingNetPlayer(Player):
             raise KeyError("Missing keyword argument. Please supply kwargs: current_player, device, "
                            "tau")
         pi = CpSelfPlay.CmctsSearch(board, current_player, tau, self.args, self.traced_path)
-        move = self.game_manager.select_move(pi)
+        move = self.game_manager.select_move(pi,tau=tau)
         return self.game_manager.network_to_board(move)
 
     def make_fresh_instance(self):

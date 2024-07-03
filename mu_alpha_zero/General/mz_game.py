@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch as th
+from mu_alpha_zero.General.utils import adjust_probabilities
 
 
 class MuZeroGame(ABC):
@@ -70,10 +71,11 @@ class MuZeroGame(ABC):
         pass
 
     @staticmethod
-    def select_move(action_probs: dict):
+    def select_move(action_probs: dict, tau: float):
         """
         Samples a move from the action probabilities.
         """
+        action_probs = adjust_probabilities(action_probs, tau=tau)
         moves, probs = zip(*action_probs.items())
         return np.random.choice(moves, p=probs)
 

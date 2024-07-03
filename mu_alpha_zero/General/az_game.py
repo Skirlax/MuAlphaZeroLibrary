@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from mu_alpha_zero.General.utils import adjust_probabilities
 import numpy as np
 
 
@@ -24,7 +24,8 @@ class AlphaZeroGame(ABC):
         return None
 
     @staticmethod
-    def select_move(action_probs: dict):
+    def select_move(action_probs: dict, tau: float):
+        action_probs = adjust_probabilities(action_probs, tau=tau)
         moves, probs = zip(*action_probs.items())
         return np.random.choice(moves, p=probs)
 
@@ -104,14 +105,14 @@ class AlphaZeroGame(ABC):
         pass
 
     @abstractmethod
-    def get_random_valid_action(self,board:np.ndarray,**kwargs):
+    def get_random_valid_action(self, board: np.ndarray, **kwargs):
         """
         Returns a random valid action for the given board and optionally player.
         """
         pass
 
     @abstractmethod
-    def get_invalid_actions(self,state:np.ndarray, player: int):
+    def get_invalid_actions(self, state: np.ndarray, player: int):
         """
         Returns a list of invalid actions for the given player.
         """

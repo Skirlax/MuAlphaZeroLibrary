@@ -46,7 +46,7 @@ class McSearchTree(SearchTree):
         results = {"1": 0, "-1": 0, "D": 0}
         while True:
             pi, _ = self.search(network, state, current_player, device)
-            move = self.game_manager.select_move(pi)
+            move = self.game_manager.select_move(pi,tau=self.alpha_zero_config.tau)
             # self.step_root([move])
             self.step_root(None)
             # pi = [x for x in pi.values()]
@@ -134,7 +134,7 @@ class McSearchTree(SearchTree):
 
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(tau, self.root_node))
-        return self.root_node.get_self_action_probabilities(tau=tau), None
+        return self.root_node.get_self_action_probabilities(), None
 
     def backprop(self, v, path):
         """

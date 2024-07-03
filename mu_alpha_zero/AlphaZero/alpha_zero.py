@@ -28,7 +28,7 @@ class AlphaZero:
     def create_new(self, alpha_zero_config: AlphaZeroConfig, network_class: Type[GeneralNetwork],
                    memory: GeneralMemoryBuffer, headless: bool = True, hook_manager: HookManager or None = None,
                    checkpointer_verbose: bool = False):
-        network = network_class.make_from_config(alpha_zero_config,hook_manager=hook_manager).to(self.device)
+        network = network_class.make_from_config(alpha_zero_config, hook_manager=hook_manager).to(self.device)
         tree = McSearchTree(self.game.make_fresh_instance(), alpha_zero_config)
         self.tree = tree
         net_player = NetPlayer(self.game.make_fresh_instance(), **{"network": network, "monte_carlo_tree_search": tree})
@@ -58,7 +58,7 @@ class AlphaZero:
             "num_net_in_channels"]), "Input shape is not correct. Expected (board_size, board_size, num_net_in_channels)." \
                                      "Got: " + str(x.shape)
         pi, _ = self.tree.search(self.net, x, 1, self.device, tau=tau)
-        return self.game.select_move(pi)
+        return self.game.select_move(pi, tau=self.alpha_zero_config.tau)
 
     def play(self, p1_name: str, p2_name: str, num_games: int, alpha_zero_config: AlphaZeroConfig, starts: int = 1,
              switch_players: bool = True):
