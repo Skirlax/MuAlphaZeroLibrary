@@ -127,7 +127,10 @@ class MuZeroSearchTree(SearchTree):
         G = v
         for node in reversed(path):
             gamma = 1 if G == v else self.muzero_config.gamma
-            G = node.reward + gamma * (-G)
+            if self.muzero_config.multiple_players:
+                G = node.reward + gamma * (-G)
+            else:
+                G = node.reward + gamma * G
             node.total_value += G
             node.update_q(G)
             self.update_min_max_q(node.q)
