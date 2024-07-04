@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="mu_alpha_zero_library",
-    version="1.0.9.4",
+    version="1.0.9.5",
     description="Library for running and training MuZero and AlphaZero models.",
     author="Skyr",
     install_requires=open("requirements.txt").read().strip().split("\n"),
