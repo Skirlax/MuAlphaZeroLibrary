@@ -100,6 +100,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         K = muzero_config.K
         iteration = 0
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
+                                                                                muzero_config.enable_per,
                                                                                 muzero_config.batch_size, K,
                                                                                 alpha=muzero_config.alpha):
             if len(experience_batch) <= 1:
@@ -127,6 +128,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
         K = muzero_config.K
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.eval_epochs,
+                                                                                muzero_config.enable_per,
                                                                                 muzero_config.batch_size, K,
                                                                                 alpha=muzero_config.alpha,
                                                                                 is_eval=True):
@@ -153,9 +155,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         _, pred_rews = self.dynamics_forward(latent)
         priorities = priorities.to(device)
         balance_term = muzero_config.balance_term
-        w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
-        w /= w.sum()
-        w = w.reshape(pred_vs.shape)
+        if muzero_config.enable_per:
+            w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
+            w /= w.sum()
+            w = w.reshape(pred_vs.shape)
+        else:
+            w = 1
         loss_v = mse_loss(pred_vs, vs) * balance_term * w
         loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
         loss_r = mse_loss(pred_rews, rews) * balance_term * w

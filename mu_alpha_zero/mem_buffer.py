@@ -97,9 +97,12 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, epochs, batch_size, K, alpha=1, is_eval: bool = False):
+    def batch_with_priorities(self, epochs, enable_per:bool,batch_size, K, alpha=1, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
-        priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
+        if enable_per:
+            priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
+        else:
+            priorities = np.ones((len(buf),)) / len(buf)
         self.priorities = priorities
         for _ in range(epochs):
 

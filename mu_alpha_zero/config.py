@@ -108,6 +108,7 @@ class MuZeroConfig(Config):
     multiple_players: bool = False
     scale_state: bool = True
     balance_term: float = 0.5
+    enable_per: bool = True
 
 
 
