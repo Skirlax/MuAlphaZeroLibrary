@@ -131,7 +131,8 @@ class MuZeroSearchTree(SearchTree):
                 G = node.reward + gamma * (-G)
             else:
                 G = node.reward + gamma * G
-            node.total_value += G
+            node.total_value += v
+            v *= -1
             node.update_q(G)
             self.update_min_max_q(node.q)
             node.times_visited += 1
