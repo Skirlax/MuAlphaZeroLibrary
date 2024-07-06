@@ -125,14 +125,16 @@ class MuZeroSearchTree(SearchTree):
 
     def backprop(self, v, path):
         G = v
+        G_node = -v
         for node in reversed(path):
             gamma = 1 if G == v else self.muzero_config.gamma
             if self.muzero_config.multiple_players:
-                G = node.reward + gamma * (-G)
+                G = node.reward + gamma * (-G) # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
+                G_node = node.reward + gamma * (-G_node)
+                node.total_value += G_node
             else:
                 G = node.reward + gamma * G
-            node.total_value += v
-            v *= -1
+                node.total_value += G
             node.update_q(G)
             self.update_min_max_q(node.q)
             node.times_visited += 1
