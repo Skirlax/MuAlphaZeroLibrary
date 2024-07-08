@@ -191,7 +191,7 @@ class Trainer:
         #                              args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
         #                                    self.make_n_trees(self.muzero_alphazero_config.num_workers),
         #                                    shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
-        #                                    self.muzero_alphazero_config.num_workers))
+        #                                    self.muzero_alphazero_config.num_worker_iters,dir_path=self.memory.dir_path))
         # p2 = multiprocessing.Process(target=self.network.continuous_weight_update,
         #                              args=(shared_storage, self.muzero_alphazero_config))
         # p3 = multiprocessing.Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
@@ -208,7 +208,7 @@ class Trainer:
         #                           self.muzero_alphazero_config.num_simulations,
         #                           shared_storage, False, 1)
         from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import c_p_self_play
-        c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,shared_storage,self.muzero_alphazero_config.num_workers,dir_path=self.memory.dir_path)
+        c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,shared_storage,self.muzero_alphazero_config.num_worker_iters,dir_path=self.memory.dir_path)
         self.network.train()
         self.network.continuous_weight_update(shared_storage, self.muzero_alphazero_config)
         # ps = [p3]

@@ -44,6 +44,7 @@ class Config:
     requires_player_to_reset: bool = False
     arena_running_muzero: bool = False
     use_wandb: bool = False
+    num_worker_iters: int = 100_000
 
     def to_dict(self):
         return self.__dict__
@@ -109,7 +110,6 @@ class MuZeroConfig(Config):
     scale_state: bool = True
     balance_term: float = 1
     enable_per: bool = True
-    num_worker_iters: int = 100_000
 
 
 
