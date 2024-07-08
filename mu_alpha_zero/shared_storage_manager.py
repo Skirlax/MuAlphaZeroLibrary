@@ -27,9 +27,13 @@ class SharedStorage:
     def get_mem_buffer(self):
         return self.mem_buffer
 
+    def add_list(self, list_:list):
+        self.mem_buffer.add_list(list_)
+
 
 class SharedStorageManager(BaseManager):
     pass
 
 
 SharedStorageManager.register("SharedStorage", SharedStorage)
+SharedStorageManager.register("MemBuffer", MemBuffer)

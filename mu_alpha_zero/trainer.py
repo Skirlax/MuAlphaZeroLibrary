@@ -184,7 +184,8 @@ class Trainer:
         self.opponent_network.load_state_dict(self.network.state_dict())
         shared_storage_manager = SharedStorageManager()
         shared_storage_manager.start()
-        shared_storage: SharedStorage = shared_storage_manager.SharedStorage(self.memory)
+        mem = shared_storage_manager.MemBuffer(self.memory.max_size, self.memory.disk, self.memory.full_disk, self.memory.dir_path, hook_manager=self.memory.hook_manager)
+        shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         self.network.eval()
         shared_storage.set_stable_network_params(self.network.state_dict())
         # p1 = multiprocessing.Process(target=self.mcts.start_continuous_self_play,

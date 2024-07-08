@@ -97,7 +97,7 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, epochs, enable_per:bool,batch_size, K, alpha=1, is_eval: bool = False):
+    def batch_with_priorities(self, epochs, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
         if enable_per:
             priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
@@ -105,7 +105,6 @@ class MemBuffer(GeneralMemoryBuffer):
             priorities = np.ones((len(buf),)) / len(buf)
         self.priorities = priorities
         for _ in range(epochs):
-
             random_indexes = np.random.choice(np.arange(len(buf)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
                                               replace=False, p=self.priorities).tolist()
@@ -126,7 +125,7 @@ class MemBuffer(GeneralMemoryBuffer):
         return ps
 
     def make_fresh_instance(self):
-        return MemBuffer(self.max_size, self.disk, self.dir_path)
+        return MemBuffer(self.max_size, self.disk, self.full_disk, self.dir_path, hook_manager=self.hook_manager)
 
     def to_dataloader(self, batch_size):
         return DataLoader(MemDataset(self.buffer), batch_size=batch_size, shuffle=True, collate_fn=lambda x: x)
