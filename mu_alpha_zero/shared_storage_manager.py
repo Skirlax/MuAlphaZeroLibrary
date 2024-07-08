@@ -2,7 +2,6 @@ import copy
 
 from mu_alpha_zero.mem_buffer import MemBuffer
 
-import multiprocessing
 from multiprocessing.managers import BaseManager
 
 
