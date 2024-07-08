@@ -1,6 +1,6 @@
 import copy
 import dill
-import dill, multiprocessing,multiprocessing.reduction
+import dill, multiprocessing,multiprocessing.reduction,multiprocessing.queues
 
 dill.Pickler.dumps, dill.Pickler.loads = dill.dumps, dill.loads
 multiprocessing.reduction.ForkingPickler = dill.Pickler
