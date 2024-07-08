@@ -193,6 +193,7 @@ class Trainer:
                                              shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
                                              self.muzero_alphazero_config.num_workers,
                                              self.muzero_alphazero_config.num_worker_iters)
+        print("Reached p2")
         p2 = Process(target=self.network.continuous_weight_update,
                      args=(shared_storage, self.muzero_alphazero_config))
         p3 = Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
@@ -207,6 +208,7 @@ class Trainer:
         ps = [p2, p3]
         for p in ps:
             p.start()
+        print("Started processes")
         for p in ps:
             p.join()
 
