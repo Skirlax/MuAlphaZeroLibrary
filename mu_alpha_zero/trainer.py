@@ -189,12 +189,13 @@ class Trainer:
         print(len(mem.get_buffer()))
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         shared_storage.set_stable_network_params(self.network.state_dict())
-        self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
+        pool = self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
                                              self.make_n_trees(self.muzero_alphazero_config.num_workers),
                                              shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
                                              self.muzero_alphazero_config.num_workers,
                                              self.muzero_alphazero_config.num_worker_iters)
-        print("Reached p2")
+        self.logger.log(f"Successfully started a pool of {self.muzero_alphazero_config.num_workers} workers for "
+                        f"self-play (1/3).")
         p2 = Process(target=self.network.continuous_weight_update,
                      args=(shared_storage, self.muzero_alphazero_config))
         p3 = Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
@@ -206,12 +207,15 @@ class Trainer:
                                                              self.muzero_alphazero_config.num_simulations,
                                                              shared_storage, False, 1))
 
-        ps = [p2, p3]
-        for p in ps:
-            p.start()
-        print("Started processes")
-        for p in ps:
-            p.join()
+        p2.start()
+        self.logger.log("Successfully started continuous weight update process (2/3).")
+        p3.start()
+        self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
+
+        p2.join()
+        p3.join()
+        pool.close()
+        pool.join()
 
     def make_n_networks(self, n: int) -> list[AlphaZeroNet]:
         """

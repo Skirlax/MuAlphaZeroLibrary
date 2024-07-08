@@ -198,8 +198,7 @@ class MuZeroSearchTree(SearchTree):
                          [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, shared_storage,
                            num_worker_iters,
                            shared_storage.get_mem_buffer().get_dir_path()) for i in range(num_jobs)])
-        pool.close()
-        pool.join()
+        return pool
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)

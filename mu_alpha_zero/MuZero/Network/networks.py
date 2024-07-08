@@ -100,7 +100,6 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
                                            weight_decay=muzero_config.l2)
         losses = []
-        print("Starting training.")
         K = muzero_config.K
         iteration = 0
         memory_buffer.reset_priorities()
