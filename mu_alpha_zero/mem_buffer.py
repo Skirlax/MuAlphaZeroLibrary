@@ -65,6 +65,9 @@ class MemBuffer(GeneralMemoryBuffer):
         else:
             return deque(maxlen=self.max_size)
 
+    def get_dir_path(self):
+        return self.dir_path
+
     def add_list(self, experience_list, percent_eval: int = 10):
         train = experience_list[:int(len(experience_list) * 0.9)]
         test = experience_list[int(len(experience_list) * 0.9):]

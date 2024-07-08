@@ -195,7 +195,7 @@ class MuZeroSearchTree(SearchTree):
             pool.starmap(
                 c_p_self_play,
                 [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, shared_storage, num_worker_iters,
-                  shared_storage.get_mem_buffer().dir_path) for i in range(num_jobs)]
+                  shared_storage.get_mem_buffer().get_dir_path()) for i in range(num_jobs)]
             )
 
     def run_on_training_end(self):
