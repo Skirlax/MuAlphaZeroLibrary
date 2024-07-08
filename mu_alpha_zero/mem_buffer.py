@@ -281,11 +281,13 @@ class PickleMemBuffer(GeneralMemoryBuffer):
         raise NotImplementedError("Length not implemented for PickleMemBuffer.")
 
 
-class DillPickler:
-    @staticmethod
-    def dumps(obj, protocol=None):
-        return dill.dumps(obj, protocol=protocol)
+def dill_pickler():
+    class DillPickler:
+        @staticmethod
+        def dumps(obj, protocol=None):
+            return dill.dumps(obj, protocol=protocol)
 
-    @staticmethod
-    def loads(obj):
-        return dill.loads(obj)
+        @staticmethod
+        def loads(obj):
+            return dill.loads(obj)
+    return DillPickler

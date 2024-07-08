@@ -2,8 +2,8 @@ import multiprocessing.reduction
 
 from torch.multiprocessing import set_start_method
 set_start_method('spawn', force=True)
-from mu_alpha_zero.mem_buffer import DillPickler
-multiprocessing.reduction.ForkingPickler = DillPickler
+from mu_alpha_zero.mem_buffer import dill_pickler
+multiprocessing.reduction.ForkingPickler = dill_pickler()
 from mu_alpha_zero.General.utils import not_zero
 
 
