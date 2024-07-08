@@ -283,8 +283,8 @@ class PickleMemBuffer(GeneralMemoryBuffer):
 
 class DillPickler:
     @staticmethod
-    def dumps(obj):
-        return dill.dumps(obj)
+    def dumps(obj, protocol=None):
+        return dill.dumps(obj, protocol=protocol)
 
     @staticmethod
     def loads(obj):
