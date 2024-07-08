@@ -1,11 +1,13 @@
 import multiprocessing.reduction
 
+import dill
 from torch.multiprocessing import set_start_method
 set_start_method('spawn', force=True)
-from mu_alpha_zero.mem_buffer import dill_pickler
-multiprocessing.reduction.ForkingPickler = dill_pickler()
+from mu_alpha_zero.mem_buffer import dump,dumps
 from mu_alpha_zero.General.utils import not_zero
-
+multiprocessing.reduction.dump = dump
+multiprocessing.reduction.dumps = dumps
+multiprocessing.reduction.ForkingPickler = dill.Pickler
 
 from copy import deepcopy
 
