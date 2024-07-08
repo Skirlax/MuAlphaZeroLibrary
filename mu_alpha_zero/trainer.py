@@ -188,12 +188,11 @@ class Trainer:
                                                self.memory.dir_path, hook_manager=self.memory.hook_manager)
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         shared_storage.set_stable_network_params(self.network.state_dict())
-        p1 = Process(target=self.mcts.start_continuous_self_play,
-                     args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
-                           self.make_n_trees(self.muzero_alphazero_config.num_workers),
-                           shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
-                           self.muzero_alphazero_config.num_workers,
-                           self.muzero_alphazero_config.num_worker_iters))
+        self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
+                                             self.make_n_trees(self.muzero_alphazero_config.num_workers),
+                                             shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
+                                             self.muzero_alphazero_config.num_workers,
+                                             self.muzero_alphazero_config.num_worker_iters)
         p2 = Process(target=self.network.continuous_weight_update,
                      args=(shared_storage, self.muzero_alphazero_config))
         p3 = Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
@@ -205,7 +204,7 @@ class Trainer:
                                                              self.muzero_alphazero_config.num_simulations,
                                                              shared_storage, False, 1))
 
-        ps = [p1, p2, p3]
+        ps = [p2, p3]
         for p in ps:
             p.start()
         for p in ps:
