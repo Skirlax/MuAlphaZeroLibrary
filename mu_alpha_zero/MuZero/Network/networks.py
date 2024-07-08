@@ -100,11 +100,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         losses = []
         K = muzero_config.K
         iteration = 0
-        for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
-                                                                                muzero_config.enable_per,
-                                                                                muzero_config.batch_size, K,
-                                                                                alpha=muzero_config.alpha,
-                                                                                use_generator=muzero_config.user_buffer_generator):
+        memory_buffer.reset_priorities()
+        loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
+                                                             muzero_config.batch_size, K,
+                                                             alpha=muzero_config.alpha)
+        for epoch in range(muzero_config.epochs):
+            experience_batch, priorities = loader()
             if len(experience_batch) <= 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
@@ -129,12 +130,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                            weight_decay=muzero_config.l2)
 
         K = muzero_config.K
-        for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.eval_epochs,
-                                                                                muzero_config.enable_per,
-                                                                                muzero_config.batch_size, K,
-                                                                                alpha=muzero_config.alpha,
-                                                                                is_eval=True,
-                                                                                use_generator=muzero_config.user_buffer_generator):
+        memory_buffer.reset_priorities()
+        loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
+                                                             muzero_config.batch_size, K,
+                                                             alpha=muzero_config.alpha,
+                                                             is_eval=True)
+        for epoch in range(muzero_config.eval_epochs):
+            experience_batch, priorities = loader()
             if len(experience_batch) <= 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)

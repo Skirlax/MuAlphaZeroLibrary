@@ -110,7 +110,6 @@ class MuZeroConfig(Config):
     scale_state: bool = True
     balance_term: float = 1
     enable_per: bool = True
-    user_buffer_generator: bool = True
 
 
 

@@ -97,33 +97,19 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, epochs, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False,
-                              use_generator: bool = True):
+    def batch_with_priorities(self, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
-        if enable_per:
-            priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
-        else:
-            priorities = np.ones((len(buf),)) / len(buf)
-        self.priorities = priorities
-        batches = []
-        for _ in range(epochs):
-            random_indexes = np.random.choice(np.arange(len(buf)),
-                                              size=min(len(self.priorities) // K, max(batch_size // K, 1)),
-                                              replace=False, p=self.priorities).tolist()
-            batch = [list(itertools.islice(buf, i, i + K)) for i in random_indexes]
-            pris = [self.priorities[i:i + K] for i in random_indexes]
-            self.hook_manager.process_hook_executes(self, self.batch_with_priorities.__name__, __file__, HookAt.ALL,
-                                                    args=(batch, pris))
-            if use_generator:
-                yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
-            else:
-                batches.append(
-                    [list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)])
-        if not use_generator:
-            return batches
+        if self.priorities is None:
+            self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
+        return self.simple_sample(buf, batch_size, K)
 
-    def calculate_priorities(self, batch_size, alpha, K, is_eval: bool = False):
+    def reset_priorities(self):
+        self.priorities = None
+
+    def calculate_priorities(self, user_per: bool, alpha: float, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
+        if not user_per:
+            return np.ones((len(buf),)) / len(buf)
         ps = [abs(buf[i][1] - buf[i][2][2]) for i in range(len(buf))]
         ps = np.array(ps)
         ps = ps ** alpha
@@ -131,6 +117,14 @@ class MemBuffer(GeneralMemoryBuffer):
         self.hook_manager.process_hook_executes(self, self.calculate_priorities.__name__, __file__, HookAt.ALL,
                                                 args=(ps,))
         return ps
+
+    def simple_sample(self, buf: deque, batch_size: int, K: int) -> tuple:
+        random_indexes = np.random.choice(np.arange(len(buf)),
+                                          size=min(len(self.priorities) // K, max(batch_size // K, 1)),
+                                          replace=False, p=self.priorities).tolist()
+        batch = [list(itertools.islice(buf, i, i + K)) for i in random_indexes]
+        pris = [self.priorities[i:i + K] for i in random_indexes]
+        return list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
 
     def make_fresh_instance(self):
         return MemBuffer(self.max_size, self.disk, self.full_disk, self.dir_path, hook_manager=self.hook_manager)
