@@ -1,4 +1,4 @@
-from multiprocessing import set_start_method
+from multiprocess import set_start_method
 set_start_method("spawn", force=True)
 
 from mu_alpha_zero.General.utils import not_zero
