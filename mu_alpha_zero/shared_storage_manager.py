@@ -1,5 +1,12 @@
 import copy
 import dill
+import dill, multiprocessing,multiprocessing.reduction
+
+dill.Pickler.dumps, dill.Pickler.loads = dill.dumps, dill.loads
+multiprocessing.reduction.ForkingPickler = dill.Pickler
+multiprocessing.reduction.dump = dill.dump
+multiprocessing.queues._ForkingPickler = dill.Pickler
+
 from multiprocessing import set_start_method
 set_start_method("spawn", force=True)
 from mu_alpha_zero.mem_buffer import MemBuffer
