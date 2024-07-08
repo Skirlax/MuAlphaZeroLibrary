@@ -1,8 +1,8 @@
 import copy
 import gc
-from torch.multiprocessing import set_start_method
+from multiprocess import set_start_method
 set_start_method("spawn", force=True)
-from torch.multiprocessing import Pool
+from multiprocess.pool import Pool
 
 import numpy as np
 import torch as th
