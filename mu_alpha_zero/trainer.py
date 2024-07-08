@@ -207,9 +207,10 @@ class Trainer:
         #                           self.muzero_alphazero_config.num_pit_games,
         #                           self.muzero_alphazero_config.num_simulations,
         #                           shared_storage, False, 1)
-        print(shared_storage.get_stable_network_params())
         from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import c_p_self_play
         c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,shared_storage,self.muzero_alphazero_config.num_workers,dir_path=self.memory.dir_path)
+        self.network.train()
+        self.network.continuous_weight_update(shared_storage, self.muzero_alphazero_config)
         # ps = [p3]
         # for p in ps:
         #     p.start()
