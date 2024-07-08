@@ -1,3 +1,5 @@
+import copy
+
 from mu_alpha_zero.mem_buffer import MemBuffer
 
 import multiprocessing
@@ -11,16 +13,16 @@ class SharedStorage:
         self.stable_network_params: dict = None
 
     def get_experimental_network_params(self):
-        return self.experimental_network_params.clone()
+        return copy.deepcopy(self.experimental_network_params)
 
     def set_experimental_network_params(self, network_params: dict):
-        self.experimental_network_params = network_params.clone()
+        self.experimental_network_params = copy.deepcopy(network_params)
 
     def get_stable_network_params(self):
-        return self.stable_network_params.clone()
+        return copy.deepcopy(self.stable_network_params)
 
     def set_stable_network_params(self, network_params: dict):
-        self.stable_network_params = network_params.clone()
+        self.stable_network_params = copy.deepcopy(network_params)
 
     def get_mem_buffer(self):
         return self.mem_buffer
