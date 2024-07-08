@@ -146,6 +146,9 @@ class MemBuffer(GeneralMemoryBuffer):
         else:
             return self.buffer.directory
 
+    def get_buffer(self):
+        return self.buffer
+
 
 class MuZeroFrameBuffer:
     def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int):

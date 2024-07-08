@@ -184,7 +184,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.train()
         losses = []
         loss_avgs = []
-        while len(shared_storage.get_mem_buffer().buffer) < muzero_config.batch_size * 3: # await reasonable buffer size
+        while len(shared_storage.get_mem_buffer().get_buffer()) < muzero_config.batch_size * 3: # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
             shared_storage.set_experimental_network_params(self.state_dict())
