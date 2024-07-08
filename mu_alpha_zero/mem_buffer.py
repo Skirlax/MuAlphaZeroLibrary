@@ -97,13 +97,15 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, epochs, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False):
+    def batch_with_priorities(self, epochs, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False,
+                              use_generator: bool = True):
         buf = self.buffer if not is_eval else self.eval_buffer
         if enable_per:
             priorities = self.calculate_priorities(batch_size, alpha, K, is_eval=is_eval)
         else:
             priorities = np.ones((len(buf),)) / len(buf)
         self.priorities = priorities
+        batches = []
         for _ in range(epochs):
             random_indexes = np.random.choice(np.arange(len(buf)),
                                               size=min(len(self.priorities) // K, max(batch_size // K, 1)),
@@ -112,7 +114,13 @@ class MemBuffer(GeneralMemoryBuffer):
             pris = [self.priorities[i:i + K] for i in random_indexes]
             self.hook_manager.process_hook_executes(self, self.batch_with_priorities.__name__, __file__, HookAt.ALL,
                                                     args=(batch, pris))
-            yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
+            if use_generator:
+                yield list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)
+            else:
+                batches.append(
+                    [list(chain.from_iterable(batch)), th.tensor(list(chain.from_iterable(pris)), dtype=th.float32)])
+        if not use_generator:
+            return batches
 
     def calculate_priorities(self, batch_size, alpha, K, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
@@ -278,4 +286,3 @@ class PickleMemBuffer(GeneralMemoryBuffer):
 
     def __len__(self):
         raise NotImplementedError("Length not implemented for PickleMemBuffer.")
-

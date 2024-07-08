@@ -103,7 +103,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         for experience_batch, priorities in memory_buffer.batch_with_priorities(muzero_config.epochs,
                                                                                 muzero_config.enable_per,
                                                                                 muzero_config.batch_size, K,
-                                                                                alpha=muzero_config.alpha):
+                                                                                alpha=muzero_config.alpha,
+                                                                                use_generator=muzero_config.user_buffer_generator):
             if len(experience_batch) <= 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
@@ -132,7 +133,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                                 muzero_config.enable_per,
                                                                                 muzero_config.batch_size, K,
                                                                                 alpha=muzero_config.alpha,
-                                                                                is_eval=True):
+                                                                                is_eval=True,
+                                                                                use_generator=muzero_config.user_buffer_generator):
             if len(experience_batch) <= 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
