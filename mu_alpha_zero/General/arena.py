@@ -1,3 +1,4 @@
+import time
 from abc import abstractmethod, ABC
 from typing import Type
 
@@ -21,6 +22,9 @@ class GeneralArena(ABC):
         conf = self.muzero_config if hasattr(self, "muzero_config") else self.alpha_zero_config
         for iter_ in range(conf.num_worker_iters):
             tested_params = shared_storage.get_experimental_network_params()
+            if tested_params is None:
+                time.sleep(5)
+                continue
             player1.network.load_state_dict(tested_params)
             player2.network.load_state_dict(shared_storage.get_stable_network_params())
             results_p1, results_p2, _ = self.pit(player1, player2, num_games_to_play, num_mc_simulations,

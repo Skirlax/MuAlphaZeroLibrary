@@ -186,6 +186,7 @@ class Trainer:
         shared_storage_manager.start()
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(self.memory)
         self.network.eval()
+        shared_storage.set_stable_network_params(self.network.state_dict())
         # p1 = multiprocessing.Process(target=self.mcts.start_continuous_self_play,
         #                              args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
         #                                    self.make_n_trees(self.muzero_alphazero_config.num_workers),
@@ -201,11 +202,12 @@ class Trainer:
         #                                                                      self.muzero_alphazero_config.num_pit_games,
         #                                                                      self.muzero_alphazero_config.num_simulations,
         #                                                                      shared_storage, False, 1))
-        self.arena.continuous_pit(self.net_player.make_fresh_instance(), self.net_player.make_fresh_instance(),
-                                  RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
-                                  self.muzero_alphazero_config.num_pit_games,
-                                  self.muzero_alphazero_config.num_simulations,
-                                  shared_storage, False, 1)
+        # self.arena.continuous_pit(self.net_player.make_fresh_instance(), self.net_player.make_fresh_instance(),
+        #                           RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
+        #                           self.muzero_alphazero_config.num_pit_games,
+        #                           self.muzero_alphazero_config.num_simulations,
+        #                           shared_storage, False, 1)
+        self.mcts.c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,self.muzero_alphazero_config.num_workers,dir_path=self.memory.dir_path)
         # ps = [p3]
         # for p in ps:
         #     p.start()
