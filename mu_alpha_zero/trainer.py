@@ -208,7 +208,7 @@ class Trainer:
         #                           self.muzero_alphazero_config.num_simulations,
         #                           shared_storage, False, 1)
         from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import c_p_self_play
-        c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,self.muzero_alphazero_config.num_workers,dir_path=self.memory.dir_path)
+        c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,shared_storage,self.muzero_alphazero_config.num_workers,dir_path=self.memory.dir_path)
         # ps = [p3]
         # for p in ps:
         #     p.start()
