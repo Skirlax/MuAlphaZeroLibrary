@@ -3,7 +3,7 @@ from typing import Type
 
 import torch as th
 
-from mu_alpha_zero.AlphaZero.Arena.players import Player
+from mu_alpha_zero.AlphaZero.Arena.players import Player, NetPlayer, RandomPlayer
 from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.Hooks.hook_manager import HookManager
@@ -11,6 +11,8 @@ from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.utils import resize_obs, scale_state, scale_action
 from mu_alpha_zero.config import MuZeroConfig
 import wandb
+
+from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
 class MzArena(GeneralArena):
@@ -64,3 +66,5 @@ class MzArena(GeneralArena):
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
+
+

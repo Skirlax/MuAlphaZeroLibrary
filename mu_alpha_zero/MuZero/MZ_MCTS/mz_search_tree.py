@@ -17,6 +17,7 @@ from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
 import wandb
+from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
 class MuZeroSearchTree(SearchTree):
@@ -129,7 +130,8 @@ class MuZeroSearchTree(SearchTree):
         for node in reversed(path):
             gamma = 1 if G == v else self.muzero_config.gamma
             if self.muzero_config.multiple_players:
-                G = node.reward + gamma * (-G) # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
+                G = node.reward + gamma * (
+                    -G)  # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
                 G_node = node.reward + gamma * (-G_node)
                 node.total_value += G_node
             else:
@@ -186,6 +188,16 @@ class MuZeroSearchTree(SearchTree):
 
         return None, None, None
 
+    @staticmethod
+    def start_continuous_self_play(nets: list, trees: list, shared_storage: SharedStorage,
+                                   device: th.device, num_games: int, num_jobs: int, num_worker_iters: int):
+        with Pool(num_jobs) as pool:
+            pool.starmap(
+                c_p_self_play,
+                [(nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, shared_storage, num_worker_iters,
+                  shared_storage.get_mem_buffer().dir_path) for i in range(num_jobs)]
+            )
+
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
 
@@ -199,3 +211,13 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
         else:
             data.extend(game_results)
     return data
+
+
+def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_worker_iters: int,
+                  dir_path: str or None = None):
+    for iter_ in range(num_worker_iters):
+        for game in range(num_g):
+            net.load_state_dict(shared_storage.get_stable_network_params())
+            game_results = tree.play_one_game(net, device, dir_path=dir_path,
+                                              calculate_avg_num_children=game == num_g - 1)
+            shared_storage.get_mem_buffer().add_list(game_results)

@@ -7,7 +7,7 @@ import torch as th
 from mu_alpha_zero.AlphaZero.Arena.arena import Arena
 from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
 from mu_alpha_zero.AlphaZero.MCTS.az_search_tree import McSearchTree
-from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
+from mu_alpha_zero.trainer import Trainer
 from mu_alpha_zero.General.az_game import AlphaZeroGame
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralNetwork

@@ -10,7 +10,7 @@ from IPython import get_ipython
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet
 from mu_alpha_zero.AlphaZero.constants import SAMPLE_AZ_ARGS as test_args
 from mu_alpha_zero.mem_buffer import MemBuffer
-from mu_alpha_zero.config import MuZeroConfig, Config, AlphaZeroConfig
+from mu_alpha_zero.config import Config, AlphaZeroConfig
 
 
 
@@ -163,7 +163,7 @@ def az_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, 
         del trainer
         return win_freq
 
-    from mu_alpha_zero.AlphaZero.Network.trainer import Trainer  # import here to avoid circular imports
+    from mu_alpha_zero.trainer import Trainer  # import here to avoid circular imports
     from mu_alpha_zero.AlphaZero.MCTS.az_search_tree import McSearchTree
     trial_config = config
     trial_config.show_tqdm = False

@@ -13,6 +13,7 @@ from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
 from mu_alpha_zero.config import MuZeroConfig
+from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
 class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
@@ -172,6 +173,16 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             masks = masks.reshape(y_hat.shape).to(self.device)
             y_hat = masks * y_hat
         return -th.sum(y * y_hat) / y.size()[0]
+
+    def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
+        losses = []
+        loss_avgs = []
+        for iter_ in range(muzero_config.num_worker_iters):
+            shared_storage.set_experimental_network_params(self.state_dict())
+            avg, iter_losses = self.train_net(shared_storage.get_mem_buffer(), muzero_config)
+            loss_avgs.append(avg)
+            losses.extend(iter_losses)
+            wandb.log({"loss_avg": avg})
 
     def to_pickle(self, path: str):
         th.save(self, path)

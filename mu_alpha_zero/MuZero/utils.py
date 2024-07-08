@@ -110,7 +110,7 @@ def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: 
     from mu_alpha_zero.MuZero.MZ_Arena.arena import MzArena
     from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import MuZeroSearchTree
     from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
-    from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
+    from mu_alpha_zero.trainer import Trainer
     from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
     from mu_alpha_zero.mem_buffer import MemBuffer
 

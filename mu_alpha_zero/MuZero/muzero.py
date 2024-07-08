@@ -9,14 +9,13 @@ from typing import Type
 
 import torch as th
 from mu_alpha_zero.AlphaZero.Arena.players import NetPlayer
-from mu_alpha_zero.AlphaZero.Network.trainer import Trainer
+from mu_alpha_zero.trainer import Trainer
 from mu_alpha_zero.General.utils import find_project_root, net_not_none
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralNetwork
 from mu_alpha_zero.MuZero.MZ_Arena.arena import MzArena
 from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import MuZeroSearchTree
-from mu_alpha_zero.mem_buffer import PickleMemBuffer
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 
@@ -98,11 +97,15 @@ class MuZero:
         net_not_none(self.net)
         self.trainer.train()
 
+    def train_parallel(self):
+        net_not_none(self.net)
+        self.trainer.train_parallel()
+
     def predict(self, x: np.ndarray, tau: float = 0) -> int:
         net_not_none(self.net)
         assert x.shape == self.muzero_config.target_resolution + (
             3,), "Input shape must match target resolution with 3 channels. Got: " + str(x.shape)
         self.net.eval()
         pi, (v, _) = self.tree.search(self.net, x, None, self.device, tau=tau)
-        move = self.game_manager.select_move(pi,tau=self.muzero_config.tau)
+        move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
         return move

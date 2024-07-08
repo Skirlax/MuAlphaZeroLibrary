@@ -6,7 +6,7 @@ from AlphaZero.MCTS.az_search_tree import McSearchTree
 
 os.environ['OMP_NUM_THREADS'] = '5'
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-from AlphaZero.Network.trainer import Trainer
+from mu_alpha_zero.trainer import Trainer
 
 from AlphaZero.constants import SAMPLE_AZ_ARGS as args_
 from AlphaZero.constants import TRAINED_AZ_NET_ARGS as _args

@@ -1,3 +1,5 @@
+import multiprocessing
+
 from torch.multiprocessing import set_start_method
 
 from mu_alpha_zero.General.utils import not_zero
@@ -25,6 +27,7 @@ from mu_alpha_zero.MuZero.JavaGateway.java_manager import JavaManager
 from mu_alpha_zero.config import Config
 from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.Hooks.hook_manager import HookManager
+from mu_alpha_zero.shared_storage_manager import SharedStorageManager, SharedStorage
 
 
 class Trainer:
@@ -174,6 +177,35 @@ class Trainer:
         self.logger.log(LoggingMessageTemplates.TRAINING_END(important_args))
         self.logger.pushbullet_log(LoggingMessageTemplates.TRAINING_END_PSB())
         return self.network
+
+    def train_parallel(self):
+        self.opponent_network.to(self.device)
+        self.logger.log(LoggingMessageTemplates.TRAINING_START(self.muzero_alphazero_config.num_iters))
+        self.opponent_network.load_state_dict(self.network.state_dict())
+        shared_storage_manager = SharedStorageManager()
+        shared_storage_manager.start()
+        shared_storage: SharedStorage = shared_storage_manager.SharedStorage(self.memory)
+        self.network.eval()
+        # p1 = multiprocessing.Process(target=self.mcts.start_continuous_self_play,
+        #                              args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
+        #                                    self.make_n_trees(self.muzero_alphazero_config.num_workers),
+        #                                    shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
+        #                                    self.muzero_alphazero_config.num_workers))
+        # p2 = multiprocessing.Process(target=self.network.continuous_weight_update,
+        #                              args=(shared_storage, self.muzero_alphazero_config))
+        p3 = multiprocessing.Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
+                                                                             self.net_player.make_fresh_instance(),
+                                                                             RandomPlayer(
+                                                                                 self.game_manager.make_fresh_instance(),
+                                                                                 **{}),
+                                                                             self.muzero_alphazero_config.num_pit_games,
+                                                                             self.muzero_alphazero_config.num_simulations,
+                                                                             shared_storage, False, 1))
+        ps = [p3]
+        for p in ps:
+            p.start()
+        for p in ps:
+            p.join()
 
     def make_n_networks(self, n: int) -> list[AlphaZeroNet]:
         """
