@@ -1,8 +1,7 @@
 import copy
-
 from mu_alpha_zero.mem_buffer import MemBuffer
 
-from multiprocessing.managers import BaseManager
+from multiprocessing_on_dill.managers import BaseManager
 
 
 class SharedStorage:

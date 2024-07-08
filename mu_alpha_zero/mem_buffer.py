@@ -3,7 +3,6 @@ import random
 from collections import deque
 from itertools import chain
 
-import dill
 import numpy as np
 import pymongo
 import torch as th
@@ -280,13 +279,3 @@ class PickleMemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         raise NotImplementedError("Length not implemented for PickleMemBuffer.")
 
-
-# Override default pickler to use dill
-def dump(obj, file, protocol=None):
-    '''Replacement for pickle.dump() using dill.'''
-    dill.dump(obj, file, protocol)
-
-
-def dumps(obj, protocol=None):
-    '''Replacement for pickle.dumps() using dill.'''
-    return dill.dumps(obj, protocol)
