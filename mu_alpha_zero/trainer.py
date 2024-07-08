@@ -186,6 +186,7 @@ class Trainer:
         shared_storage_manager.start()
         mem = shared_storage_manager.MemBuffer(self.memory.max_size, self.memory.disk, self.memory.full_disk,
                                                self.memory.dir_path, hook_manager=self.memory.hook_manager)
+        print(len(mem.get_buffer()))
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         shared_storage.set_stable_network_params(self.network.state_dict())
         self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
