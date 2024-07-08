@@ -1,8 +1,10 @@
 import copy
-from mu_alpha_zero.mem_buffer import MemBuffer
-from multiprocessing_on_dill import set_start_method
+import dill
+from multiprocessing import set_start_method
 set_start_method("spawn", force=True)
-from multiprocessing_on_dill.managers import BaseManager
+from mu_alpha_zero.mem_buffer import MemBuffer
+
+from multiprocessing.managers import BaseManager
 
 
 class SharedStorage:

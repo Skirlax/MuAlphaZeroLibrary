@@ -1,5 +1,5 @@
-from multiprocessing_on_dill import set_start_method as set_start_method_dill
-set_start_method_dill('spawn', force=True)
+from multiprocessing import set_start_method
+set_start_method("spawn", force=True)
 
 from mu_alpha_zero.General.utils import not_zero
 
