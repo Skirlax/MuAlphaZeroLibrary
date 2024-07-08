@@ -19,7 +19,10 @@ class GeneralArena(ABC):
                        num_mc_simulations: int,
                        shared_storage: SharedStorage,
                        one_player: bool = False, start_player: int = 1):
+
         conf = self.muzero_config if hasattr(self, "muzero_config") else self.alpha_zero_config
+        player1.network.eval()
+        player2.network.eval()
         for iter_ in range(conf.num_worker_iters):
             tested_params = shared_storage.get_experimental_network_params()
             if tested_params is None:
@@ -37,3 +40,4 @@ class GeneralArena(ABC):
             results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
                                                  one_player=one_player, start_player=start_player)
             wandb.log({"wins_p1_vs_random": results_p1, "wins_random_vs_p1": results_p2})
+            shared_storage.set_experimental_network_params(None)

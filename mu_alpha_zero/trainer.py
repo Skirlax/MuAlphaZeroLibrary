@@ -1,4 +1,6 @@
 from multiprocess import set_start_method
+from multiprocessing import Process
+
 set_start_method("spawn", force=True)
 
 from mu_alpha_zero.General.utils import not_zero
@@ -182,39 +184,32 @@ class Trainer:
         self.opponent_network.load_state_dict(self.network.state_dict())
         shared_storage_manager = SharedStorageManager()
         shared_storage_manager.start()
-        mem = shared_storage_manager.MemBuffer(self.memory.max_size, self.memory.disk, self.memory.full_disk, self.memory.dir_path, hook_manager=self.memory.hook_manager)
+        mem = shared_storage_manager.MemBuffer(self.memory.max_size, self.memory.disk, self.memory.full_disk,
+                                               self.memory.dir_path, hook_manager=self.memory.hook_manager)
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
-        self.network.eval()
         shared_storage.set_stable_network_params(self.network.state_dict())
-        # p1 = multiprocessing.Process(target=self.mcts.start_continuous_self_play,
-        #                              args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
-        #                                    self.make_n_trees(self.muzero_alphazero_config.num_workers),
-        #                                    shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
-        #                                    self.muzero_alphazero_config.num_worker_iters,dir_path=self.memory.dir_path))
-        # p2 = multiprocessing.Process(target=self.network.continuous_weight_update,
-        #                              args=(shared_storage, self.muzero_alphazero_config))
-        # p3 = multiprocessing.Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
-        #                                                                      self.net_player.make_fresh_instance(),
-        #                                                                      RandomPlayer(
-        #                                                                          self.game_manager.make_fresh_instance(),
-        #                                                                          **{}),
-        #                                                                      self.muzero_alphazero_config.num_pit_games,
-        #                                                                      self.muzero_alphazero_config.num_simulations,
-        #                                                                      shared_storage, False, 1))
-        # self.arena.continuous_pit(self.net_player.make_fresh_instance(), self.net_player.make_fresh_instance(),
-        #                           RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
-        #                           self.muzero_alphazero_config.num_pit_games,
-        #                           self.muzero_alphazero_config.num_simulations,
-        #                           shared_storage, False, 1)
-        from mu_alpha_zero.MuZero.MZ_MCTS.mz_search_tree import c_p_self_play
-        c_p_self_play(self.network,self.mcts,self.device,self.muzero_alphazero_config.self_play_games,shared_storage,self.muzero_alphazero_config.num_worker_iters,dir_path=self.memory.dir_path)
-        self.network.train()
-        self.network.continuous_weight_update(shared_storage, self.muzero_alphazero_config)
-        # ps = [p3]
-        # for p in ps:
-        #     p.start()
-        # for p in ps:
-        #     p.join()
+        p1 = Process(target=self.mcts.start_continuous_self_play,
+                     args=(self.make_n_networks(self.muzero_alphazero_config.num_workers),
+                           self.make_n_trees(self.muzero_alphazero_config.num_workers),
+                           shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
+                           self.muzero_alphazero_config.num_workers,
+                           self.muzero_alphazero_config.num_worker_iters))
+        p2 = Process(target=self.network.continuous_weight_update,
+                     args=(shared_storage, self.muzero_alphazero_config))
+        p3 = Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
+                                                             self.net_player.make_fresh_instance(),
+                                                             RandomPlayer(
+                                                                 self.game_manager.make_fresh_instance(),
+                                                                 **{}),
+                                                             self.muzero_alphazero_config.num_pit_games,
+                                                             self.muzero_alphazero_config.num_simulations,
+                                                             shared_storage, False, 1))
+
+        ps = [p1, p2, p3]
+        for p in ps:
+            p.start()
+        for p in ps:
+            p.join()
 
     def make_n_networks(self, n: int) -> list[AlphaZeroNet]:
         """

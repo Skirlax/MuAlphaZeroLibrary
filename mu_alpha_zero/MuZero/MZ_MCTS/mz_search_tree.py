@@ -215,6 +215,8 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
 
 def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_worker_iters: int,
                   dir_path: str or None = None):
+    net = net.to(device)
+    net.eval()
     for iter_ in range(num_worker_iters):
         for game in range(num_g):
             net.load_state_dict(shared_storage.get_stable_network_params())

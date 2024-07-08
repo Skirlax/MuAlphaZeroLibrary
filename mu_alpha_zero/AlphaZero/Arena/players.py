@@ -1,4 +1,5 @@
 import atexit
+import copy
 from abc import ABC, abstractmethod
 
 import jpype
@@ -86,7 +87,7 @@ class NetPlayer(Player):
         return int(move)
 
     def make_fresh_instance(self):
-        return NetPlayer(self.game_manager.make_fresh_instance(), **{"network": self.network,
+        return NetPlayer(self.game_manager.make_fresh_instance(), **{"network": copy.deepcopy(self.network),
                                                                      "monte_carlo_tree_search": self.monte_carlo_tree_search.make_fresh_instance()})
 
     def set_network(self, network):

@@ -8,13 +8,13 @@ from mu_alpha_zero.mem_buffer import MemBuffer
 class SharedStorage:
     def __init__(self, mem_buffer: MemBuffer):
         self.mem_buffer = mem_buffer
-        self.experimental_network_params: dict = None
-        self.stable_network_params: dict = None
+        self.experimental_network_params: dict or None = None
+        self.stable_network_params: dict or None = None
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
 
-    def set_experimental_network_params(self, network_params: dict):
+    def set_experimental_network_params(self, network_params: dict or None):
         self.experimental_network_params = copy.deepcopy(network_params)
 
     def get_stable_network_params(self):
