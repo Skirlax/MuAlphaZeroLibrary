@@ -193,19 +193,24 @@ class Trainer:
         #                                    self.muzero_alphazero_config.num_workers))
         # p2 = multiprocessing.Process(target=self.network.continuous_weight_update,
         #                              args=(shared_storage, self.muzero_alphazero_config))
-        p3 = multiprocessing.Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
-                                                                             self.net_player.make_fresh_instance(),
-                                                                             RandomPlayer(
-                                                                                 self.game_manager.make_fresh_instance(),
-                                                                                 **{}),
-                                                                             self.muzero_alphazero_config.num_pit_games,
-                                                                             self.muzero_alphazero_config.num_simulations,
-                                                                             shared_storage, False, 1))
-        ps = [p3]
-        for p in ps:
-            p.start()
-        for p in ps:
-            p.join()
+        # p3 = multiprocessing.Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
+        #                                                                      self.net_player.make_fresh_instance(),
+        #                                                                      RandomPlayer(
+        #                                                                          self.game_manager.make_fresh_instance(),
+        #                                                                          **{}),
+        #                                                                      self.muzero_alphazero_config.num_pit_games,
+        #                                                                      self.muzero_alphazero_config.num_simulations,
+        #                                                                      shared_storage, False, 1))
+        self.arena.continuous_pit(self.net_player.make_fresh_instance(), self.net_player.make_fresh_instance(),
+                                  RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
+                                  self.muzero_alphazero_config.num_pit_games,
+                                  self.muzero_alphazero_config.num_simulations,
+                                  shared_storage, False, 1)
+        # ps = [p3]
+        # for p in ps:
+        #     p.start()
+        # for p in ps:
+        #     p.join()
 
     def make_n_networks(self, n: int) -> list[AlphaZeroNet]:
         """
