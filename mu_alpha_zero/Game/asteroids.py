@@ -7,7 +7,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 
 class Asteroids(MuZeroGame):
 
-    def get_state_for_player(self, state: np.ndarray, player: int):
+    def get_state_for_passive_player(self, state: np.ndarray, player: int):
         return state
 
     def __init__(self):

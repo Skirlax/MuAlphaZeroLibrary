@@ -158,8 +158,7 @@ class MuZeroFrameBuffer:
         self.buffers = {1: deque(maxlen=frame_buffer_size), -1: deque(maxlen=frame_buffer_size)}
 
     def add_frame(self, frame, action, player):
-        self.buffers[player][-1] = (self.buffers[player][-1][0], action)
-        self.buffers[player].append((frame, self.noop_action))
+        self.buffers[player].append((frame, action))
 
     def concat_frames(self, player):
         frames_with_actions = [th.cat((th.tensor(frame, dtype=th.float32),

@@ -3,7 +3,7 @@ import time
 import wandb
 
 from mu_alpha_zero.AlphaZero.Arena.players import Player
-from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager as GameManager
+# from mu_alpha_zero.General.az_game import AlphaZeroGame
 from mu_alpha_zero.General.arena import GeneralArena
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
@@ -12,7 +12,7 @@ from mu_alpha_zero.config import AlphaZeroConfig
 
 
 class Arena(GeneralArena):
-    def __init__(self, game_manager: GameManager, alpha_zero_config: AlphaZeroConfig, device,
+    def __init__(self, game_manager, alpha_zero_config: AlphaZeroConfig, device,
                  hook_manager: HookManager or None = None, state_managed: bool = False):
         self.game_manager = game_manager
         self.state_managed = state_managed
@@ -64,12 +64,13 @@ class Arena(GeneralArena):
                 state = self.game_manager.reset()
             else:
                 state = self.game_manager.reset(player=current_player)
-            if self.alpha_zero_config.arena_running_muzero:
+            if self.alpha_zero_config.arena_running_muzero and self.alpha_zero_config.enable_frame_buffer:
                 try:
-                    player1.monte_carlo_tree_search.buffer.init_buffer(self.game_manager.get_state_for_player(state, 1 if current_player == 1 else 2),
-                                                                       current_player)
+                    player1.monte_carlo_tree_search.buffer.init_buffer(
+                        self.game_manager.get_state_for_passive_player(state, 1),
+                        1)
                     player2.monte_carlo_tree_search.buffer.init_buffer(
-                        self.game_manager.get_state_for_player(state, -1 if current_player == -1 else -2), -current_player)
+                        self.game_manager.get_state_for_passive_player(state, -1), -1)
                 except AttributeError:
                     pass
 
@@ -93,18 +94,18 @@ class Arena(GeneralArena):
                     state = self.game_manager.get_next_state(move, current_player)[0]
                     status = self.game_manager.game_result(current_player)
                 self.game_manager.render()
-                if self.alpha_zero_config.arena_running_muzero:
+                if self.alpha_zero_config.arena_running_muzero and self.alpha_zero_config.enable_frame_buffer:
                     move = scale_action(move, self.game_manager.get_num_actions()) if isinstance(move, int) else \
                         scale_action(move[0] * state.shape[0] + move[1], self.game_manager.get_num_actions())
                     try:
-                        if current_player == -1:
-                            state_fp = self.game_manager.get_state_for_player(state, -2)
-                            player2.monte_carlo_tree_search.buffer.add_frame(state_fp, move, current_player)
-                            player1.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
-                        else:
-                            state_fp = self.game_manager.get_state_for_player(state, 2)
-                            player1.monte_carlo_tree_search.buffer.add_frame(state_fp, move, current_player)
-                            player2.monte_carlo_tree_search.buffer.add_frame(state, move, -current_player)
+                        if game < num_games_per_player:
+                            if current_player == 1:
+                                player2.monte_carlo_tree_search.buffer.add_frame(state,move,-1)
+                                player1.monte_carlo_tree_search.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, 1),move,1)
+                            else:
+                                player1.monte_carlo_tree_search.buffer.add_frame(state,move,1)
+                                player2.monte_carlo_tree_search.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -1),move,-1)
+
                     except AttributeError:
                         # Player is probably not a net player and doesn't have monte_carlo_tree_search.
                         pass

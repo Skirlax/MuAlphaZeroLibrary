@@ -96,8 +96,10 @@ class MuZeroGame(ABC):
         pass
 
     @abstractmethod
-    def get_state_for_player(self, state: np.ndarray, player: int):
+    def get_state_for_passive_player(self, state: np.ndarray, player: int):
         """
-        Returns the state of the game for the given player. If your game state is not dependent on the player, return the state as is.
+        Returns a state with information specific for the provided player. This should only be done when a part of
+        the actual observation is player specific (for example the player's cards in a card game). In other cases
+        this method should return the provided state as is (for example in chess or other board games).
         """
         pass

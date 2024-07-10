@@ -1,6 +1,9 @@
 import copy
 import gc
+import time
+
 from multiprocess import set_start_method
+
 set_start_method("spawn", force=True)
 from multiprocess.pool import Pool
 
@@ -15,10 +18,9 @@ from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_state, \
-    scale_hidden_state, mask_invalid_actions, scale_reward_value
+    scale_hidden_state, mask_invalid_actions
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
-import wandb
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
@@ -28,9 +30,14 @@ class MuZeroSearchTree(SearchTree):
         self.game_manager = game_manager
         self.muzero_config = muzero_config
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
-        self.buffer = MuZeroFrameBuffer(self.muzero_config.frame_buffer_size, self.game_manager.get_noop(),
-                                        self.muzero_config.net_action_size)
+        self.buffer = self.init_frame_buffer()
         self.min_max_q = [float("inf"), -float("inf")]
+
+    def init_frame_buffer(self):
+        if self.muzero_config.enable_frame_buffer:
+            return MuZeroFrameBuffer(self.muzero_config.frame_buffer_size, self.game_manager.get_noop(),
+                                     self.muzero_config.net_action_size)
+        return MuZeroFrameBuffer(1, self.game_manager.get_noop(), self.muzero_config.net_action_size)
 
     def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
                       calculate_avg_num_children: bool = False) -> list:
@@ -42,7 +49,7 @@ class MuZeroSearchTree(SearchTree):
         player = 1
         self.buffer.init_buffer(state, player)
         if self.muzero_config.multiple_players:
-            self.buffer.init_buffer(self.game_manager.get_state_for_player(state, -2), -player)
+            self.buffer.init_buffer(self.game_manager.get_state_for_passive_player(state, -player), -player)
         data = []
 
         for step in range(num_steps):
@@ -51,28 +58,19 @@ class MuZeroSearchTree(SearchTree):
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
             _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
-            if self.muzero_config.multiple_players:
-                # We want to signify that player can see this state but their not the one acting based on it
-                # (this is important mainly if part of the observation is player specific).
-                # Without this the player buffer would contain only state at time step t and then t + 2, t + 4, ...
-                sign = np.sign(player)
-                player_observing_flag = sign * (sign * player + 1)
-                state = self.game_manager.get_state_for_player(state, player_observing_flag)
-                scaled_move = scale_action(move, self.game_manager.get_num_actions())
-                self.buffer.add_frame(state, scaled_move, player)
-            rew = scale_reward_value(float(rew))
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
-            if done:
-                break
             move = scale_action(move, self.game_manager.get_num_actions())
             frame = self.buffer.concat_frames(player).detach().cpu().numpy()
             data.append(
                 (pi, v, (rew, move, float(pred_v[0]), player),
                  frame if dir_path is None else LazyArray(frame, dir_path)))
+            if done:
+                break
             if self.muzero_config.multiple_players:
                 player = -player
             self.buffer.add_frame(state, move, player)
+            self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player), move, -player)
 
         gc.collect()  # To clear any memory leaks, might not be necessary.
         return data
@@ -199,6 +197,27 @@ class MuZeroSearchTree(SearchTree):
                            num_worker_iters,
                            shared_storage.get_mem_buffer().get_dir_path()) for i in range(num_jobs)])
         return pool
+
+    @staticmethod
+    def reanalyze(net, tree, device, shared_storage: SharedStorage, config: MuZeroConfig):
+        def get_first_n(n: int, mem: GeneralMemoryBuffer):
+            buffer = mem.get_buffer()
+            data = []
+            for i in range(n):
+                data.append((buffer[i], i))
+            return data
+
+        memory = shared_storage.get_mem_buffer()
+        net = net.to(device)
+        net.eval()
+        while len(memory.get_buffer()) < config.batch_size * 6:
+            time.sleep(5)
+        for iter_ in range(config.num_worker_iters):
+            data = get_first_n(config.batch_size * 2, memory)
+            for pi, v, (rew, move, pred_v, player), frame in data:
+                if isinstance(frame, LazyArray):
+                    frame = frame.load_array()
+                state = th.tensor(frame, device=device).float()
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)

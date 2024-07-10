@@ -45,6 +45,7 @@ class Config:
     arena_running_muzero: bool = False
     use_wandb: bool = False
     num_worker_iters: int = 100_000
+    enable_frame_buffer: bool = True
 
     def to_dict(self):
         return self.__dict__
