@@ -181,6 +181,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return -th.sum(y * y_hat) / y.size()[0]
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
+        wandb.init(project="MZ",name="Continuous Weight Update")
         self.train()
         losses = []
         loss_avgs = []
