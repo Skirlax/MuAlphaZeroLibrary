@@ -105,7 +105,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         memory_buffer.reset_priorities()
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
                                                              muzero_config.batch_size, K,
-                                                             alpha=muzero_config.alpha)
+                                                             alpha=muzero_config.alpha,
+                                                             recalculate_on_every_call=muzero_config.recalculate_p_on_every_call)
         for epoch in range(muzero_config.epochs):
             experience_batch, priorities = loader()
             if len(experience_batch) <= 1:
@@ -136,7 +137,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
                                                              muzero_config.batch_size, K,
                                                              alpha=muzero_config.alpha,
-                                                             is_eval=True)
+                                                             is_eval=True,
+                                                             recalculate_on_every_call=muzero_config.recalculate_p_on_every_call)
         for epoch in range(muzero_config.eval_epochs):
             experience_batch, priorities = loader()
             if len(experience_batch) <= 1:
@@ -181,15 +183,17 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return -th.sum(y * y_hat) / y.size()[0]
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
-        wandb.init(project="MZ",name="Continuous Weight Update")
+        wandb.init(project="MZ", name="Continuous Weight Update")
         self.train()
         losses = []
         loss_avgs = []
-        while len(shared_storage.get_mem_buffer().get_buffer()) < muzero_config.batch_size * 3: # await reasonable buffer size
+        while len(
+                shared_storage.get_mem_buffer().get_buffer()) < muzero_config.batch_size * 3:  # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
             shared_storage.set_experimental_network_params(self.state_dict())
             avg, iter_losses = self.train_net(shared_storage.get_mem_buffer(), muzero_config)
+            self.eval_net(shared_storage.get_mem_buffer(), muzero_config)
             loss_avgs.append(avg)
             losses.extend(iter_losses)
             wandb.log({"loss_avg": avg})

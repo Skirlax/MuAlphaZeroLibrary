@@ -100,8 +100,11 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False):
+    def batch_with_priorities(self, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False,
+                              recalculate_on_every_call: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
+        if recalculate_on_every_call:
+            self.priorities = None
         if self.priorities is None:
             self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
         return self.simple_sample(buf, batch_size, K)

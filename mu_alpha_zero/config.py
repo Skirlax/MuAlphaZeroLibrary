@@ -46,6 +46,7 @@ class Config:
     use_wandb: bool = False
     num_worker_iters: int = 100_000
     enable_frame_buffer: bool = True
+    recalculate_p_on_every_call: bool = False
 
     def to_dict(self):
         return self.__dict__
@@ -111,6 +112,7 @@ class MuZeroConfig(Config):
     scale_state: bool = True
     balance_term: float = 1
     enable_per: bool = True
+
 
 
 
