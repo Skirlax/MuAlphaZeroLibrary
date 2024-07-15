@@ -241,7 +241,11 @@ def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_w
     net.eval()
     for iter_ in range(num_worker_iters):
         for game in range(num_g):
-            net.load_state_dict(shared_storage.get_stable_network_params())
+            if shared_storage.get_experimental_network_params() is None:
+                params = shared_storage.get_stable_network_params()
+            else:
+                params = shared_storage.get_experimental_network_params()
+            net.load_state_dict(params)
             game_results = tree.play_one_game(net, device, dir_path=dir_path,
                                               calculate_avg_num_children=game == num_g - 1)
             shared_storage.add_list(game_results)
