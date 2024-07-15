@@ -105,8 +105,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         memory_buffer.reset_priorities()
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
                                                              muzero_config.batch_size, K,
-                                                             alpha=muzero_config.alpha,
-                                                             recalculate_on_every_call=muzero_config.recalculate_p_on_every_call)
+                                                             alpha=muzero_config.alpha)
         for epoch in range(muzero_config.epochs):
             experience_batch, priorities = loader()
             if len(experience_batch) <= 1:
@@ -137,8 +136,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
                                                              muzero_config.batch_size, K,
                                                              alpha=muzero_config.alpha,
-                                                             is_eval=True,
-                                                             recalculate_on_every_call=muzero_config.recalculate_p_on_every_call)
+                                                             is_eval=True)
         for epoch in range(muzero_config.eval_epochs):
             experience_batch, priorities = loader()
             if len(experience_batch) <= 1:

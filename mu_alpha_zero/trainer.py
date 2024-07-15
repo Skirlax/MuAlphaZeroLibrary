@@ -179,7 +179,6 @@ class Trainer:
         return self.network
 
     def train_parallel(self):
-        self.muzero_alphazero_config.recalculate_p_on_every_call = True
         self.opponent_network.to(self.device)
         self.logger.log(LoggingMessageTemplates.TRAINING_START(self.muzero_alphazero_config.num_iters))
         self.opponent_network.load_state_dict(self.network.state_dict())
