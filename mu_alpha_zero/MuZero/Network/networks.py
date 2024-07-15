@@ -188,12 +188,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         losses = []
         loss_avgs = []
         while len(
-                shared_storage.get_mem_buffer().get_buffer()) < muzero_config.batch_size * 3:  # await reasonable buffer size
+                shared_storage.get_buffer()) < muzero_config.batch_size * 3:  # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
             shared_storage.set_experimental_network_params(self.state_dict())
-            avg, iter_losses = self.train_net(shared_storage.get_mem_buffer(), muzero_config)
-            self.eval_net(shared_storage.get_mem_buffer(), muzero_config)
+            avg, iter_losses = self.train_net(shared_storage, muzero_config)
+            self.eval_net(shared_storage, muzero_config)
             loss_avgs.append(avg)
             losses.extend(iter_losses)
             wandb.log({"loss_avg": avg})

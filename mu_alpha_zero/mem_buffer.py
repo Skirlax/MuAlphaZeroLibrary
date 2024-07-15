@@ -3,7 +3,6 @@ import random
 from collections import deque
 from itertools import chain
 
-import multiprocess.synchronize
 import numpy as np
 import pymongo
 import torch as th
@@ -43,7 +42,6 @@ class MemBuffer(GeneralMemoryBuffer):
         self.last_buffer_size = 0
         self.priorities = None
         self.is_disk = disk
-        self.lock = multiprocess.context._default_context.Lock()
 
     def add(self, experience, is_eval: bool = False):
         if not isinstance(experience, tuple):
@@ -71,13 +69,12 @@ class MemBuffer(GeneralMemoryBuffer):
         return self.dir_path
 
     def add_list(self, experience_list, percent_eval: int = 10):
-        with self.lock:
-            train = experience_list[:int(len(experience_list) * 0.9)]
-            test = experience_list[int(len(experience_list) * 0.9):]
-            for item in train:
-                self.add(item)
-            for item in test:
-                self.add(item, is_eval=True)
+        train = experience_list[:int(len(experience_list) * 0.9)]
+        test = experience_list[int(len(experience_list) * 0.9):]
+        for item in train:
+            self.add(item)
+        for item in test:
+            self.add(item, is_eval=True)
 
     def sample(self, batch_size):
         return random.sample(self.buffer, batch_size)
@@ -103,18 +100,14 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def get_lock(self):
-        return self.lock
-
     def batch_with_priorities(self, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False,
                               recalculate_p_on_every_call: bool = False):
-        with self.lock:
-            buf = self.buffer if not is_eval else self.eval_buffer
-            if recalculate_p_on_every_call:
-                self.priorities = None
-            if self.priorities is None:
-                self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
-            return self.simple_sample(buf, batch_size, K)
+        buf = self.buffer if not is_eval else self.eval_buffer
+        if recalculate_p_on_every_call:
+            self.priorities = None
+        if self.priorities is None:
+            self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
+        return self.simple_sample(buf, batch_size, K)
 
     def reset_priorities(self):
         self.priorities = None

@@ -195,27 +195,26 @@ class MuZeroSearchTree(SearchTree):
         for i in range(num_jobs):
             pool.apply_async(c_p_self_play, args=(
                 nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, shared_storage, num_worker_iters,
-                shared_storage.get_mem_buffer().get_dir_path())
-            )
+                shared_storage.get_dir_path())
+                             )
 
         return pool
 
     @staticmethod
     def reanalyze(net, tree, device, shared_storage: SharedStorage, config: MuZeroConfig):
-        def get_first_n(n: int, mem: GeneralMemoryBuffer):
+        def get_first_n(n: int, mem: SharedStorage):
             buffer = mem.get_buffer()
             data = []
             for i in range(n):
                 data.append((buffer[i], i))
             return data
 
-        memory = shared_storage.get_mem_buffer()
         net = net.to(device)
         net.eval()
-        while len(memory.get_buffer()) < config.batch_size * 6:
+        while len(shared_storage.get_buffer()) < config.batch_size * 6:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
-            data = get_first_n(config.batch_size * 2, memory)
+            data = get_first_n(config.batch_size * 2, shared_storage)
             for pi, v, (rew, move, pred_v, player), frame in data:
                 if isinstance(frame, LazyArray):
                     frame = frame.load_array()
@@ -245,4 +244,4 @@ def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_w
             net.load_state_dict(shared_storage.get_stable_network_params())
             game_results = tree.play_one_game(net, device, dir_path=dir_path,
                                               calculate_avg_num_children=game == num_g - 1)
-            shared_storage.get_mem_buffer().add_list(game_results)
+            shared_storage.add_list(game_results)

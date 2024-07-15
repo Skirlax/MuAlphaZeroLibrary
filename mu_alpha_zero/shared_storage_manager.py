@@ -1,5 +1,5 @@
 import copy
-
+import multiprocess
 # from pathos.helpers import mp as multiprocess
 from multiprocess.managers import BaseManager
 from mu_alpha_zero.mem_buffer import MemBuffer
@@ -10,6 +10,7 @@ class SharedStorage:
         self.mem_buffer = mem_buffer
         self.experimental_network_params: dict or None = None
         self.stable_network_params: dict or None = None
+        self.lock = multiprocess.context._default_context.Lock()
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
@@ -23,11 +24,15 @@ class SharedStorage:
     def set_stable_network_params(self, network_params: dict):
         self.stable_network_params = copy.deepcopy(network_params)
 
-    def get_mem_buffer(self):
-        return self.mem_buffer
+    # def get_mem_buffer(self):
+    #     return self.mem_buffer
 
-    def add_list(self, list_: list):
-        self.mem_buffer.add_list(list_)
+    def __getattr__(self, item):
+        if hasattr(self, item):
+            return getattr(self, item)
+        if hasattr(self.mem_buffer, item):
+            return getattr(self.mem_buffer, item)
+        raise AttributeError(f"SharedStorage and MemBuffer have no attribute {item}")
 
 
 class SharedStorageManager(BaseManager):
