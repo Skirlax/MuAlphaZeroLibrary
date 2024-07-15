@@ -28,10 +28,11 @@ class SharedStorage:
     #     return self.mem_buffer
 
     def __getattr__(self, item):
-        if hasattr(self, item):
-            return getattr(self, item)
-        if hasattr(self.mem_buffer, item):
-            return getattr(self.mem_buffer, item)
+        with self.lock:
+            if hasattr(self, item):
+                return getattr(self, item)
+            if hasattr(self.mem_buffer, item):
+                return getattr(self.mem_buffer, item)
         raise AttributeError(f"SharedStorage and MemBuffer have no attribute {item}")
 
 
