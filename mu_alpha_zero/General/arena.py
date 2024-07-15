@@ -40,4 +40,3 @@ class GeneralArena(ABC):
             results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
                                                  one_player=one_player, start_player=start_player)
             wandb.log({"wins_p1_vs_random": results_p1, "wins_random_vs_p1": results_p2})
-            shared_storage.set_experimental_network_params(None)
