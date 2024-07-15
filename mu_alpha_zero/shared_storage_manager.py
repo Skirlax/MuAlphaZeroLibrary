@@ -24,14 +24,25 @@ class SharedStorage:
     def set_stable_network_params(self, network_params: dict):
         self.stable_network_params = copy.deepcopy(network_params)
 
-    def __getattr__(self, name):
-        def method(*args, **kwargs):
-            if hasattr(self, name) and callable(getattr(self, name)):
-                return getattr(self, name)(*args, **kwargs)
-            if not hasattr(self.mem_buffer, name) and callable(getattr(self.mem_buffer, name)):
-                return getattr(self.mem_buffer, name)(*args, **kwargs)
-            raise AttributeError(f"'MemBuffer' object has no attribute '{name}'")
-        return method
+    def add_list(self, *args, **kwargs):
+        with self.lock:
+            return self.mem_buffer.add_list(*args, **kwargs)
+
+    def get_dir_path(self):
+        with self.lock:
+            return self.mem_buffer.get_dir_path()
+
+    def get_buffer(self):
+        with self.lock:
+            return self.mem_buffer.get_buffer()
+
+    def batch_with_priorities(self, *args, **kwargs):
+        with self.lock:
+            return self.mem_buffer.batch_with_priorities(*args, **kwargs)
+
+    def reset_priorities(self):
+        with self.lock:
+            return self.mem_buffer.reset_priorities()
 
 
 class SharedStorageManager(BaseManager):
