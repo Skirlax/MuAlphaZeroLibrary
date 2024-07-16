@@ -191,8 +191,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                 shared_storage.get_buffer()) < muzero_config.batch_size * 3:  # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
-            shared_storage.set_experimental_network_params(self.state_dict())
             avg, iter_losses = self.train_net(shared_storage, muzero_config)
+            shared_storage.set_experimental_network_params(self.state_dict())
+            shared_storage.set_optimizer(self.optimizer)
             self.eval_net(shared_storage, muzero_config)
             loss_avgs.append(avg)
             losses.extend(iter_losses)

@@ -190,10 +190,11 @@ class Trainer:
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         shared_storage.set_stable_network_params(self.network.state_dict())
         pool = self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
-                                             self.make_n_trees(self.muzero_alphazero_config.num_workers),
-                                             shared_storage, self.device, self.muzero_alphazero_config.self_play_games,
-                                             self.muzero_alphazero_config.num_workers,
-                                             self.muzero_alphazero_config.num_worker_iters)
+                                                    self.make_n_trees(self.muzero_alphazero_config.num_workers),
+                                                    shared_storage, self.device,
+                                                    self.muzero_alphazero_config.self_play_games,
+                                                    self.muzero_alphazero_config.num_workers,
+                                                    self.muzero_alphazero_config.num_worker_iters)
         self.logger.log(f"Successfully started a pool of {self.muzero_alphazero_config.num_workers} workers for "
                         f"self-play (1/3).")
         p2 = Process(target=self.network.continuous_weight_update,
@@ -205,7 +206,7 @@ class Trainer:
                                                                  **{}),
                                                              self.muzero_alphazero_config.num_pit_games,
                                                              self.muzero_alphazero_config.num_simulations,
-                                                             shared_storage, False, 1))
+                                                             shared_storage, self.checkpointer, False, 1))
 
         p2.start()
         self.logger.log("Successfully started continuous weight update process (2/3).")

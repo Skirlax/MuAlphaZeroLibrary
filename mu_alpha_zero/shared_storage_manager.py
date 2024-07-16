@@ -11,6 +11,7 @@ class SharedStorage:
         self.experimental_network_params: dict or None = None
         self.stable_network_params: dict or None = None
         self.lock = multiprocess.context._default_context.Lock()
+        self.optimizer = None
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
@@ -35,6 +36,12 @@ class SharedStorage:
     def get_buffer(self):
         with self.lock:
             return self.mem_buffer.get_buffer()
+
+    def set_optimizer(self, optimizer):
+        self.optimizer = copy.deepcopy(optimizer)
+
+    def get_optimizer(self):
+        return copy.deepcopy(self.optimizer)
 
     def batch_with_priorities(self, *args, **kwargs):
         with self.lock:
