@@ -42,6 +42,7 @@ class GeneralArena(ABC):
                 accept_num += 1
                 checkpointer.save_checkpoint(player1.network, player2.network, shared_storage.get_optimizer(), conf.lr,
                                              accept_num, conf)
+            shared_storage.set_was_pitted(True)
 
             results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
                                                  one_player=one_player, start_player=start_player)

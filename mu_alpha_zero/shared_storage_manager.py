@@ -12,6 +12,7 @@ class SharedStorage:
         self.stable_network_params: dict or None = None
         self.lock = multiprocess.context._default_context.Lock()
         self.optimizer = None
+        self.was_pitted = True
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
@@ -42,6 +43,12 @@ class SharedStorage:
 
     def get_optimizer(self):
         return copy.deepcopy(self.optimizer)
+
+    def set_was_pitted(self, was_pitted: bool):
+        self.was_pitted = was_pitted
+
+    def get_was_pitted(self):
+        return self.was_pitted
 
     def batch_with_priorities(self, *args, **kwargs):
         with self.lock:
