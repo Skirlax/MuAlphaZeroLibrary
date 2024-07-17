@@ -166,7 +166,7 @@ class MuZeroFrameBuffer:
             self.buffers[player].append(frame)
             return
         for i, item in enumerate(reversed(self.buffers[player])):
-            if item[1] != self.noop_action:
+            if item[1] != scale_action(self.noop_action, self.action_space_size):
                 break
             item_ = list(item)
             item_[1] = action
