@@ -154,29 +154,16 @@ class MemBuffer(GeneralMemoryBuffer):
 
 
 class MuZeroFrameBuffer:
-    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int, ignore_actions: bool = False):
+    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int):
         self.max_size = frame_buffer_size
         self.noop_action = noop_action
-        self.ignore_actions = ignore_actions
         self.action_space_size = action_space_size
         self.buffers = {1: deque(maxlen=frame_buffer_size), -1: deque(maxlen=frame_buffer_size)}
 
     def add_frame(self, frame, action, player):
-        if self.ignore_actions:
-            self.buffers[player].append(frame)
-            return
-        for i, item in enumerate(reversed(self.buffers[player])):
-            if item[1] != scale_action(self.noop_action, self.action_space_size):
-                break
-            item_ = list(item)
-            item_[1] = action
-            self.buffers[player][-(i + 1)] = tuple(item_)
-        self.buffers[player].append((frame, scale_action(self.noop_action, self.action_space_size)))
+        self.buffers[player].append((frame, action))
 
     def concat_frames(self, player):
-        if self.ignore_actions:
-            assert len(self.buffers[player]) == 1, "Can only ignore actions if frame buffer is disabled!"
-            return th.tensor(self.buffers[player][0], dtype=th.float32)
         frames_with_actions = [th.cat((th.tensor(frame, dtype=th.float32),
                                        th.full((frame.shape[0], frame.shape[1], 1), action, dtype=th.float32)), dim=2)
                                for frame, action in self.buffers[player]]
@@ -184,9 +171,6 @@ class MuZeroFrameBuffer:
         return th.cat(frames_with_actions, dim=2)
 
     def init_buffer(self, init_state, player):
-        if self.ignore_actions:
-            self.buffers[player].append(init_state)
-            return
         for _ in range(self.max_size):
             self.buffers[player].append((init_state, scale_action(self.noop_action, self.action_space_size)))
 
