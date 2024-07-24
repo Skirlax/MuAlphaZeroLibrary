@@ -72,10 +72,12 @@ class MemBuffer(GeneralMemoryBuffer):
 
     def add_list(self, experience_list, percent_eval: int = 10):
         if len(self.buffer) >= 10:
-            start_idx = int(len(self.buffer) * 0.9)
-            for item in self.buffer[start_idx:]:
-                self.buffer.remove(item)
-                self.eval_buffer.append(item)
+            prob = random.random()
+            if prob < 0.1:
+                # In 10% of cases, add to eval buffer
+                for item in experience_list:
+                    self.eval_buffer.append(item)
+                return
         for item in experience_list:
             self.buffer.append(item)
 

@@ -244,6 +244,9 @@ def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_w
     net.eval()
     for iter_ in range(num_worker_iters):
         for game in range(num_g):
+            # if not shared_storage.get_was_pitted():
+            #     # If the network was not yet decided on, slow down the process so the data won't get overpopulated with current params.
+            #     time.sleep(5)
             if shared_storage.get_experimental_network_params() is None:
                 params = shared_storage.get_stable_network_params()
             else:
