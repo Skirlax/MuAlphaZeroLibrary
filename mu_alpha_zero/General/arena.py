@@ -28,7 +28,7 @@ class GeneralArena(ABC):
         accept_num = 0
         for iter_ in range(conf.num_worker_iters):
             tested_params = shared_storage.get_experimental_network_params()
-            if tested_params is None:
+            if tested_params is None or shared_storage.get_was_pitted():
                 time.sleep(5)
                 continue
             player1.network.load_state_dict(tested_params)

@@ -98,8 +98,6 @@ class Arena(GeneralArena):
                 if self.alpha_zero_config.arena_running_muzero:
                     move = scale_action(move, self.game_manager.get_num_actions()) if isinstance(move, int) else \
                         scale_action(move[0] * state.shape[0] + move[1], self.game_manager.get_num_actions())
-                    #TODO: Remove print move
-                    print(move)
                     try:
                         if current_player == 1:
                             player2.monte_carlo_tree_search.buffer.add_frame(state,move,-1)

@@ -26,6 +26,10 @@ class SharedStorage:
     def set_stable_network_params(self, network_params: dict):
         self.stable_network_params = copy.deepcopy(network_params)
 
+    def eval_length(self):
+        with self.lock:
+            return self.mem_buffer.eval_length()
+
     def add_list(self, *args, **kwargs):
         with self.lock:
             return self.mem_buffer.add_list(*args, **kwargs)
