@@ -15,6 +15,7 @@ from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig, Config
 from mu_alpha_zero.mem_buffer import MemBuffer
+from mu_alpha_zero.MuZero.utils import invert_scale_reward_value
 
 
 class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
@@ -173,7 +174,7 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         else:
             self.policy_head = PolicyHead(action_size, linear_input_size[1], num_channels)
 
-    def forward(self, x, muzero: bool = False):
+    def forward(self, x, muzero: bool = False, return_support: bool = False):
         if not muzero:
             x = x.unsqueeze(1)
         x = F.relu(self.bn1(self.conv1(x)))
@@ -182,10 +183,12 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         x = self.dropout(x)
         val_h_output = self.value_head(x)
         pol_h_output = self.policy_head(x)
-        if muzero:
+        if not return_support:
             # multiply arange by softmax probabilities
+            val_h_output = th.exp(val_h_output)
             support_range = th.arange(-300, 301, 1, dtype=th.float32, device=x.device).unsqueeze(0)
             output = th.sum(val_h_output * support_range, dim=1)
+            output = invert_scale_reward_value(output)
             return pol_h_output, output.unsqueeze(0)
         return pol_h_output, val_h_output
 
@@ -287,8 +290,8 @@ class ValueHead(th.nn.Module):
         self.bn = nn.BatchNorm2d(1)
         self.fc1 = nn.Linear(linear_input_size, 256)
         if muzero:
-            self.fc2 = nn.Linear(256, support_size)
-            self.act = nn.Softmax(dim=1)
+            self.fc2 = nn.Linear(256, 2*support_size+ 1)
+            self.act = nn.LogSoftmax(dim=1)
         else:
             self.fc2 = nn.Linear(256, 1)
             self.act = nn.Tanh()

@@ -13,7 +13,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scalar_to_support, support_to_scalar
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
@@ -68,25 +68,37 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
-    def dynamics_forward(self, x: th.Tensor, predict: bool = False):
+    def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
+                         convert_to_state: bool = True):
         if predict:
             state, r = self.dynamics_network.forward(x, muzero=True)
-            state = state.view(self.num_out_channels, self.latent_size[0], self.latent_size[1])
-            r = r.detach().cpu().numpy()
-            return state, r
-        state, reward = self.dynamics_network(x, muzero=True)
+            reward = r.detach().cpu().numpy()
+        else:
+            state, reward = self.dynamics_network(x, muzero=True, return_support=return_support)
+        if convert_to_state:
+            try:
+                state = state.view(self.num_out_channels, self.latent_size[0], self.latent_size[1])
+            except RuntimeError:
+                # The state is batched
+                state = state.view(-1, self.num_out_channels, self.latent_size[0], self.latent_size[1])
         return state, reward
 
-    def prediction_forward(self, x: th.Tensor, predict: bool = False):
+    def prediction_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False):
         if predict:
             pi, v = self.prediction_network.predict(x, muzero=True)
             return pi, v
-        pi, v = self.prediction_network(x, muzero=True)
+        pi, v = self.prediction_network(x, muzero=True, return_support=return_support)
         return pi, v
 
     def representation_forward(self, x: th.Tensor):
         x = self.representation_network(x)
         return x
+
+    def forward_recurrent(self, hidden_state_with_action: th.Tensor, all_predict: bool, return_support: bool = False):
+        next_state, reward = self.dynamics_forward(hidden_state_with_action, predict=all_predict,
+                                                   return_support=return_support)
+        pi, v = self.prediction_forward(next_state, predict=all_predict, return_support=return_support)
+        return next_state, reward, pi, v
 
     def make_fresh_instance(self):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
@@ -100,18 +112,14 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
                                            weight_decay=muzero_config.l2)
         losses = []
-        K = muzero_config.K
         iteration = 0
-        memory_buffer.reset_priorities()
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
-                                                             muzero_config.batch_size, K,
-                                                             alpha=muzero_config.alpha,
-                                                             recalculate_p_on_every_call=muzero_config.recalculate_p_on_every_call)
+                                                             muzero_config.batch_size, muzero_config)
         for epoch in range(muzero_config.epochs):
-            experience_batch, priorities = loader()
-            if len(experience_batch) <= 1:
+            sampled_game_data, priorities, weights = loader()
+            if len(sampled_game_data) <= 1:
                 continue
-            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(sampled_game_data, weights, device, muzero_config)
             wandb.log({"combined_loss": loss.item(), "loss_v": loss_v.item(), "loss_pi": loss_pi.item(),
                        "loss_r": loss_r.item()})
             losses.append(loss.item())
@@ -119,7 +127,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             loss.backward()
             self.optimizer.step()
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
-                experience_batch, loss.item(), loss_v, loss_pi, loss_r,
+                sampled_game_data, loss.item(), loss_v, loss_pi, loss_r,
                 iteration))
             iteration += 1
         self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.TAIL,
@@ -127,60 +135,101 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return sum(losses) / len(losses), losses
 
     def eval_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> None:
+        if memory_buffer.eval_length() == 0:
+            return
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
                                            weight_decay=muzero_config.l2)
 
-        K = muzero_config.K
-        memory_buffer.reset_priorities()
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
-                                                             muzero_config.batch_size, K,
-                                                             alpha=muzero_config.alpha,
-                                                             is_eval=True,
-                                                             recalculate_p_on_every_call=muzero_config.recalculate_p_on_every_call)
+                                                             muzero_config.batch_size,
+                                                             muzero_config,
+                                                             is_eval=True)
         for epoch in range(muzero_config.eval_epochs):
-            experience_batch, priorities = loader()
+            experience_batch, priorities, weights = loader()
             if len(experience_batch) <= 1:
                 continue
-            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, priorities, device, muzero_config)
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, weights, device, muzero_config)
             wandb.log({"eval_combined_loss": loss.item(), "eval_loss_v": loss_v.item(), "eval_loss_pi": loss_pi.item(),
                        "eval_loss_r": loss_r.item()})
 
-    def calculate_losses(self, experience_batch, priorities, device, muzero_config):
-        pis, vs, rews_moves_players, states = zip(*experience_batch)
-        rews = [x[0] for x in rews_moves_players]
-        moves = [x[1] for x in rews_moves_players]
-        states = [np.array(x) for x in states]
-        states = th.tensor(np.array(states), dtype=th.float32, device=device).permute(0, 3, 1, 2)
-        pis = [list(x.values()) for x in pis]
-        pis = th.tensor(np.array(pis), dtype=th.float32, device=device)
-        vs = th.tensor(np.array(vs), dtype=th.float32, device=device).unsqueeze(0)
-        rews = th.tensor(np.array(rews), dtype=th.float32, device=device).unsqueeze(0)
-        latent = self.representation_forward(states)
-        pred_pis, pred_vs = self.prediction_forward(latent)
-        # masks = mask_invalid_actions_batch(self.game_manager.get_invalid_actions, pis, players)
-        latent = match_action_with_obs_batch(latent, moves)
-        _, pred_rews = self.dynamics_forward(latent)
-        priorities = priorities.to(device)
-        balance_term = muzero_config.balance_term
+    def calculate_losses(self, experience_batch, weights, device, muzero_config):
+        init_states, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(0, experience_batch, device)
+        # rewards = scalar_to_support(rewards, muzero_config.support_size)
+        values = scalar_to_support(scalar_values, muzero_config.support_size)
+        hidden_state = self.representation_forward(init_states)
+        pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=True)
+        pi_loss, v_loss, r_loss = 0, 0, 0
+        pi_loss += self.muzero_loss(pred_pis, pis)
+        v_loss += self.muzero_loss(pred_vs, values)
+        new_priorities = [[] for x in range(pred_pis.size(0))]
         if muzero_config.enable_per:
-            w = (1 / (len(priorities) * priorities)) ** muzero_config.beta
-            w /= w.sum()
-            w = w.reshape(pred_vs.shape)
-        else:
-            w = 1
-        loss_v = mse_loss(pred_vs, vs) * balance_term * w
-        loss_pi = self.muzero_pi_loss(pred_pis, pis) * balance_term * w
-        loss_r = mse_loss(pred_rews, rews) * balance_term * w
-        loss = loss_v.sum() + loss_pi.sum() + loss_r.sum()
-        return loss, loss_v.sum(), loss_pi.sum(), loss_r.sum()
+            self.populate_priorities((th.abs(support_to_scalar(pred_vs,
+                                                               muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
+                -1).tolist(), new_priorities)
+        for i in range(1, muzero_config.K + 1):
+            _, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(i, experience_batch,
+                                                                                    device)
+            rewards = scalar_to_support(rewards, muzero_config.support_size)
+            values = scalar_to_support(scalar_values, muzero_config.support_size)
+            hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
+                match_action_with_obs_batch(hidden_state, moves), False, return_support=True)
+            hidden_state.register_hook(lambda grad: grad * 0.5)
+            current_pi_loss = self.muzero_loss(pred_pis, pis)
+            current_v_loss = self.muzero_loss(pred_vs, values)
+            current_r_loss = self.muzero_loss(pred_rs, rewards)
+            current_r_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
+            current_v_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
+            current_pi_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
+            pi_loss += current_pi_loss
+            v_loss += current_v_loss
+            r_loss += current_r_loss
+            if muzero_config.enable_per:
+                self.populate_priorities((th.abs(support_to_scalar(pred_vs,
+                                                                   muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
+                    -1).tolist(), new_priorities)
+        # TODO: Multiply v by 0.25 when reanalyze implemented.
+        loss = pi_loss + v_loss + r_loss
+        if muzero_config.enable_per:
+            loss *= th.tensor(weights, dtype=loss.dtype, device=loss.device)
+        loss = loss.sum()
+        if muzero_config.enable_per:
+            self.update_priorities(new_priorities, experience_batch)
+        return loss, v_loss.sum(), pi_loss.sum(), r_loss.sum()
 
-    def muzero_pi_loss(self, y_hat, y, masks: th.Tensor or None = None):
+    def get_batch_for_unroll_index(self, index: int, experience_batch, device) -> tuple[
+        th.Tensor, th.Tensor, th.Tensor, list, th.Tensor]:
+        tensor_from_x = lambda x: th.tensor(x, dtype=th.float32, device=device)
+        init_states = None
+        if index == 0:
+            init_states = [np.array(x.datapoints[index].frame) for x in experience_batch]
+            init_states = tensor_from_x(np.array(init_states)).permute(0, 3, 1, 2)
+        rewards = np.array([x.datapoints[index].reward for x in experience_batch])
+        rewards = tensor_from_x(rewards)
+        values = np.array([x.datapoints[index].v for x in experience_batch])
+        values = tensor_from_x(values)
+        moves = [x.datapoints[index].move for x in experience_batch]
+        # moves = np.array([x.datapoints[index].move for x in experience_batch])
+        # moves = tensor_from_x(moves)
+        pis = np.array([x.datapoints[index].pi for x in experience_batch])
+        pis = tensor_from_x(pis)
+        return init_states, rewards.unsqueeze(1), values.unsqueeze(1), moves, pis
+
+    def populate_priorities(self, new_priorities: list, priorities_list: list):
+        for idx, priority in enumerate(new_priorities):
+            priorities_list[idx].append(priority)
+
+    def update_priorities(self, new_priorities: list, experience_batch: list):
+        for idx, game in enumerate(experience_batch):
+            for i in range(len(game.datapoints)):
+                game.datapoints[i].priority = new_priorities[idx][i]
+
+    def muzero_loss(self, y_hat, y, masks: th.Tensor or None = None):
         if masks is not None:
             masks = masks.reshape(y_hat.shape).to(self.device)
             y_hat = masks * y_hat
-        return -th.sum(y * y_hat) / y.size()[0]
+        return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
         wandb.init(project="MZ", name="Continuous Weight Update")

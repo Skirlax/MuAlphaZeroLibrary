@@ -26,7 +26,7 @@ class Config:
     tau: float = 1
     arena_tau: float = 1e-2
     c: float = 1
-    dirichlet_alpha = 0.3
+    dirichlet_alpha = 0.2
     checkpoint_dir: str = None
     update_threshold: float = 0.6
     num_workers: int = 5
@@ -39,7 +39,7 @@ class Config:
     l2: float = 1e-4
     eval_epochs: int = 50
     net_latent_size: list[int] = field(default_factory=lambda:[6,6])
-    support_size: int = 601
+    support_size: int = 300
     unravel: bool = True # unravel the to board in arena
     requires_player_to_reset: bool = False
     arena_running_muzero: bool = False
@@ -112,6 +112,7 @@ class MuZeroConfig(Config):
     scale_state: bool = True
     balance_term: float = 1
     enable_per: bool = True
+    num_td_steps: int = 10
 
 
 

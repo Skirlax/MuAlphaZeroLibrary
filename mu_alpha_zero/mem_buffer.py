@@ -1,9 +1,11 @@
 import itertools
 import random
+import uuid
 from collections import deque
 from itertools import chain
 
 import numpy as np
+import numpy.random
 import pymongo
 import torch as th
 from diskcache import Deque
@@ -16,6 +18,7 @@ from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.pickler import DataPickler
 from mu_alpha_zero.MuZero.utils import scale_action
+from mu_alpha_zero.config import MuZeroConfig
 
 
 class MemDataset(Dataset):
@@ -40,17 +43,16 @@ class MemBuffer(GeneralMemoryBuffer):
         self.buffer = self.init_buffer(dir_path)
         self.eval_buffer = self.init_buffer(dir_path)
         self.last_buffer_size = 0
-        self.priorities = None
+        # self.priorities = []
+        # self.eval_priorities = []
         self.is_disk = disk
 
     def add(self, experience, is_eval: bool = False):
-        if not isinstance(experience, tuple):
-            raise ValueError("Experience must be a tuple")
-        if self.disk and not self.full_disk and not isinstance(experience[-1], LazyArray):
-            frame = LazyArray(experience[-1], self.dir_path)
-            list_exp = list(experience)
-            list_exp[-1] = frame
-            experience = tuple(list_exp)
+        if not isinstance(experience, SingleGameData):
+            raise ValueError("Experience must be a DataPoint instance")
+        # if self.disk and not self.full_disk and not isinstance(experience.frame, LazyArray):
+        #     frame = LazyArray(experience.frame, self.dir_path)
+        #     experience.frame = frame
 
         if not is_eval:
             self.buffer.append(experience)
@@ -69,12 +71,13 @@ class MemBuffer(GeneralMemoryBuffer):
         return self.dir_path
 
     def add_list(self, experience_list, percent_eval: int = 10):
-        train = experience_list[:int(len(experience_list) * 0.9)]
-        test = experience_list[int(len(experience_list) * 0.9):]
-        for item in train:
-            self.add(item)
-        for item in test:
-            self.add(item, is_eval=True)
+        if len(self.buffer) >= 10:
+            start_idx = int(len(self.buffer) * 0.9)
+            for item in self.buffer[start_idx:]:
+                self.buffer.remove(item)
+                self.eval_buffer.append(item)
+        for item in experience_list:
+            self.buffer.append(item)
 
     def sample(self, batch_size):
         return random.sample(self.buffer, batch_size)
@@ -100,14 +103,32 @@ class MemBuffer(GeneralMemoryBuffer):
     def __len__(self):
         return len(self.buffer)
 
-    def batch_with_priorities(self, enable_per: bool, batch_size, K, alpha=1, is_eval: bool = False,
-                              recalculate_p_on_every_call: bool = False):
+    def eval_length(self):
+        return len(self.eval_buffer)
+
+    def batch_with_priorities(self, enable_per: bool, batch_size: int, config: MuZeroConfig, is_eval: bool = False):
         buf = self.buffer if not is_eval else self.eval_buffer
-        if recalculate_p_on_every_call:
-            self.priorities = None
-        if self.priorities is None:
-            self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
-        return self.simple_sample(buf, batch_size, K)
+        # if recalculate_p_on_every_call:
+        #     self.priorities = None
+        # if self.priorities is None:
+        #     self.priorities = self.calculate_priorities(enable_per, alpha, is_eval=is_eval)
+        # return self.simple_sample(buf, batch_size, K)
+        if enable_per:
+            game_priorities = np.array([x.game_priority for x in buf])
+        else:
+            game_priorities = np.ones((len(buf),))
+
+        game_priorities /= game_priorities.sum()
+        sampled_indexes = np.random.choice(np.arange(len(buf)), replace=False, size=min(batch_size, len(buf)),
+                                           p=game_priorities).tolist()
+        positions = [buf[index].normalize(config).sample_position_with_unroll(config) for index in sampled_indexes]
+        if config.enable_per:
+            weights = [positions[i].datapoints[0].priority * game_priorities[i] for i in range(len(positions))]
+            weights = np.array(weights)
+            weights = 1 / (weights * weights.shape[0]) ** config.beta
+        else:
+            weights = np.ones((len(positions),))
+        return positions, game_priorities, weights.reshape(-1,1)
 
     def reset_priorities(self):
         self.priorities = None
@@ -151,6 +172,82 @@ class MemBuffer(GeneralMemoryBuffer):
 
     def get_buffer(self):
         return self.buffer
+
+
+class SingleGameData:
+    def __init__(self):
+        self.datapoints = []
+        self.game_priority: float = float("-inf")
+
+    def add_data_point(self, experience_point):
+        self.datapoints.append(experience_point)
+
+    def compute_initial_priorities(self, config: MuZeroConfig):
+        if not config.enable_per:
+            return
+        for index, data_point in enumerate(self.datapoints):
+            future_index = index + config.num_td_steps
+            if future_index < len(self.datapoints):
+                val = self.datapoints[future_index].v if self.datapoints[
+                                                             future_index].player == data_point.player else - \
+                    self.datapoints[future_index].v
+                val = val * config.gamma ** config.num_td_steps
+            else:
+                val = 0
+            for idx, d_point in enumerate(self.datapoints[index: future_index + 1]):
+                val += (
+                           d_point.reward if d_point.player == data_point.player else -d_point.reward) * config.gamma ** idx
+            self.datapoints[index].priority = abs(self.datapoints[index].v - val) ** config.alpha
+            # sum_ += self.datapoints[index].priority
+            self.game_priority = max(self.game_priority, self.datapoints[index].priority)
+
+    def normalize(self,config: MuZeroConfig):
+        if not config.enable_per:
+            return self
+        sum_ = 0
+        for datapoint in self.datapoints:
+            sum_ += datapoint.priority
+        for datapoint in self.datapoints:
+            datapoint.priority /= sum_
+        return self
+
+    def sample_position(self,config: MuZeroConfig):
+        if config.enable_per:
+            priorities = [x.priority for x in self.datapoints]
+            index = numpy.random.choice(np.arange(len(self.datapoints)), size=(1,),
+                                        p=priorities).tolist()[0]
+        else:
+            index = random.randint(0, len(self.datapoints) - 1)
+        # index, max_datapoint = max([((i, x), x.priority) for i, x in enumerate(self.datapoints)], key=lambda x: x[1])[0]
+        return self.datapoints[index], index
+
+    def sample_position_with_unroll(self, config: MuZeroConfig):
+        position, index = self.sample_position(config)
+        game_data = SingleGameData()
+        for unroll_index in range(index, index + config.K + 1):
+            if unroll_index < len(self.datapoints):
+                game_data.add_data_point(self.datapoints[unroll_index])
+            else:
+                game_data.add_data_point(DataPoint(
+                    np.divide(np.ones((config.net_action_size,)), config.net_action_size).tolist(),
+                    0,
+                    0,
+                    random.randint(0, config.net_action_size - 1),
+                    0,
+                    None
+                ))
+        return game_data
+
+
+class DataPoint:
+    def __init__(self, pi: dict, v: float, reward: float, move: int, player: int, frame: np.ndarray or None):
+        self.pi = [x for x in pi.values()] if isinstance(pi,dict) else pi
+        self.v = v
+        self.reward = reward
+        self.move = move
+        self.player = player
+        self.frame = frame
+        self.priority = None
 
 
 class MuZeroFrameBuffer:

@@ -20,7 +20,7 @@ from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_state, \
     scale_hidden_state, mask_invalid_actions
 from mu_alpha_zero.config import MuZeroConfig
-from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer
+from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer, SingleGameData, DataPoint
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
@@ -40,7 +40,7 @@ class MuZeroSearchTree(SearchTree):
         return MuZeroFrameBuffer(1, self.game_manager.get_noop(), self.muzero_config.net_action_size)
 
     def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
-                      calculate_avg_num_children: bool = False) -> list:
+                      calculate_avg_num_children: bool = False) -> list[SingleGameData]:
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
@@ -50,21 +50,23 @@ class MuZeroSearchTree(SearchTree):
         self.buffer.init_buffer(state, player)
         if self.muzero_config.multiple_players:
             self.buffer.init_buffer(self.game_manager.get_state_for_passive_player(state, -player), -player)
-        data = []
+        data = SingleGameData()
 
         for step in range(num_steps):
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
-            _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
+            # _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
             move = scale_action(move, self.game_manager.get_num_actions())
             frame = self.buffer.concat_frames(player).detach().cpu().numpy()
-            data.append(
-                (pi, v, (rew, move, float(pred_v[0]), player),
-                 frame if dir_path is None else LazyArray(frame, dir_path)))
+            data_point = DataPoint(pi, v, rew, move, player, frame if dir_path is None else LazyArray(frame, dir_path))
+            # data.append(
+            #     (pi, v, (rew, move, float(pred_v[0]), player),
+            #      ))
+            data.add_data_point(data_point)
             if done:
                 break
             if self.muzero_config.multiple_players:
@@ -72,8 +74,8 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.add_frame(state, move, player)
             self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player), move, -player)
 
-        gc.collect()  # To clear any memory leaks, might not be necessary.
-        return data
+        data.compute_initial_priorities(self.muzero_config)
+        return [data]
 
     def search(self, network_wrapper, state: np.ndarray, current_player: int or None, device: th.device,
                tau: float or None = None, calculate_avg_num_children: bool = False):
@@ -84,6 +86,7 @@ class MuZeroSearchTree(SearchTree):
             tau = self.muzero_config.tau
 
         root_node = MzAlphaZeroNode(current_player=current_player)
+        # print(self.buffer.buffers[current_player][-1][0][:,:,0])
         state_ = network_wrapper.representation_forward(
             self.buffer.concat_frames(current_player).permute(2, 0, 1).unsqueeze(0)).squeeze(0)
         state_ = scale_hidden_state(state_)

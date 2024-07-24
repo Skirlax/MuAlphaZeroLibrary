@@ -43,7 +43,8 @@ def scale_state(state: np.ndarray, scale: bool):
 
 
 def scale_action(action: int, num_actions: int):
-    return action / (num_actions - 1)
+    # return action / (num_actions - 1)
+    return action + 1
 
 
 def scale_hidden_state(hidden_state: th.Tensor):
@@ -51,19 +52,44 @@ def scale_hidden_state(hidden_state: th.Tensor):
 
 
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
-    if isinstance(value, float) or isinstance(value, np.float32):
-        scaled_v = np.sign(value) * (np.sqrt(np.abs(value) + 1) - 1 + value * e)
-        return float(scaled_v)
-    return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1 + value * e)
+    return th.sign(value) * (th.sqrt(th.abs(value) + 1) - 1) + e * value
+
+
+def invert_scale_reward_value(value: th.Tensor, e: float = 0.001):
+    return th.sign(value) * ((((th.sqrt(1 + 4 * e * (th.abs(value) + 1 + e)) - 1) / 2 * e) ** 2) - 1)
 
 
 def scale_reward(reward: float):
     return math.log(reward + 1, 5)
 
 
+def scalar_to_support(x: th.Tensor, support_size: int):
+    # x is of shape: [batch_size,1] at unroll step t
+    x = scale_reward_value(x)
+    x = th.clamp(x, -support_size, support_size)
+    lower_p = 1 - (x - x.floor())
+    upper_p = x - x.floor()
+    support = th.zeros((x.size(0), 2 * support_size + 1), device=x.device)
+    support.scatter_(1, (support_size + x.floor()).type(th.int64), lower_p)
+    try:
+        support.scatter_(1, (
+                support_size + x.floor() + 1).type(th.int64), upper_p)
+    except RuntimeError:
+        # The value was so large it got clamped to 300 and as such support_size + x.floor() + 1 is 651 - out of bounds.
+        pass
+    return support
+
+
+def support_to_scalar(x: th.Tensor, support_size: int):
+    support = th.arange(-support_size, support_size + 1, 1, dtype=x.dtype, device=x.device).unsqueeze(0)
+    output = th.sum(x * support, dim=1)
+    output = invert_scale_reward_value(output)
+    return output.unsqueeze(1)
+
+
 def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: str, game,
                                muzero_config: MuZeroConfig, in_memory: bool = False, direction: str = "maximize",
-                               arena_override= None, memory_override=None):
+                               arena_override=None, memory_override=None):
     def objective(trial: optuna.Trial):
         muzero_config.num_simulations = trial.suggest_int("num_mc_simulations", 60, 800)
         muzero_config.lr = trial.suggest_float("lr", 1e-5, 5e-2, log=True)
@@ -92,7 +118,8 @@ def mz_optuna_parameter_search(n_trials: int, storage: str or None, study_name: 
         else:
             arena = arena_override
         if memory_override is None:
-            mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False, dir_path=muzero_config.pickle_dir)
+            mem = MemBuffer(muzero_config.max_buffer_size, disk=True, full_disk=False,
+                            dir_path=muzero_config.pickle_dir)
         else:
             mem = memory_override
         trainer = Trainer.create(muzero_config, game.make_fresh_instance(), network, tree, net_player, headless=True,

@@ -76,7 +76,7 @@ class GeneralMuZeroNetwork(GeneralNetwork):
         pass
 
     @abstractmethod
-    def muzero_pi_loss(self, y_hat: th.Tensor, y: th.Tensor) -> th.Tensor:
+    def muzero_loss(self, y_hat: th.Tensor, y: th.Tensor) -> th.Tensor:
         """
         Calculate the loss for the action probability distribution.
         :param y_hat: The predicted action probability distribution.
