@@ -56,7 +56,11 @@ def scale_reward_value(value: th.Tensor, e: float = 0.001):
 
 
 def invert_scale_reward_value(value: th.Tensor, e: float = 0.001):
-    return th.sign(value) * ((((th.sqrt(1 + 4 * e * (th.abs(value) + 1 + e)) - 1) / 2 * e) ** 2) - 1)
+    return th.sign(value) * (
+            ((th.sqrt(1 + 4 * 0.001 * (th.abs(value) + 1 + 0.001)) - 1) / (2 * 0.001))
+            ** 2
+            - 1
+    )
 
 
 def scale_reward(reward: float):
