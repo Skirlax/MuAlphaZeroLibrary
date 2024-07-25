@@ -186,7 +186,8 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         if not return_support:
             # multiply arange by softmax probabilities
             val_h_output = th.exp(val_h_output)
-            support_range = th.arange(-300, 301, 1, dtype=th.float32, device=x.device).unsqueeze(0)
+            support_range = th.arange(-self.support_size, self.support_size + 1, 1, dtype=th.float32,
+                                      device=x.device).unsqueeze(0)
             output = th.sum(val_h_output * support_range, dim=1)
             output = invert_scale_reward_value(output)
             return pol_h_output, output.unsqueeze(0)
@@ -290,7 +291,7 @@ class ValueHead(th.nn.Module):
         self.bn = nn.BatchNorm2d(1)
         self.fc1 = nn.Linear(linear_input_size, 256)
         if muzero:
-            self.fc2 = nn.Linear(256, 2*support_size+ 1)
+            self.fc2 = nn.Linear(256, 2 * support_size + 1)
             self.act = nn.LogSoftmax(dim=1)
         else:
             self.fc2 = nn.Linear(256, 1)
