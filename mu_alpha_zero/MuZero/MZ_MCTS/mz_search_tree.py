@@ -222,6 +222,10 @@ class MuZeroSearchTree(SearchTree):
                 if isinstance(frame, LazyArray):
                     frame = frame.load_array()
                 state = th.tensor(frame, device=device).float()
+                pi, (v,_) = tree.search(net, state, player, device)
+                move = tree.game_manager.select_move(pi, tau=config.tau)
+                
+                
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)

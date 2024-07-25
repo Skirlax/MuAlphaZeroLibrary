@@ -1,0 +1,211 @@
+wandb_version: 1
+
+num_net_channels:
+  desc: null
+  value: 512
+num_net_in_channels:
+  desc: null
+  value: 1
+net_dropout:
+  desc: null
+  value: 0.3
+net_action_size:
+  desc: null
+  value: 14
+num_simulations:
+  desc: null
+  value: 150
+self_play_games:
+  desc: null
+  value: 3
+num_iters:
+  desc: null
+  value: 40
+epochs:
+  desc: null
+  value: 50
+lr:
+  desc: null
+  value: 0.0006
+max_buffer_size:
+  desc: null
+  value: 500000
+num_pit_games:
+  desc: null
+  value: 20
+random_pit_freq:
+  desc: null
+  value: 2
+batch_size:
+  desc: null
+  value: 512
+tau:
+  desc: null
+  value: 1
+arena_tau:
+  desc: null
+  value: 0.01
+c:
+  desc: null
+  value: 1.25
+checkpoint_dir:
+  desc: null
+  value: /home/skyr/Downloads/connect4_nets
+update_threshold:
+  desc: null
+  value: 0.55
+num_workers:
+  desc: null
+  value: 3
+log_epsilon:
+  desc: null
+  value: 1.0e-09
+zero_tau_after:
+  desc: null
+  value: 100
+az_net_linear_input_size:
+  desc: null
+  value:
+  - 4
+  - 8
+  - 16
+log_dir:
+  desc: null
+  value: /home/skyr/Downloads/connect4_logs
+pushbullet_token:
+  desc: null
+  value: null
+num_blocks:
+  desc: null
+  value: 10
+l2:
+  desc: null
+  value: 0.0004
+eval_epochs:
+  desc: null
+  value: 50
+net_latent_size:
+  desc: null
+  value:
+  - 2
+  - 2
+support_size:
+  desc: null
+  value: 300
+unravel:
+  desc: null
+  value: false
+requires_player_to_reset:
+  desc: null
+  value: true
+arena_running_muzero:
+  desc: null
+  value: true
+use_wandb:
+  desc: null
+  value: false
+num_worker_iters:
+  desc: null
+  value: 100000
+enable_frame_buffer:
+  desc: null
+  value: true
+recalculate_p_on_every_call:
+  desc: null
+  value: false
+num_net_out_channels:
+  desc: null
+  value: 256
+rep_input_channels:
+  desc: null
+  value: 96
+K:
+  desc: null
+  value: 5
+gamma:
+  desc: null
+  value: 0.99
+frame_buffer_size:
+  desc: null
+  value: 32
+frame_skip:
+  desc: null
+  value: 1
+num_steps:
+  desc: null
+  value: 100000
+c2:
+  desc: null
+  value: 19652
+alpha:
+  desc: null
+  value: 1
+beta:
+  desc: null
+  value: 1
+pickle_dir:
+  desc: null
+  value: Pickles/Data
+target_resolution:
+  desc: null
+  value:
+  - 96
+  - 96
+show_tqdm:
+  desc: null
+  value: false
+resize_images:
+  desc: null
+  value: false
+muzero:
+  desc: null
+  value: true
+use_original:
+  desc: null
+  value: true
+use_pooling:
+  desc: null
+  value: false
+multiple_players:
+  desc: null
+  value: true
+scale_state:
+  desc: null
+  value: false
+balance_term:
+  desc: null
+  value: 1
+enable_per:
+  desc: null
+  value: false
+num_td_steps:
+  desc: null
+  value: 10
+_wandb:
+  desc: null
+  value:
+    python_version: 3.11.8
+    cli_version: 0.16.5
+    framework: huggingface
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1721845603.0
+    t:
+      1:
+      - 1
+      - 35
+      - 55
+      2:
+      - 1
+      - 11
+      - 35
+      - 49
+      - 55
+      3:
+      - 16
+      - 23
+      4: 3.11.8
+      5: 0.16.5
+      8:
+      - 5
+      13: linux-x86_64

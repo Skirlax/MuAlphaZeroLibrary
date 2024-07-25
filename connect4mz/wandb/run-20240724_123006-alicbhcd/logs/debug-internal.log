@@ -1,0 +1,198 @@
+2024-07-24 12:30:06,033 INFO    StreamThr :30673 [internal.py:wandb_internal():86] W&B internal server running at pid: 30673, started at: 2024-07-24 12:30:06.032861
+2024-07-24 12:30:06,034 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status
+2024-07-24 12:30:06,036 INFO    WriterThread:30673 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/run-alicbhcd.wandb
+2024-07-24 12:30:06,037 DEBUG   SenderThread:30673 [sender.py:send():379] send: header
+2024-07-24 12:30:06,039 DEBUG   SenderThread:30673 [sender.py:send():379] send: run
+2024-07-24 12:30:06,460 INFO    SenderThread:30673 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files
+2024-07-24 12:30:06,460 INFO    SenderThread:30673 [sender.py:_start_run_threads():1124] run started: alicbhcd with start time 1721817006.031708
+2024-07-24 12:30:06,468 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: check_version
+2024-07-24 12:30:06,468 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: check_version
+2024-07-24 12:30:06,559 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: run_start
+2024-07-24 12:30:06,566 DEBUG   HandlerThread:30673 [system_info.py:__init__():26] System info init
+2024-07-24 12:30:06,566 DEBUG   HandlerThread:30673 [system_info.py:__init__():41] System info init done
+2024-07-24 12:30:06,567 INFO    HandlerThread:30673 [system_monitor.py:start():194] Starting system monitor
+2024-07-24 12:30:06,567 INFO    SystemMonitor:30673 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-24 12:30:06,567 INFO    HandlerThread:30673 [system_monitor.py:probe():214] Collecting system info
+2024-07-24 12:30:06,568 INFO    SystemMonitor:30673 [interfaces.py:start():190] Started cpu monitoring
+2024-07-24 12:30:06,568 INFO    SystemMonitor:30673 [interfaces.py:start():190] Started disk monitoring
+2024-07-24 12:30:06,569 INFO    SystemMonitor:30673 [interfaces.py:start():190] Started gpu monitoring
+2024-07-24 12:30:06,569 INFO    SystemMonitor:30673 [interfaces.py:start():190] Started memory monitoring
+2024-07-24 12:30:06,570 INFO    SystemMonitor:30673 [interfaces.py:start():190] Started network monitoring
+2024-07-24 12:30:06,580 DEBUG   HandlerThread:30673 [system_info.py:probe():150] Probing system
+2024-07-24 12:30:06,582 DEBUG   HandlerThread:30673 [system_info.py:_probe_git():135] Probing git
+2024-07-24 12:30:06,586 DEBUG   HandlerThread:30673 [system_info.py:_probe_git():143] Probing git done
+2024-07-24 12:30:06,587 DEBUG   HandlerThread:30673 [system_info.py:probe():198] Probing system done
+2024-07-24 12:30:06,587 DEBUG   HandlerThread:30673 [system_monitor.py:probe():223] {'os': 'Linux-6.9.3-76060903-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-24T10:30:06.580599', 'startedAt': '2024-07-24T10:30:06.028333', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'connect4mz/train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/MuAlphaZeroLibrary.git', 'commit': 'd01a57f346dfcb33e57579b36a95666e87be4b8c'}, 'email': None, 'root': '/home/skyr/PycharmProjects/MuAlphaZeroBuild', 'host': 'pop-os', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 3.7983, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 4.761, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 3.903, 'min': 800.0, 'max': 3900.0}, {'current': 3.973, 'min': 800.0, 'max': 3900.0}, {'current': 3.932, 'min': 800.0, 'max': 3900.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 3.928, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.925, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 906.9564056396484, 'used': 159.64080810546875}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.19853973388672}}
+2024-07-24 12:30:06,587 INFO    HandlerThread:30673 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-24 12:30:06,587 INFO    HandlerThread:30673 [system_monitor.py:probe():227] Publishing system info
+2024-07-24 12:30:06,587 DEBUG   HandlerThread:30673 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-24 12:30:07,462 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/conda-environment.yaml
+2024-07-24 12:30:08,456 DEBUG   HandlerThread:30673 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-24 12:30:08,459 INFO    HandlerThread:30673 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-24 12:30:08,461 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/conda-environment.yaml
+2024-07-24 12:30:08,461 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/wandb-metadata.json
+2024-07-24 12:30:08,461 DEBUG   SenderThread:30673 [sender.py:send():379] send: files
+2024-07-24 12:30:08,461 INFO    SenderThread:30673 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-24 12:30:08,622 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-24 12:30:08,622 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: python_packages
+2024-07-24 12:30:08,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:30:08,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:30:08,632 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:30:08,839 DEBUG   SenderThread:30673 [sender.py:send():379] send: telemetry
+2024-07-24 12:30:09,031 INFO    wandb-upload_0:30673 [upload_job.py:push():131] Uploaded file /tmp/tmpqjz92fj4wandb/e7x0ykzt-wandb-metadata.json
+2024-07-24 12:30:09,203 DEBUG   SenderThread:30673 [sender.py:send():379] send: telemetry
+2024-07-24 12:30:09,316 DEBUG   SenderThread:30673 [sender.py:send():379] send: telemetry
+2024-07-24 12:30:09,461 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/requirements.txt
+2024-07-24 12:30:11,316 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:16,317 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:21,317 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:23,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:30:23,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:30:23,626 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:30:26,850 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:31,850 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:34,466 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/output.log
+2024-07-24 12:30:36,467 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/output.log
+2024-07-24 12:30:36,930 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:37,467 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/config.yaml
+2024-07-24 12:30:38,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:30:38,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:30:38,628 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:30:42,832 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:47,833 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:52,834 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:30:53,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:30:53,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:30:53,664 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:30:57,882 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:02,883 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:06,570 DEBUG   SystemMonitor:30673 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-07-24 12:31:06,571 DEBUG   SenderThread:30673 [sender.py:send():379] send: stats
+2024-07-24 12:31:08,571 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:08,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:31:08,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:31:08,664 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:31:13,855 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:18,855 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:23,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:31:23,623 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:31:23,664 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:31:24,850 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:29,850 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:34,851 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:36,571 DEBUG   SenderThread:30673 [sender.py:send():379] send: stats
+2024-07-24 12:31:38,623 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:31:38,624 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:31:38,664 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:31:40,823 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:44,282 DEBUG   SenderThread:30673 [sender.py:send():379] send: exit
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:send_exit():586] handling exit code: 0
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:send_exit():588] handling runtime: 97
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:send_exit():594] send defer
+2024-07-24 12:31:44,283 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,283 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 0
+2024-07-24 12:31:44,283 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 0
+2024-07-24 12:31:44,283 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 1
+2024-07-24 12:31:44,283 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,283 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 1
+2024-07-24 12:31:44,284 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,284 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 1
+2024-07-24 12:31:44,284 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 2
+2024-07-24 12:31:44,284 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,284 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 2
+2024-07-24 12:31:44,284 INFO    HandlerThread:30673 [system_monitor.py:finish():203] Stopping system monitor
+2024-07-24 12:31:44,284 DEBUG   SystemMonitor:30673 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-07-24 12:31:44,284 DEBUG   SystemMonitor:30673 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-07-24 12:31:44,285 INFO    HandlerThread:30673 [interfaces.py:finish():202] Joined cpu monitor
+2024-07-24 12:31:44,285 INFO    HandlerThread:30673 [interfaces.py:finish():202] Joined disk monitor
+2024-07-24 12:31:44,311 INFO    HandlerThread:30673 [interfaces.py:finish():202] Joined gpu monitor
+2024-07-24 12:31:44,311 INFO    HandlerThread:30673 [interfaces.py:finish():202] Joined memory monitor
+2024-07-24 12:31:44,312 INFO    HandlerThread:30673 [interfaces.py:finish():202] Joined network monitor
+2024-07-24 12:31:44,312 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,312 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 2
+2024-07-24 12:31:44,312 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 3
+2024-07-24 12:31:44,312 DEBUG   SenderThread:30673 [sender.py:send():379] send: stats
+2024-07-24 12:31:44,312 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,312 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 3
+2024-07-24 12:31:44,312 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,312 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 3
+2024-07-24 12:31:44,312 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 4
+2024-07-24 12:31:44,312 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,313 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 4
+2024-07-24 12:31:44,313 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,313 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 4
+2024-07-24 12:31:44,313 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 5
+2024-07-24 12:31:44,313 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,313 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 5
+2024-07-24 12:31:44,313 DEBUG   SenderThread:30673 [sender.py:send():379] send: summary
+2024-07-24 12:31:44,313 INFO    SenderThread:30673 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2024-07-24 12:31:44,313 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,313 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 5
+2024-07-24 12:31:44,313 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 6
+2024-07-24 12:31:44,313 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,313 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 6
+2024-07-24 12:31:44,313 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,314 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 6
+2024-07-24 12:31:44,314 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 7
+2024-07-24 12:31:44,314 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:31:44,314 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:44,314 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 7
+2024-07-24 12:31:44,314 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:44,314 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 7
+2024-07-24 12:31:44,480 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/wandb-summary.json
+2024-07-24 12:31:45,283 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-24 12:31:46,122 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 8
+2024-07-24 12:31:46,122 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: poll_exit
+2024-07-24 12:31:46,122 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:46,122 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 8
+2024-07-24 12:31:46,122 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:46,122 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 8
+2024-07-24 12:31:46,123 INFO    SenderThread:30673 [job_builder.py:build():318] Attempting to build job artifact
+2024-07-24 12:31:46,123 INFO    SenderThread:30673 [job_builder.py:_get_source_type():455] is repo sourced job
+2024-07-24 12:31:46,283 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-24 12:31:46,480 INFO    Thread-16 :30673 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/output.log
+2024-07-24 12:31:47,106 INFO    SenderThread:30673 [job_builder.py:build():431] adding wandb-job metadata file
+2024-07-24 12:31:47,112 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 9
+2024-07-24 12:31:47,113 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: poll_exit
+2024-07-24 12:31:47,113 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:47,113 DEBUG   SenderThread:30673 [sender.py:send():379] send: artifact
+2024-07-24 12:31:47,113 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 9
+2024-07-24 12:31:47,284 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-24 12:31:48,059 INFO    SenderThread:30673 [sender.py:send_artifact():1468] sent artifact job-https___github.com_Skirlax_MuAlphaZeroLibrary.git_connect4mz_train_mz.py - {'id': 'QXJ0aWZhY3Q6MTAyMzM3MzU1Mw==', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjMxMDI5MjMwMQ==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6MTAyMzM3MzU1Mw==', 'versionIndex': 0}}}
+2024-07-24 12:31:48,059 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:48,059 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 9
+2024-07-24 12:31:48,059 INFO    SenderThread:30673 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-07-24 12:31:48,481 INFO    SenderThread:30673 [dir_watcher.py:finish():388] scan: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files
+2024-07-24 12:31:48,481 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/config.yaml config.yaml
+2024-07-24 12:31:48,481 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/conda-environment.yaml conda-environment.yaml
+2024-07-24 12:31:48,482 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/wandb-metadata.json wandb-metadata.json
+2024-07-24 12:31:48,482 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/wandb-summary.json wandb-summary.json
+2024-07-24 12:31:48,482 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/output.log output.log
+2024-07-24 12:31:48,482 INFO    SenderThread:30673 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/requirements.txt requirements.txt
+2024-07-24 12:31:48,482 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 10
+2024-07-24 12:31:48,482 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: poll_exit
+2024-07-24 12:31:48,482 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:48,483 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 10
+2024-07-24 12:31:48,490 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:48,493 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 10
+2024-07-24 12:31:48,493 INFO    SenderThread:30673 [file_pusher.py:finish():172] shutting down file pusher
+2024-07-24 12:31:48,878 INFO    wandb-upload_1:30673 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/config.yaml
+2024-07-24 12:31:48,967 INFO    wandb-upload_4:30673 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/requirements.txt
+2024-07-24 12:31:48,995 INFO    wandb-upload_3:30673 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/output.log
+2024-07-24 12:31:48,995 INFO    wandb-upload_2:30673 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/wandb-summary.json
+2024-07-24 12:31:49,043 INFO    wandb-upload_0:30673 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_123006-alicbhcd/files/conda-environment.yaml
+2024-07-24 12:31:49,244 INFO    Thread-15 (_thread_body):30673 [sender.py:transition_state():614] send defer: 11
+2024-07-24 12:31:49,244 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:49,244 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 11
+2024-07-24 12:31:49,244 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:49,244 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 11
+2024-07-24 12:31:49,244 INFO    SenderThread:30673 [file_pusher.py:join():178] waiting for file pusher
+2024-07-24 12:31:49,245 INFO    SenderThread:30673 [sender.py:transition_state():614] send defer: 12
+2024-07-24 12:31:49,245 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: defer
+2024-07-24 12:31:49,245 INFO    HandlerThread:30673 [handler.py:handle_request_defer():172] handle defer: 12
+2024-07-24 12:31:49,245 DEBUG   SenderThread:30673 [sender.py:send_request():406] send_request: defer
+2024-07-24 12:31:49,245 INFO    SenderThread:30673 [sender.py:send_request_defer():610] handle sender defer: 12
+2024-07-24 12:31:49,245 INFO    SenderThread:30673 [file_stream.py:finish():614] file stream finish called
+2024-07-24 12:31:49,284 DEBUG   HandlerThread:30673 [handler.py:handle_request():146] handle_request: poll_exit

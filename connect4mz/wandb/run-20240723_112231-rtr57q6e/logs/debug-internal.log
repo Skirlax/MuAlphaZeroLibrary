@@ -1,0 +1,139 @@
+2024-07-23 11:22:31,054 INFO    StreamThr :24112 [internal.py:wandb_internal():86] W&B internal server running at pid: 24112, started at: 2024-07-23 11:22:31.053525
+2024-07-23 11:22:31,056 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status
+2024-07-23 11:22:31,057 INFO    WriterThread:24112 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/run-rtr57q6e.wandb
+2024-07-23 11:22:31,060 DEBUG   SenderThread:24112 [sender.py:send():379] send: header
+2024-07-23 11:22:31,061 DEBUG   SenderThread:24112 [sender.py:send():379] send: run
+2024-07-23 11:22:31,444 INFO    SenderThread:24112 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files
+2024-07-23 11:22:31,445 INFO    SenderThread:24112 [sender.py:_start_run_threads():1124] run started: rtr57q6e with start time 1721726551.052461
+2024-07-23 11:22:31,459 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: check_version
+2024-07-23 11:22:31,460 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: check_version
+2024-07-23 11:22:31,550 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: run_start
+2024-07-23 11:22:31,555 DEBUG   HandlerThread:24112 [system_info.py:__init__():26] System info init
+2024-07-23 11:22:31,555 DEBUG   HandlerThread:24112 [system_info.py:__init__():41] System info init done
+2024-07-23 11:22:31,555 INFO    HandlerThread:24112 [system_monitor.py:start():194] Starting system monitor
+2024-07-23 11:22:31,555 INFO    SystemMonitor:24112 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-23 11:22:31,556 INFO    HandlerThread:24112 [system_monitor.py:probe():214] Collecting system info
+2024-07-23 11:22:31,557 INFO    SystemMonitor:24112 [interfaces.py:start():190] Started cpu monitoring
+2024-07-23 11:22:31,558 INFO    SystemMonitor:24112 [interfaces.py:start():190] Started disk monitoring
+2024-07-23 11:22:31,559 INFO    SystemMonitor:24112 [interfaces.py:start():190] Started gpu monitoring
+2024-07-23 11:22:31,559 INFO    SystemMonitor:24112 [interfaces.py:start():190] Started memory monitoring
+2024-07-23 11:22:31,560 INFO    SystemMonitor:24112 [interfaces.py:start():190] Started network monitoring
+2024-07-23 11:22:31,566 DEBUG   HandlerThread:24112 [system_info.py:probe():150] Probing system
+2024-07-23 11:22:31,568 DEBUG   HandlerThread:24112 [system_info.py:_probe_git():135] Probing git
+2024-07-23 11:22:31,574 DEBUG   HandlerThread:24112 [system_info.py:_probe_git():143] Probing git done
+2024-07-23 11:22:31,574 DEBUG   HandlerThread:24112 [system_info.py:probe():198] Probing system done
+2024-07-23 11:22:31,574 DEBUG   HandlerThread:24112 [system_monitor.py:probe():223] {'os': 'Linux-6.9.3-76060903-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-23T09:22:31.566752', 'startedAt': '2024-07-23T09:22:31.049040', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'connect4mz/train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/MuAlphaZeroLibrary.git', 'commit': 'd01a57f346dfcb33e57579b36a95666e87be4b8c'}, 'email': None, 'root': '/home/skyr/PycharmProjects/MuAlphaZeroBuild', 'host': 'pop-os', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 3.4486, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.109, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.099, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.048, 'min': 800.0, 'max': 5100.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.976, 'min': 800.0, 'max': 3900.0}, {'current': 3.929, 'min': 800.0, 'max': 3900.0}, {'current': 3.931, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 906.9564056396484, 'used': 154.0381965637207}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.19853973388672}}
+2024-07-23 11:22:31,575 INFO    HandlerThread:24112 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-23 11:22:31,575 INFO    HandlerThread:24112 [system_monitor.py:probe():227] Publishing system info
+2024-07-23 11:22:31,575 DEBUG   HandlerThread:24112 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-23 11:22:32,447 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/conda-environment.yaml
+2024-07-23 11:22:33,444 DEBUG   HandlerThread:24112 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-23 11:22:33,447 INFO    HandlerThread:24112 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-23 11:22:33,448 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/conda-environment.yaml
+2024-07-23 11:22:33,449 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/wandb-metadata.json
+2024-07-23 11:22:33,450 DEBUG   SenderThread:24112 [sender.py:send():379] send: files
+2024-07-23 11:22:33,450 INFO    SenderThread:24112 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-23 11:22:33,611 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-23 11:22:33,611 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: python_packages
+2024-07-23 11:22:33,611 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:22:33,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:22:33,614 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:22:33,896 DEBUG   SenderThread:24112 [sender.py:send():379] send: telemetry
+2024-07-23 11:22:34,040 INFO    wandb-upload_0:24112 [upload_job.py:push():131] Uploaded file /tmp/tmp3r7vnhdcwandb/z96pr0fz-wandb-metadata.json
+2024-07-23 11:22:34,152 DEBUG   SenderThread:24112 [sender.py:send():379] send: telemetry
+2024-07-23 11:22:34,264 DEBUG   SenderThread:24112 [sender.py:send():379] send: telemetry
+2024-07-23 11:22:34,448 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/requirements.txt
+2024-07-23 11:22:35,449 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/output.log
+2024-07-23 11:22:36,887 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:22:37,449 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/output.log
+2024-07-23 11:22:41,886 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:22:46,886 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:22:48,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:22:48,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:22:48,615 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:22:52,857 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:22:57,858 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:02,864 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:03,454 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/config.yaml
+2024-07-23 11:23:03,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:23:03,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:23:03,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:23:08,800 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:13,801 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:18,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:23:18,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:23:18,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:23:18,853 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:23,853 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:28,854 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:31,561 DEBUG   SystemMonitor:24112 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-07-23 11:23:31,562 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:23:33,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:23:33,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:23:33,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:23:34,753 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:39,754 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:44,754 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:48,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:23:48,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:23:48,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:23:49,864 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:54,864 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:23:59,865 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:01,563 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:24:03,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:24:03,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:24:03,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:24:05,782 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:10,783 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:15,783 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:18,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:24:18,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:24:18,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:24:20,907 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:25,907 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:30,908 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:31,563 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:24:33,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:24:33,612 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:24:33,652 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:24:36,819 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:41,819 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:46,819 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:48,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:24:48,613 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:24:48,653 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:24:51,836 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:24:56,837 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:01,564 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:25:02,564 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:03,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:25:03,613 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:25:03,653 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:25:07,844 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:12,845 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:17,845 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:18,612 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:25:18,613 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:25:18,653 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:25:23,816 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:28,816 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:31,564 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:25:33,613 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:25:33,613 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:25:33,653 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:25:33,855 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:38,855 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:43,856 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:48,613 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:25:48,613 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:25:48,653 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:25:49,856 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:54,992 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:25:55,492 INFO    Thread-16 :24112 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_112231-rtr57q6e/files/output.log
+2024-07-23 11:25:59,993 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 11:26:01,565 DEBUG   SenderThread:24112 [sender.py:send():379] send: stats
+2024-07-23 11:26:03,613 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 11:26:03,613 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 11:26:03,614 DEBUG   SenderThread:24112 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 11:26:05,829 DEBUG   HandlerThread:24112 [handler.py:handle_request():146] handle_request: status_report

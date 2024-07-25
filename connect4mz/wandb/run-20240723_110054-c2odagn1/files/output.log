@@ -1,0 +1,20 @@
+/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/conv.py:456: UserWarning: Applied workaround for CuDNN issue, install nvrtc.so (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:80.)
+  return F.conv2d(input, weight, bias, self.stride,
+Traceback (most recent call last):
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 170, in <module>
+    train_mz()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 70, in train_mz
+    mz.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/muzero.py", line 98, in train
+    self.trainer.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/trainer.py", line 142, in train
+    wins_p1, wins_p2, game_draws = self.mcts.self_play(self.network, self.device, self_play_games,
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/MZ_MCTS/mz_search_tree.py", line 150, in self_play
+    game_results = self.play_one_game(net, device, calculate_avg_num_children=game == num_games - 1)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/MZ_MCTS/mz_search_tree.py", line 78, in play_one_game
+    data.compute_initial_priorities(self.muzero_config)
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/mem_buffer.py", line 196, in compute_initial_priorities
+    for idx, d_point in enumerate(self.datapoints[index: future_index + 1]):
+                        ^^^^^^^^^

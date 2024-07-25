@@ -1,0 +1,56 @@
+2024-07-17 20:07:52,570 INFO    StreamThr :85199 [internal.py:wandb_internal():86] W&B internal server running at pid: 85199, started at: 2024-07-17 20:07:52.570426
+2024-07-17 20:07:52,571 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status
+2024-07-17 20:07:52,573 INFO    WriterThread:85199 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/run-doq4zsit.wandb
+2024-07-17 20:07:52,574 DEBUG   SenderThread:85199 [sender.py:send():379] send: header
+2024-07-17 20:07:52,576 DEBUG   SenderThread:85199 [sender.py:send():379] send: run
+2024-07-17 20:07:52,948 INFO    SenderThread:85199 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files
+2024-07-17 20:07:52,948 INFO    SenderThread:85199 [sender.py:_start_run_threads():1124] run started: doq4zsit with start time 1721239672.569522
+2024-07-17 20:07:52,958 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: check_version
+2024-07-17 20:07:52,958 DEBUG   SenderThread:85199 [sender.py:send_request():406] send_request: check_version
+2024-07-17 20:07:53,036 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: run_start
+2024-07-17 20:07:53,040 DEBUG   HandlerThread:85199 [system_info.py:__init__():26] System info init
+2024-07-17 20:07:53,041 DEBUG   HandlerThread:85199 [system_info.py:__init__():41] System info init done
+2024-07-17 20:07:53,041 INFO    HandlerThread:85199 [system_monitor.py:start():194] Starting system monitor
+2024-07-17 20:07:53,041 INFO    SystemMonitor:85199 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-17 20:07:53,041 INFO    HandlerThread:85199 [system_monitor.py:probe():214] Collecting system info
+2024-07-17 20:07:53,041 INFO    SystemMonitor:85199 [interfaces.py:start():190] Started cpu monitoring
+2024-07-17 20:07:53,042 INFO    SystemMonitor:85199 [interfaces.py:start():190] Started disk monitoring
+2024-07-17 20:07:53,043 INFO    SystemMonitor:85199 [interfaces.py:start():190] Started gpu monitoring
+2024-07-17 20:07:53,043 INFO    SystemMonitor:85199 [interfaces.py:start():190] Started memory monitoring
+2024-07-17 20:07:53,044 INFO    SystemMonitor:85199 [interfaces.py:start():190] Started network monitoring
+2024-07-17 20:07:53,055 DEBUG   HandlerThread:85199 [system_info.py:probe():150] Probing system
+2024-07-17 20:07:53,056 DEBUG   HandlerThread:85199 [system_info.py:_probe_git():135] Probing git
+2024-07-17 20:07:53,059 DEBUG   HandlerThread:85199 [system_info.py:_probe_git():143] Probing git done
+2024-07-17 20:07:53,059 DEBUG   HandlerThread:85199 [system_info.py:probe():198] Probing system done
+2024-07-17 20:07:53,059 DEBUG   HandlerThread:85199 [system_monitor.py:probe():223] {'os': 'Linux-6.5.0-41-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-17T18:07:53.055278', 'startedAt': '2024-07-17T18:07:52.566338', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/Connect4Rl.git', 'commit': 'a35dc13b28b0c8732fa2356b97298ea3aea53e8c'}, 'email': 'skirlaxxx@gmail.com', 'root': '/home/skyr/PycharmProjects/connect4mz', 'host': 'skyr-MS-7D25', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 4.189150000000001, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.061, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.099, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 3.901, 'min': 800.0, 'max': 3900.0}, {'current': 3.902, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.906, 'min': 800.0, 'max': 3900.0}, {'current': 3.897, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 915.3232879638672, 'used': 719.6175155639648}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.191204071044922}}
+2024-07-17 20:07:53,060 INFO    HandlerThread:85199 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-17 20:07:53,060 INFO    HandlerThread:85199 [system_monitor.py:probe():227] Publishing system info
+2024-07-17 20:07:53,060 DEBUG   HandlerThread:85199 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-17 20:07:53,950 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/conda-environment.yaml
+2024-07-17 20:07:54,926 DEBUG   HandlerThread:85199 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-17 20:07:54,929 INFO    HandlerThread:85199 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-17 20:07:54,931 DEBUG   SenderThread:85199 [sender.py:send():379] send: files
+2024-07-17 20:07:54,931 INFO    SenderThread:85199 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-17 20:07:54,949 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/conda-environment.yaml
+2024-07-17 20:07:54,949 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/wandb-metadata.json
+2024-07-17 20:07:55,091 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-17 20:07:55,091 DEBUG   SenderThread:85199 [sender.py:send_request():406] send_request: python_packages
+2024-07-17 20:07:55,092 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-17 20:07:55,092 DEBUG   SenderThread:85199 [sender.py:send_request():406] send_request: stop_status
+2024-07-17 20:07:55,095 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-17 20:07:55,337 DEBUG   SenderThread:85199 [sender.py:send():379] send: telemetry
+2024-07-17 20:07:55,470 INFO    wandb-upload_0:85199 [upload_job.py:push():131] Uploaded file /tmp/tmp34oxlz8awandb/lqqywpyr-wandb-metadata.json
+2024-07-17 20:07:55,741 DEBUG   SenderThread:85199 [sender.py:send():379] send: telemetry
+2024-07-17 20:07:55,852 DEBUG   SenderThread:85199 [sender.py:send():379] send: telemetry
+2024-07-17 20:07:55,949 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/requirements.txt
+2024-07-17 20:07:57,852 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:02,853 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:07,853 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:10,092 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-17 20:08:10,092 DEBUG   SenderThread:85199 [sender.py:send_request():406] send_request: stop_status
+2024-07-17 20:08:10,094 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-17 20:08:13,379 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:18,380 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:23,385 DEBUG   HandlerThread:85199 [handler.py:handle_request():146] handle_request: status_report
+2024-07-17 20:08:23,955 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/config.yaml
+2024-07-17 20:08:23,955 INFO    Thread-16 :85199 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/connect4mz/wandb/run-20240717_200752-doq4zsit/files/output.log

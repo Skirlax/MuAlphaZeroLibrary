@@ -1,0 +1,49 @@
+Traceback (most recent call last):
+  File "/home/skyr/.local/share/JetBrains/Toolbox/apps/pycharm-professional/plugins/python/helpers/pydev/pydevd.py", line 1551, in _exec
+    pydev_imports.execfile(file, globals, locals)  # execute the script
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/.local/share/JetBrains/Toolbox/apps/pycharm-professional/plugins/python/helpers/pydev/_pydev_imps/_pydev_execfile.py", line 18, in execfile
+    exec(compile(contents+"\n", file, 'exec'), glob, loc)
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 170, in <module>
+    train_mz()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 70, in train_mz
+    mz.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/muzero.py", line 98, in train
+    self.trainer.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/trainer.py", line 153, in train
+    mean_loss, losses = self.network.train_net(self.memory, self.muzero_alphazero_config)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 117, in train_net
+    loss, loss_v, loss_pi, loss_r = self.calculate_losses(sampled_game_data, weights, device, muzero_config)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 168, in calculate_losses
+    hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 92, in forward_recurrent
+    next_state, reward = self.dynamics_forward(hidden_state_with_action, predict=all_predict,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 77, in dynamics_forward
+    state, reward = self.dynamics_network(x, muzero=True, return_support=return_support)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/AlphaZero/Network/nnet.py", line 180, in forward
+    x = F.relu(self.bn1(self.conv1(x)))
+                        ^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 460, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 456, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Given groups=1, weight of size [256, 257, 3, 3], expected input[3, 97, 6, 7] to have 257 channels, but got 97 channels instead

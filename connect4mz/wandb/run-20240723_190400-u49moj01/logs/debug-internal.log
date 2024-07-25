@@ -1,0 +1,78 @@
+2024-07-23 19:04:00,265 INFO    StreamThr :29111 [internal.py:wandb_internal():86] W&B internal server running at pid: 29111, started at: 2024-07-23 19:04:00.264753
+2024-07-23 19:04:00,267 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status
+2024-07-23 19:04:00,268 INFO    WriterThread:29111 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/run-u49moj01.wandb
+2024-07-23 19:04:00,271 DEBUG   SenderThread:29111 [sender.py:send():379] send: header
+2024-07-23 19:04:00,273 DEBUG   SenderThread:29111 [sender.py:send():379] send: run
+2024-07-23 19:04:02,627 INFO    SenderThread:29111 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files
+2024-07-23 19:04:02,627 INFO    SenderThread:29111 [sender.py:_start_run_threads():1124] run started: u49moj01 with start time 1721754240.264086
+2024-07-23 19:04:02,634 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: check_version
+2024-07-23 19:04:02,634 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: check_version
+2024-07-23 19:04:02,730 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: run_start
+2024-07-23 19:04:02,737 DEBUG   HandlerThread:29111 [system_info.py:__init__():26] System info init
+2024-07-23 19:04:02,737 DEBUG   HandlerThread:29111 [system_info.py:__init__():41] System info init done
+2024-07-23 19:04:02,737 INFO    HandlerThread:29111 [system_monitor.py:start():194] Starting system monitor
+2024-07-23 19:04:02,737 INFO    SystemMonitor:29111 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-23 19:04:02,738 INFO    HandlerThread:29111 [system_monitor.py:probe():214] Collecting system info
+2024-07-23 19:04:02,738 INFO    SystemMonitor:29111 [interfaces.py:start():190] Started cpu monitoring
+2024-07-23 19:04:02,739 INFO    SystemMonitor:29111 [interfaces.py:start():190] Started disk monitoring
+2024-07-23 19:04:02,740 INFO    SystemMonitor:29111 [interfaces.py:start():190] Started gpu monitoring
+2024-07-23 19:04:02,741 INFO    SystemMonitor:29111 [interfaces.py:start():190] Started memory monitoring
+2024-07-23 19:04:02,742 INFO    SystemMonitor:29111 [interfaces.py:start():190] Started network monitoring
+2024-07-23 19:04:02,747 DEBUG   HandlerThread:29111 [system_info.py:probe():150] Probing system
+2024-07-23 19:04:02,749 DEBUG   HandlerThread:29111 [system_info.py:_probe_git():135] Probing git
+2024-07-23 19:04:02,755 DEBUG   HandlerThread:29111 [system_info.py:_probe_git():143] Probing git done
+2024-07-23 19:04:02,755 DEBUG   HandlerThread:29111 [system_info.py:probe():198] Probing system done
+2024-07-23 19:04:02,755 DEBUG   HandlerThread:29111 [system_monitor.py:probe():223] {'os': 'Linux-6.9.3-76060903-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-23T17:04:02.747619', 'startedAt': '2024-07-23T17:04:00.260623', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'connect4mz/train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/MuAlphaZeroLibrary.git', 'commit': 'd01a57f346dfcb33e57579b36a95666e87be4b8c'}, 'email': None, 'root': '/home/skyr/PycharmProjects/MuAlphaZeroBuild', 'host': 'pop-os', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 2.7130999999999994, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.091, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 3.872, 'min': 800.0, 'max': 3900.0}, {'current': 3.953, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}, {'current': 3.966, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}, {'current': 3.912, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 906.9564056396484, 'used': 159.2510108947754}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.198532104492188}}
+2024-07-23 19:04:02,755 INFO    HandlerThread:29111 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-23 19:04:02,755 INFO    HandlerThread:29111 [system_monitor.py:probe():227] Publishing system info
+2024-07-23 19:04:02,755 DEBUG   HandlerThread:29111 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-23 19:04:03,629 INFO    Thread-16 :29111 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files/conda-environment.yaml
+2024-07-23 19:04:04,623 DEBUG   HandlerThread:29111 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-23 19:04:04,626 INFO    HandlerThread:29111 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-23 19:04:04,628 INFO    Thread-16 :29111 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files/conda-environment.yaml
+2024-07-23 19:04:04,629 DEBUG   SenderThread:29111 [sender.py:send():379] send: files
+2024-07-23 19:04:04,629 INFO    Thread-16 :29111 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files/wandb-metadata.json
+2024-07-23 19:04:04,629 INFO    SenderThread:29111 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-23 19:04:04,787 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-23 19:04:04,787 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: python_packages
+2024-07-23 19:04:04,787 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:04:04,788 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:04:04,790 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 19:04:05,007 DEBUG   SenderThread:29111 [sender.py:send():379] send: telemetry
+2024-07-23 19:04:05,216 INFO    wandb-upload_0:29111 [upload_job.py:push():131] Uploaded file /tmp/tmpa2_pvws2wandb/0xmympjz-wandb-metadata.json
+2024-07-23 19:04:05,347 DEBUG   SenderThread:29111 [sender.py:send():379] send: telemetry
+2024-07-23 19:04:05,348 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:05,461 DEBUG   SenderThread:29111 [sender.py:send():379] send: telemetry
+2024-07-23 19:04:05,628 INFO    Thread-16 :29111 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files/requirements.txt
+2024-07-23 19:04:10,462 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:15,463 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:19,788 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:04:19,788 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:04:19,791 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 19:04:21,067 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:26,068 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:31,074 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:31,635 INFO    Thread-16 :29111 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_190400-u49moj01/files/config.yaml
+2024-07-23 19:04:34,788 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:04:34,788 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:04:34,828 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 19:04:37,039 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:42,039 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:47,040 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:49,788 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:04:49,788 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:04:49,828 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 19:04:52,946 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:04:57,947 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:05:02,742 DEBUG   SystemMonitor:29111 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-07-23 19:05:02,744 DEBUG   SenderThread:29111 [sender.py:send():379] send: stats
+2024-07-23 19:05:03,744 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:05:04,788 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:05:04,788 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:05:04,828 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 19:05:08,994 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:05:13,994 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:05:18,995 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 19:05:19,788 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 19:05:19,789 DEBUG   SenderThread:29111 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 19:05:19,829 DEBUG   HandlerThread:29111 [handler.py:handle_request():146] handle_request: internal_messages

@@ -1,0 +1,148 @@
+{
+    "os": "Linux-6.5.0-41-generic-x86_64-with-glibc2.35",
+    "python": "3.11.8",
+    "heartbeatAt": "2024-07-08T12:25:24.887675",
+    "startedAt": "2024-07-08T12:25:24.189891",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/skyr/PycharmProjects/MuAlphaZeroBuild/test.py",
+    "codePathLocal": "test.py",
+    "codePath": "test.py",
+    "git": {
+        "remote": "https://github.com/Skirlax/MuAlphaZeroLibrary.git",
+        "commit": "3995af94827f6be9c36a9e511a36b0cab8bdc56c"
+    },
+    "email": "skirlaxxx@gmail.com",
+    "root": "/home/skyr/PycharmProjects/MuAlphaZeroBuild",
+    "host": "skyr-MS-7D25",
+    "username": "skyr",
+    "executable": "/home/skyr/miniconda3/envs/ai_stuff/bin/python",
+    "cpu_count": 14,
+    "cpu_count_logical": 20,
+    "cpu_freq": {
+        "current": 3.5668499999999996,
+        "min": 800.0,
+        "max": 4620.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 5.103,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.036,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.082,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.099,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 3.899,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.895,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.903,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.92,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 3900.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 915.3232879638672,
+            "used": 705.5712242126465
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3070",
+            "memory_total": 8589934592
+        }
+    ],
+    "memory": {
+        "total": 31.191211700439453
+    }
+}

@@ -1,0 +1,219 @@
+2024-07-23 12:24:16,947 INFO    StreamThr :38048 [internal.py:wandb_internal():86] W&B internal server running at pid: 38048, started at: 2024-07-23 12:24:16.947018
+2024-07-23 12:24:16,948 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status
+2024-07-23 12:24:16,949 INFO    WriterThread:38048 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/run-l3puhkx3.wandb
+2024-07-23 12:24:16,952 DEBUG   SenderThread:38048 [sender.py:send():379] send: header
+2024-07-23 12:24:16,953 DEBUG   SenderThread:38048 [sender.py:send():379] send: run
+2024-07-23 12:24:17,451 INFO    SenderThread:38048 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files
+2024-07-23 12:24:17,451 INFO    SenderThread:38048 [sender.py:_start_run_threads():1124] run started: l3puhkx3 with start time 1721730256.946169
+2024-07-23 12:24:17,458 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: check_version
+2024-07-23 12:24:17,459 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: check_version
+2024-07-23 12:24:17,587 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: run_start
+2024-07-23 12:24:17,593 DEBUG   HandlerThread:38048 [system_info.py:__init__():26] System info init
+2024-07-23 12:24:17,593 DEBUG   HandlerThread:38048 [system_info.py:__init__():41] System info init done
+2024-07-23 12:24:17,594 INFO    HandlerThread:38048 [system_monitor.py:start():194] Starting system monitor
+2024-07-23 12:24:17,594 INFO    SystemMonitor:38048 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-23 12:24:17,595 INFO    HandlerThread:38048 [system_monitor.py:probe():214] Collecting system info
+2024-07-23 12:24:17,595 INFO    SystemMonitor:38048 [interfaces.py:start():190] Started cpu monitoring
+2024-07-23 12:24:17,596 INFO    SystemMonitor:38048 [interfaces.py:start():190] Started disk monitoring
+2024-07-23 12:24:17,596 INFO    SystemMonitor:38048 [interfaces.py:start():190] Started gpu monitoring
+2024-07-23 12:24:17,597 INFO    SystemMonitor:38048 [interfaces.py:start():190] Started memory monitoring
+2024-07-23 12:24:17,598 INFO    SystemMonitor:38048 [interfaces.py:start():190] Started network monitoring
+2024-07-23 12:24:17,604 DEBUG   HandlerThread:38048 [system_info.py:probe():150] Probing system
+2024-07-23 12:24:17,606 DEBUG   HandlerThread:38048 [system_info.py:_probe_git():135] Probing git
+2024-07-23 12:24:17,613 DEBUG   HandlerThread:38048 [system_info.py:_probe_git():143] Probing git done
+2024-07-23 12:24:17,613 DEBUG   HandlerThread:38048 [system_info.py:probe():198] Probing system done
+2024-07-23 12:24:17,613 DEBUG   HandlerThread:38048 [system_monitor.py:probe():223] {'os': 'Linux-6.9.3-76060903-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-23T10:24:17.604513', 'startedAt': '2024-07-23T10:24:16.942708', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'connect4mz/train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/MuAlphaZeroLibrary.git', 'commit': 'd01a57f346dfcb33e57579b36a95666e87be4b8c'}, 'email': None, 'root': '/home/skyr/PycharmProjects/MuAlphaZeroBuild', 'host': 'pop-os', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 3.0163499999999996, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.099, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 0.8, 'min': 800.0, 'max': 5100.0}, {'current': 3.904, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.918, 'min': 800.0, 'max': 3900.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 0.8, 'min': 800.0, 'max': 3900.0}, {'current': 3.89, 'min': 800.0, 'max': 3900.0}, {'current': 3.951, 'min': 800.0, 'max': 3900.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 906.9564056396484, 'used': 154.14230346679688}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.19853973388672}}
+2024-07-23 12:24:17,613 INFO    HandlerThread:38048 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-23 12:24:17,613 INFO    HandlerThread:38048 [system_monitor.py:probe():227] Publishing system info
+2024-07-23 12:24:17,613 DEBUG   HandlerThread:38048 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-23 12:24:18,453 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/conda-environment.yaml
+2024-07-23 12:24:19,451 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/conda-environment.yaml
+2024-07-23 12:24:19,480 DEBUG   HandlerThread:38048 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-23 12:24:19,483 INFO    HandlerThread:38048 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-23 12:24:19,485 DEBUG   SenderThread:38048 [sender.py:send():379] send: files
+2024-07-23 12:24:19,485 INFO    SenderThread:38048 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-23 12:24:19,644 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-23 12:24:19,644 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: python_packages
+2024-07-23 12:24:19,646 DEBUG   SenderThread:38048 [sender.py:send():379] send: telemetry
+2024-07-23 12:24:19,686 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:24:19,686 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 12:24:19,687 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 12:24:20,063 INFO    wandb-upload_0:38048 [upload_job.py:push():131] Uploaded file /tmp/tmpkntbwg1hwandb/y542waaj-wandb-metadata.json
+2024-07-23 12:24:20,195 DEBUG   SenderThread:38048 [sender.py:send():379] send: telemetry
+2024-07-23 12:24:20,307 DEBUG   SenderThread:38048 [sender.py:send():379] send: telemetry
+2024-07-23 12:24:20,452 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/requirements.txt
+2024-07-23 12:24:20,452 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/wandb-metadata.json
+2024-07-23 12:24:21,452 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/output.log
+2024-07-23 12:24:22,922 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:23,453 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/output.log
+2024-07-23 12:24:27,921 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:32,922 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:34,645 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 12:24:34,645 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 12:24:34,648 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:24:38,812 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:43,812 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:48,817 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:49,460 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/config.yaml
+2024-07-23 12:24:49,645 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 12:24:49,645 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 12:24:49,685 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:24:54,861 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:24:59,861 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:04,645 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 12:25:04,645 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 12:25:04,686 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:25:05,861 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:10,861 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:15,862 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:17,598 DEBUG   SystemMonitor:38048 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-07-23 12:25:17,599 DEBUG   SenderThread:38048 [sender.py:send():379] send: stats
+2024-07-23 12:25:19,645 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-23 12:25:19,645 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: stop_status
+2024-07-23 12:25:19,685 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:25:21,829 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:26,830 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:31,830 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:32,922 DEBUG   SenderThread:38048 [sender.py:send():379] send: exit
+2024-07-23 12:25:32,922 INFO    SenderThread:38048 [sender.py:send_exit():586] handling exit code: 0
+2024-07-23 12:25:32,922 INFO    SenderThread:38048 [sender.py:send_exit():588] handling runtime: 75
+2024-07-23 12:25:32,924 INFO    SenderThread:38048 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2024-07-23 12:25:32,924 INFO    SenderThread:38048 [sender.py:send_exit():594] send defer
+2024-07-23 12:25:32,924 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,925 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 0
+2024-07-23 12:25:32,925 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,925 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 0
+2024-07-23 12:25:32,925 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 1
+2024-07-23 12:25:32,925 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,925 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 1
+2024-07-23 12:25:32,925 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,925 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 1
+2024-07-23 12:25:32,925 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 2
+2024-07-23 12:25:32,925 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,925 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 2
+2024-07-23 12:25:32,925 INFO    HandlerThread:38048 [system_monitor.py:finish():203] Stopping system monitor
+2024-07-23 12:25:32,925 DEBUG   SystemMonitor:38048 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-07-23 12:25:32,926 DEBUG   SystemMonitor:38048 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-07-23 12:25:32,926 INFO    HandlerThread:38048 [interfaces.py:finish():202] Joined cpu monitor
+2024-07-23 12:25:32,927 INFO    HandlerThread:38048 [interfaces.py:finish():202] Joined disk monitor
+2024-07-23 12:25:32,967 INFO    HandlerThread:38048 [interfaces.py:finish():202] Joined gpu monitor
+2024-07-23 12:25:32,967 INFO    HandlerThread:38048 [interfaces.py:finish():202] Joined memory monitor
+2024-07-23 12:25:32,967 INFO    HandlerThread:38048 [interfaces.py:finish():202] Joined network monitor
+2024-07-23 12:25:32,967 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,967 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 2
+2024-07-23 12:25:32,967 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 3
+2024-07-23 12:25:32,967 DEBUG   SenderThread:38048 [sender.py:send():379] send: stats
+2024-07-23 12:25:32,968 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,968 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 3
+2024-07-23 12:25:32,968 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,968 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 3
+2024-07-23 12:25:32,968 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 4
+2024-07-23 12:25:32,968 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,968 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 4
+2024-07-23 12:25:32,968 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,968 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 4
+2024-07-23 12:25:32,968 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 5
+2024-07-23 12:25:32,968 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,968 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 5
+2024-07-23 12:25:32,968 DEBUG   SenderThread:38048 [sender.py:send():379] send: summary
+2024-07-23 12:25:32,968 INFO    SenderThread:38048 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2024-07-23 12:25:32,969 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,969 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 5
+2024-07-23 12:25:32,969 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 6
+2024-07-23 12:25:32,969 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,969 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 6
+2024-07-23 12:25:32,969 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,969 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 6
+2024-07-23 12:25:32,969 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 7
+2024-07-23 12:25:32,969 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: status_report
+2024-07-23 12:25:32,969 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:32,969 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 7
+2024-07-23 12:25:32,969 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:32,969 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 7
+2024-07-23 12:25:33,470 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/wandb-summary.json
+2024-07-23 12:25:33,922 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:34,939 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 8
+2024-07-23 12:25:34,939 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:34,939 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:34,940 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 8
+2024-07-23 12:25:34,940 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:34,940 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 8
+2024-07-23 12:25:34,940 INFO    SenderThread:38048 [job_builder.py:build():318] Attempting to build job artifact
+2024-07-23 12:25:34,940 INFO    SenderThread:38048 [job_builder.py:_get_source_type():455] is repo sourced job
+2024-07-23 12:25:35,470 INFO    Thread-16 :38048 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/output.log
+2024-07-23 12:25:35,923 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:35,925 INFO    SenderThread:38048 [job_builder.py:build():431] adding wandb-job metadata file
+2024-07-23 12:25:35,931 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 9
+2024-07-23 12:25:35,931 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:35,931 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:35,931 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 9
+2024-07-23 12:25:35,931 DEBUG   SenderThread:38048 [sender.py:send():379] send: artifact
+2024-07-23 12:25:36,806 INFO    SenderThread:38048 [sender.py:send_artifact():1468] sent artifact job-https___github.com_Skirlax_MuAlphaZeroLibrary.git_connect4mz_train_mz.py - {'id': 'QXJ0aWZhY3Q6MTAyMzM3MzU1Mw==', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjMxMDI5MjMwMQ==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6MTAyMzM3MzU1Mw==', 'versionIndex': 0}}}
+2024-07-23 12:25:36,806 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:36,806 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 9
+2024-07-23 12:25:36,806 INFO    SenderThread:38048 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-07-23 12:25:36,924 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:37,471 INFO    SenderThread:38048 [dir_watcher.py:finish():388] scan: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files
+2024-07-23 12:25:37,471 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/config.yaml config.yaml
+2024-07-23 12:25:37,471 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/conda-environment.yaml conda-environment.yaml
+2024-07-23 12:25:37,472 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/wandb-metadata.json wandb-metadata.json
+2024-07-23 12:25:37,472 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/wandb-summary.json wandb-summary.json
+2024-07-23 12:25:37,472 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/output.log output.log
+2024-07-23 12:25:37,472 INFO    SenderThread:38048 [dir_watcher.py:finish():402] scan save: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/requirements.txt requirements.txt
+2024-07-23 12:25:37,472 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 10
+2024-07-23 12:25:37,472 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:37,472 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:37,473 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 10
+2024-07-23 12:25:37,479 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:37,481 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 10
+2024-07-23 12:25:37,481 INFO    SenderThread:38048 [file_pusher.py:finish():172] shutting down file pusher
+2024-07-23 12:25:37,830 INFO    wandb-upload_0:38048 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/config.yaml
+2024-07-23 12:25:37,897 INFO    wandb-upload_1:38048 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/conda-environment.yaml
+2024-07-23 12:25:37,925 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:37,925 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:37,929 INFO    wandb-upload_2:38048 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/wandb-summary.json
+2024-07-23 12:25:37,949 INFO    wandb-upload_4:38048 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/requirements.txt
+2024-07-23 12:25:37,971 INFO    wandb-upload_3:38048 [upload_job.py:push():131] Uploaded file /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/files/output.log
+2024-07-23 12:25:38,171 INFO    Thread-15 (_thread_body):38048 [sender.py:transition_state():614] send defer: 11
+2024-07-23 12:25:38,171 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:38,172 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 11
+2024-07-23 12:25:38,172 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:38,172 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 11
+2024-07-23 12:25:38,172 INFO    SenderThread:38048 [file_pusher.py:join():178] waiting for file pusher
+2024-07-23 12:25:38,172 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 12
+2024-07-23 12:25:38,172 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:38,172 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 12
+2024-07-23 12:25:38,172 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:38,172 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 12
+2024-07-23 12:25:38,172 INFO    SenderThread:38048 [file_stream.py:finish():614] file stream finish called
+2024-07-23 12:25:38,646 INFO    SenderThread:38048 [file_stream.py:finish():618] file stream finish is done
+2024-07-23 12:25:38,646 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 13
+2024-07-23 12:25:38,646 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:38,646 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 13
+2024-07-23 12:25:38,646 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:38,646 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 13
+2024-07-23 12:25:38,646 INFO    SenderThread:38048 [sender.py:transition_state():614] send defer: 14
+2024-07-23 12:25:38,646 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: defer
+2024-07-23 12:25:38,646 INFO    HandlerThread:38048 [handler.py:handle_request_defer():172] handle defer: 14
+2024-07-23 12:25:38,646 DEBUG   SenderThread:38048 [sender.py:send():379] send: final
+2024-07-23 12:25:38,647 DEBUG   SenderThread:38048 [sender.py:send():379] send: footer
+2024-07-23 12:25:38,647 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: defer
+2024-07-23 12:25:38,647 INFO    SenderThread:38048 [sender.py:send_request_defer():610] handle sender defer: 14
+2024-07-23 12:25:38,647 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:38,647 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:38,647 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: poll_exit
+2024-07-23 12:25:38,647 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: poll_exit
+2024-07-23 12:25:38,648 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: server_info
+2024-07-23 12:25:38,648 DEBUG   SenderThread:38048 [sender.py:send_request():406] send_request: server_info
+2024-07-23 12:25:38,648 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: get_summary
+2024-07-23 12:25:38,650 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: sampled_history
+2024-07-23 12:25:38,650 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-23 12:25:38,784 INFO    MainThread:38048 [wandb_run.py:_footer_history_summary_info():3920] rendering history
+2024-07-23 12:25:38,784 INFO    MainThread:38048 [wandb_run.py:_footer_history_summary_info():3952] rendering summary
+2024-07-23 12:25:38,784 INFO    MainThread:38048 [wandb_run.py:_footer_sync_info():3879] logging synced files
+2024-07-23 12:25:38,784 DEBUG   HandlerThread:38048 [handler.py:handle_request():146] handle_request: shutdown
+2024-07-23 12:25:38,784 INFO    HandlerThread:38048 [handler.py:finish():866] shutting down handler
+2024-07-23 12:25:39,648 INFO    WriterThread:38048 [datastore.py:close():296] close: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240723_122416-l3puhkx3/run-l3puhkx3.wandb
+2024-07-23 12:25:39,784 INFO    SenderThread:38048 [sender.py:finish():1546] shutting down sender
+2024-07-23 12:25:39,784 INFO    SenderThread:38048 [file_pusher.py:finish():172] shutting down file pusher
+2024-07-23 12:25:39,784 INFO    SenderThread:38048 [file_pusher.py:join():178] waiting for file pusher

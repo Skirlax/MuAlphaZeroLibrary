@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 170, in <module>
+    train_mz()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py", line 70, in train_mz
+    mz.train_parallel()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/muzero.py", line 102, in train_parallel
+    self.trainer.train_parallel()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/trainer.py", line 216, in train_parallel
+    p2.join()
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/multiprocess/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/multiprocess/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/multiprocess/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^

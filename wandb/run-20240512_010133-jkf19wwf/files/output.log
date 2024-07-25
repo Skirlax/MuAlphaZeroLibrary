@@ -1,0 +1,46 @@
+DEBUG:AlphaZeroLogger:Starting training for 1 iterations.
+DEBUG:AlphaZeroLogger:Starting self play for 1 games.
+DEBUG:AlphaZeroLogger:Self play ended. Results not available (This is expected if you are running MuZero).
+DEBUG:AlphaZeroLogger:Saved temp checkpoint to C:\Users\Skyr\PycharmProjects\testMuAlphaZeroLib\Checkpoints/Temp/temp_net.pth
+DEBUG:AlphaZeroLogger:Restored opponent network from C:\Users\Skyr\PycharmProjects\testMuAlphaZeroLib\Checkpoints/Temp/temp_net.pth
+DEBUG:AlphaZeroLogger:Starting network training for 1600 epochs.
+Traceback (most recent call last):
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/test.py", line 110, in <module>
+    run()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/test.py", line 58, in run
+    mz.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/muzero.py", line 99, in train
+    self.trainer.train()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/AlphaZero/Network/trainer.py", line 150, in train
+    mean_loss, losses = self.network.train_net(self.memory, self.muzero_alphazero_config)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 113, in train_net
+    states = [np.array(x) for x in states]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 113, in <listcomp>
+    states = [np.array(x) for x in states]
+              ^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/lazy_arrays.py", line 27, in __array__
+    return self.load_array()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/lazy_arrays.py", line 17, in load_array
+    arr = np.load(f)
+          ^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/numpy/lib/npyio.py", line 456, in load
+    return format.read_array(fid, allow_pickle=allow_pickle,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/numpy/lib/format.py", line 831, in read_array
+    data = _read_bytes(fp, read_size, "array data")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/numpy/lib/format.py", line 966, in _read_bytes
+    r = fp.read(size - len(data))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/gzip.py", line 301, in read
+    return self._buffer.read(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/_compression.py", line 68, in readinto
+    data = self.read(len(byte_view))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/gzip.py", line 507, in read
+    uncompress = self._decompressor.decompress(buf, size)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

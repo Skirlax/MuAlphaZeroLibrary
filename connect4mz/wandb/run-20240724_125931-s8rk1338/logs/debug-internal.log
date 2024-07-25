@@ -1,0 +1,140 @@
+2024-07-24 12:59:31,634 INFO    StreamThr :38323 [internal.py:wandb_internal():86] W&B internal server running at pid: 38323, started at: 2024-07-24 12:59:31.634224
+2024-07-24 12:59:31,636 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status
+2024-07-24 12:59:31,638 INFO    WriterThread:38323 [datastore.py:open_for_write():87] open: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/run-s8rk1338.wandb
+2024-07-24 12:59:31,638 DEBUG   SenderThread:38323 [sender.py:send():379] send: header
+2024-07-24 12:59:31,642 DEBUG   SenderThread:38323 [sender.py:send():379] send: run
+2024-07-24 12:59:32,741 INFO    SenderThread:38323 [dir_watcher.py:__init__():211] watching files in: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files
+2024-07-24 12:59:32,741 INFO    SenderThread:38323 [sender.py:_start_run_threads():1124] run started: s8rk1338 with start time 1721818771.633257
+2024-07-24 12:59:32,749 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: check_version
+2024-07-24 12:59:32,749 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: check_version
+2024-07-24 12:59:32,846 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: run_start
+2024-07-24 12:59:32,851 DEBUG   HandlerThread:38323 [system_info.py:__init__():26] System info init
+2024-07-24 12:59:32,851 DEBUG   HandlerThread:38323 [system_info.py:__init__():41] System info init done
+2024-07-24 12:59:32,851 INFO    HandlerThread:38323 [system_monitor.py:start():194] Starting system monitor
+2024-07-24 12:59:32,851 INFO    SystemMonitor:38323 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-07-24 12:59:32,851 INFO    HandlerThread:38323 [system_monitor.py:probe():214] Collecting system info
+2024-07-24 12:59:32,852 INFO    SystemMonitor:38323 [interfaces.py:start():190] Started cpu monitoring
+2024-07-24 12:59:32,853 INFO    SystemMonitor:38323 [interfaces.py:start():190] Started disk monitoring
+2024-07-24 12:59:32,854 INFO    SystemMonitor:38323 [interfaces.py:start():190] Started gpu monitoring
+2024-07-24 12:59:32,854 INFO    SystemMonitor:38323 [interfaces.py:start():190] Started memory monitoring
+2024-07-24 12:59:32,855 INFO    SystemMonitor:38323 [interfaces.py:start():190] Started network monitoring
+2024-07-24 12:59:32,861 DEBUG   HandlerThread:38323 [system_info.py:probe():150] Probing system
+2024-07-24 12:59:32,863 DEBUG   HandlerThread:38323 [system_info.py:_probe_git():135] Probing git
+2024-07-24 12:59:32,867 DEBUG   HandlerThread:38323 [system_info.py:_probe_git():143] Probing git done
+2024-07-24 12:59:32,867 DEBUG   HandlerThread:38323 [system_info.py:probe():198] Probing system done
+2024-07-24 12:59:32,867 DEBUG   HandlerThread:38323 [system_monitor.py:probe():223] {'os': 'Linux-6.9.3-76060903-generic-x86_64-with-glibc2.35', 'python': '3.11.8', 'heartbeatAt': '2024-07-24T10:59:32.861687', 'startedAt': '2024-07-24T10:59:31.629869', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/train_mz.py', 'codePathLocal': 'train_mz.py', 'codePath': 'connect4mz/train_mz.py', 'git': {'remote': 'https://github.com/Skirlax/MuAlphaZeroLibrary.git', 'commit': 'd01a57f346dfcb33e57579b36a95666e87be4b8c'}, 'email': None, 'root': '/home/skyr/PycharmProjects/MuAlphaZeroBuild', 'host': 'pop-os', 'username': 'skyr', 'executable': '/home/skyr/miniconda3/envs/ai_stuff/bin/python', 'cpu_count': 14, 'cpu_count_logical': 20, 'cpu_freq': {'current': 4.607050000000001, 'min': 800.0, 'max': 4620.0}, 'cpu_freq_per_core': [{'current': 5.077, 'min': 800.0, 'max': 5100.0}, {'current': 5.115, 'min': 800.0, 'max': 5100.0}, {'current': 5.099, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 5.099, 'min': 800.0, 'max': 5100.0}, {'current': 5.085, 'min': 800.0, 'max': 5100.0}, {'current': 5.103, 'min': 800.0, 'max': 5100.0}, {'current': 5.1, 'min': 800.0, 'max': 5100.0}, {'current': 3.9, 'min': 800.0, 'max': 3900.0}, {'current': 3.913, 'min': 800.0, 'max': 3900.0}, {'current': 3.854, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}, {'current': 3.859, 'min': 800.0, 'max': 3900.0}, {'current': 3.898, 'min': 800.0, 'max': 3900.0}, {'current': 3.885, 'min': 800.0, 'max': 3900.0}, {'current': 3.899, 'min': 800.0, 'max': 3900.0}], 'disk': {'/': {'total': 906.9564056396484, 'used': 159.6686897277832}}, 'gpu': 'NVIDIA GeForce RTX 3070', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3070', 'memory_total': 8589934592}], 'memory': {'total': 31.19853973388672}}
+2024-07-24 12:59:32,867 INFO    HandlerThread:38323 [system_monitor.py:probe():224] Finished collecting system info
+2024-07-24 12:59:32,867 INFO    HandlerThread:38323 [system_monitor.py:probe():227] Publishing system info
+2024-07-24 12:59:32,867 DEBUG   HandlerThread:38323 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-07-24 12:59:33,742 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/conda-environment.yaml
+2024-07-24 12:59:34,734 DEBUG   HandlerThread:38323 [system_info.py:_save_conda():222] Saving conda packages done
+2024-07-24 12:59:34,737 INFO    HandlerThread:38323 [system_monitor.py:probe():229] Finished publishing system info
+2024-07-24 12:59:34,739 DEBUG   SenderThread:38323 [sender.py:send():379] send: files
+2024-07-24 12:59:34,739 INFO    SenderThread:38323 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2024-07-24 12:59:34,744 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/conda-environment.yaml
+2024-07-24 12:59:34,744 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/wandb-metadata.json
+2024-07-24 12:59:34,898 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: python_packages
+2024-07-24 12:59:34,898 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: python_packages
+2024-07-24 12:59:34,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:59:34,899 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:59:34,909 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:59:35,162 DEBUG   SenderThread:38323 [sender.py:send():379] send: telemetry
+2024-07-24 12:59:35,355 INFO    wandb-upload_0:38323 [upload_job.py:push():131] Uploaded file /tmp/tmpg7a0d_7nwandb/s4xk36gi-wandb-metadata.json
+2024-07-24 12:59:35,466 DEBUG   SenderThread:38323 [sender.py:send():379] send: telemetry
+2024-07-24 12:59:35,579 DEBUG   SenderThread:38323 [sender.py:send():379] send: telemetry
+2024-07-24 12:59:35,744 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/requirements.txt
+2024-07-24 12:59:37,579 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:59:42,580 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:59:47,581 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:59:49,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 12:59:49,899 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 12:59:49,902 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 12:59:53,158 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:59:58,158 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 12:59:58,749 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_created():271] file/dir created: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/output.log
+2024-07-24 13:00:00,750 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/output.log
+2024-07-24 13:00:03,443 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:03,751 INFO    Thread-16 :38323 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/skyr/PycharmProjects/MuAlphaZeroBuild/connect4mz/wandb/run-20240724_125931-s8rk1338/files/config.yaml
+2024-07-24 13:00:04,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:00:04,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:00:04,902 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:00:09,141 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:14,141 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:19,142 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:19,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:00:19,899 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:00:19,940 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:00:24,159 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:29,159 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:32,855 DEBUG   SystemMonitor:38323 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-07-24 13:00:32,856 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:00:34,857 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:34,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:00:34,899 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:00:34,940 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:00:40,175 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:45,176 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:49,899 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:00:49,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:00:49,940 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:00:51,147 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:00:56,148 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:01,148 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:02,857 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:01:04,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:01:04,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:01:04,940 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:01:07,086 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:12,086 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:17,087 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:19,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:01:19,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:01:19,940 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:01:22,165 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:27,165 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:32,166 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:32,858 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:01:34,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:01:34,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:01:34,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:01:38,095 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:43,096 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:48,096 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:49,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:01:49,900 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:01:49,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:01:54,079 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:01:59,079 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:02,859 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:02:04,859 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:04,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:02:04,901 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:02:04,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:02:10,094 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:15,094 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:19,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:02:19,901 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:02:19,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:02:20,141 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:25,142 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:30,142 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:32,859 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:02:34,900 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:02:34,901 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:02:34,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:02:36,082 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:41,083 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:46,083 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:49,901 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:02:49,901 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:02:49,942 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:02:52,076 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:02:57,076 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:03:02,076 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:03:02,860 DEBUG   SenderThread:38323 [sender.py:send():379] send: stats
+2024-07-24 13:03:04,901 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: stop_status
+2024-07-24 13:03:04,901 DEBUG   SenderThread:38323 [sender.py:send_request():406] send_request: stop_status
+2024-07-24 13:03:04,941 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: internal_messages
+2024-07-24 13:03:07,083 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:03:12,083 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report
+2024-07-24 13:03:17,083 DEBUG   HandlerThread:38323 [handler.py:handle_request():146] handle_request: status_report

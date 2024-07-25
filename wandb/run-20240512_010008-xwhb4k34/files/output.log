@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/test.py", line 110, in <module>
+    run()
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/test.py", line 43, in run
+    mz.create_new(conf, MuZeroNet, memory, headless=True, checkpointer_verbose=False, hook_manager=hook_manager)
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/muzero.py", line 63, in create_new
+    network = network_class.make_from_config(muzero_config, self.game_manager, hook_manager=hook_manager).to(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 66, in make_from_config
+    return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/MuZero/Network/networks.py", line 33, in __init__
+    self.optimizer = th.optim.Adam(self.parameters(), lr=self.config.lr, weight_decay=self.config.l2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/optim/adam.py", line 45, in __init__
+    super().__init__(params, defaults)
+  File "/home/skyr/miniconda3/envs/ai_stuff/lib/python3.11/site-packages/torch/optim/optimizer.py", line 273, in __init__
+    raise ValueError("optimizer got an empty parameter list")
+ValueError: optimizer got an empty parameter list

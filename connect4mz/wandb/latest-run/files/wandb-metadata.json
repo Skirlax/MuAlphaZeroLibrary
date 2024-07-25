@@ -1,0 +1,148 @@
+{
+    "os": "Linux-6.5.0-41-generic-x86_64-with-glibc2.35",
+    "python": "3.11.8",
+    "heartbeatAt": "2024-07-17T18:09:20.441020",
+    "startedAt": "2024-07-17T18:09:19.292619",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/skyr/PycharmProjects/connect4mz/train_mz.py",
+    "codePathLocal": "train_mz.py",
+    "codePath": "train_mz.py",
+    "git": {
+        "remote": "https://github.com/Skirlax/Connect4Rl.git",
+        "commit": "a35dc13b28b0c8732fa2356b97298ea3aea53e8c"
+    },
+    "email": "skirlaxxx@gmail.com",
+    "root": "/home/skyr/PycharmProjects/connect4mz",
+    "host": "skyr-MS-7D25",
+    "username": "skyr",
+    "executable": "/home/skyr/miniconda3/envs/ai_stuff/bin/python",
+    "cpu_count": 14,
+    "cpu_count_logical": 20,
+    "cpu_freq": {
+        "current": 3.44595,
+        "min": 800.0,
+        "max": 4620.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.084,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.101,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.1,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.121,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 5.101,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 5100.0
+        },
+        {
+            "current": 3.9,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.902,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.899,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.902,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 0.8,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.899,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.898,
+            "min": 800.0,
+            "max": 3900.0
+        },
+        {
+            "current": 3.9,
+            "min": 800.0,
+            "max": 3900.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 915.3232879638672,
+            "used": 719.6154174804688
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3070",
+            "memory_total": 8589934592
+        }
+    ],
+    "memory": {
+        "total": 31.191204071044922
+    }
+}
