@@ -44,11 +44,13 @@ def scale_state(state: np.ndarray, scale: bool):
 
 def scale_action(action: int, num_actions: int):
     # return action / (num_actions - 1)
-    return action + 1
+    return (action + 1) / num_actions
 
 
 def scale_hidden_state(hidden_state: th.Tensor):
-    return (hidden_state - th.min(hidden_state)) / (th.max(hidden_state) - th.min(hidden_state))
+    max_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).max(dim=2,keepdim=True)[0].unsqueeze(-1)
+    min_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).min(dim=2,keepdim=True)[0].unsqueeze(-1)
+    return (hidden_state - min_) / (max_ - min_)
 
 
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
@@ -61,6 +63,7 @@ def invert_scale_reward_value(value: th.Tensor, e: float = 0.001):
             ** 2
             - 1
     )
+
 
 
 def scale_reward(reward: float):
