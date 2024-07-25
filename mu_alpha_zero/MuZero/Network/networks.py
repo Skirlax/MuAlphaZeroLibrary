@@ -246,7 +246,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.load_state_dict(shared_storage.get_stable_network_params())
             avg, iter_losses = self.train_net(shared_storage, muzero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
-            shared_storage.set_optimizer(self.optimizer)
+            shared_storage.set_optimizer(self.optimizer.state_dict())
             shared_storage.set_was_pitted(False)
             self.eval_net(shared_storage, muzero_config)
             loss_avgs.append(avg)

@@ -37,7 +37,7 @@ class CheckPointer:
         checkpoint_path = f"{self.__checkpoint_dir}/{name}.pth"
         th.save({
             "net": net.state_dict(),
-            "optimizer": optimizer.state_dict(),
+            "optimizer": optimizer.state_dict() if isinstance(optimizer, th.optim.Optimizer) else optimizer,
             "lr": lr,
             "iteration": iteration,
             "args": mu_alpha_zero_config.to_dict(),

@@ -11,7 +11,7 @@ class SharedStorage:
         self.experimental_network_params: dict or None = None
         self.stable_network_params: dict or None = None
         self.lock = multiprocess.context._default_context.Lock()
-        self.optimizer = None
+        self.optimizer_state_dict = None
         self.was_pitted = True
 
     def get_experimental_network_params(self):
@@ -43,10 +43,10 @@ class SharedStorage:
             return self.mem_buffer.get_buffer()
 
     def set_optimizer(self, optimizer):
-        self.optimizer = copy.deepcopy(optimizer)
+        self.optimizer_state_dict = copy.deepcopy(optimizer)
 
     def get_optimizer(self):
-        return copy.deepcopy(self.optimizer)
+        return copy.deepcopy(self.optimizer_state_dict)
 
     def set_was_pitted(self, was_pitted: bool):
         self.was_pitted = was_pitted
