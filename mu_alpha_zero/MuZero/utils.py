@@ -54,8 +54,10 @@ def scale_hidden_state(hidden_state: th.Tensor):
         was_reshaped = True
     max_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).max(dim=2,keepdim=True)[0].unsqueeze(-1)
     min_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).min(dim=2,keepdim=True)[0].unsqueeze(-1)
-    hidden_state = hidden_state.squeeze(0) if was_reshaped else hidden_state
-    return (hidden_state - min_) / (max_ - min_)
+    max_min_dif = max_ - min_
+    max_min_dif[max_min_dif == 0] = 1e-5
+    hidden_state = (hidden_state - min_) / max_min_dif
+    return hidden_state.squeeze(0) if was_reshaped else hidden_state
 
 
 def scale_reward_value(value: th.Tensor, e: float = 0.001):
