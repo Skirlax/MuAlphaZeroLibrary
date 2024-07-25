@@ -237,7 +237,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         losses = []
         loss_avgs = []
         while len(
-                shared_storage.get_buffer()) < muzero_config.batch_size:  # await reasonable buffer size
+                shared_storage.get_buffer()) < muzero_config.batch_size // 2:  # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
             if not shared_storage.get_was_pitted():

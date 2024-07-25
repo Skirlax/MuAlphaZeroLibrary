@@ -1,6 +1,0 @@
-[2024-03-29 16:45:36,262 - DEBUG] Starting training for 10 iterations.
-[2024-03-29 16:45:36,270 - DEBUG] Starting self play for 2 games.
-[2024-03-29 16:45:53,507 - DEBUG] Self play ended. Results not available (This is expected if you are running MuZero).
-[2024-03-29 16:45:53,856 - DEBUG] Saved temp checkpoint to C:\Users\Skyr\PycharmProjects\MuAlphaZeroBuild\mu_alpha_zero/Checkpoints/Temp/temp_net.pth
-[2024-03-29 16:45:53,927 - DEBUG] Restored opponent network from C:\Users\Skyr\PycharmProjects\MuAlphaZeroBuild\mu_alpha_zero/Checkpoints/Temp/temp_net.pth
-[2024-03-29 16:45:53,928 - DEBUG] Starting network training for 3600 epochs.

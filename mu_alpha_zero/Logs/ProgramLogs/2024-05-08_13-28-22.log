@@ -1,6 +1,0 @@
-[2024-05-08 13:28:23,527 - DEBUG] Starting training for 50 iterations.
-[2024-05-08 13:28:23,533 - DEBUG] Starting self play for 10 games.
-[2024-05-08 13:30:09,447 - DEBUG] Self play ended. Player 1 win frequency: 0.5. Player 2 win frequency: 0.1. Draws: 4.
-[2024-05-08 13:30:09,540 - DEBUG] Saved temp checkpoint to /home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/Checkpoints/NetVersions/Temp/temp_net.pth
-[2024-05-08 13:30:09,591 - DEBUG] Restored opponent network from /home/skyr/PycharmProjects/MuAlphaZeroBuild/mu_alpha_zero/Checkpoints/NetVersions/Temp/temp_net.pth
-[2024-05-08 13:30:09,591 - DEBUG] Starting network training for 500 epochs.
