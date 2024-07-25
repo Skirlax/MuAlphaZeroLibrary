@@ -48,6 +48,7 @@ def scale_action(action: int, num_actions: int):
 
 
 def scale_hidden_state(hidden_state: th.Tensor):
+    hidden_state = hidden_state.unsqueeze(0) if len(hidden_state.shape) == 3 else hidden_state
     max_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).max(dim=2,keepdim=True)[0].unsqueeze(-1)
     min_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).min(dim=2,keepdim=True)[0].unsqueeze(-1)
     return (hidden_state - min_) / (max_ - min_)
