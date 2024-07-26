@@ -356,7 +356,7 @@ class StateHead(th.nn.Module):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
         x = F.relu(self.fc(x))
-        x = self.fc3(x)
+        x = F.relu(self.fc3(x))
         return x
 
 
