@@ -232,29 +232,30 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
-        wandb.init(project="MZ", name="Continuous Weight Update")
+        wandb.init(project=muzero_config.wandbd_project_name, name="Continuous Weight Update")
         self.train()
-        losses = []
-        loss_avgs = []
-        num_epochs = muzero_config.epochs
+        # losses = []
+        # loss_avgs = []
+        # num_epochs = muzero_config.epochs
         muzero_config.epochs = 1
+        muzero_config.eval_epochs = 1
         while len(
-                shared_storage.get_buffer()) < muzero_config.batch_size:  # await reasonable buffer size
+                shared_storage.get_buffer()) < muzero_config.batch_size // 2:  # await reasonable buffer size
             time.sleep(5)
         for iter_ in range(muzero_config.num_worker_iters):
-            if not shared_storage.get_was_pitted():
-                time.sleep(5)
-                continue
-            self.load_state_dict(shared_storage.get_stable_network_params())
-            for epoch in range(num_epochs):
-                avg, iter_losses = self.train_net(shared_storage, muzero_config)
-                shared_storage.set_experimental_network_params(self.state_dict())
-                shared_storage.set_optimizer(self.optimizer.state_dict())
-                loss_avgs.append(avg)
-                losses.extend(iter_losses)
+            # if not shared_storage.get_was_pitted():
+            #     time.sleep(5)
+            #     continue
+            # self.load_state_dict(shared_storage.get_stable_network_params())
+            # for epoch in range(num_epochs):
+            avg, iter_losses = self.train_net(shared_storage, muzero_config)
+            shared_storage.set_experimental_network_params(self.state_dict())
+            shared_storage.set_optimizer(self.optimizer.state_dict())
+            # loss_avgs.append(avg)
+            # losses.extend(iter_losses)
             shared_storage.set_was_pitted(False)
             self.eval_net(shared_storage, muzero_config)
-            wandb.log({"loss_avg": avg})
+            # wandb.log({"loss_avg": avg})
 
     def to_pickle(self, path: str):
         th.save(self, path)

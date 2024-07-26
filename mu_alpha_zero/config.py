@@ -47,6 +47,7 @@ class Config:
     num_worker_iters: int = 100_000
     enable_frame_buffer: bool = True
     recalculate_p_on_every_call: bool = False
+    wandbd_project_name: str = "mz"
 
     def to_dict(self):
         return self.__dict__

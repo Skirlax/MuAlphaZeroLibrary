@@ -2,6 +2,7 @@ import copy
 import gc
 import time
 
+import wandb
 from multiprocess import set_start_method
 
 set_start_method("spawn", force=True)
@@ -51,8 +52,9 @@ class MuZeroSearchTree(SearchTree):
         if self.muzero_config.multiple_players:
             self.buffer.init_buffer(self.game_manager.get_state_for_passive_player(state, -player), -player)
         data = SingleGameData()
-
+        game_length = 0
         for step in range(num_steps):
+            game_length += 1
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
@@ -74,6 +76,7 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.add_frame(state, move, player)
             self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player), move, -player)
 
+        wandb.log({"Game length": game_length})
         data.compute_initial_priorities(self.muzero_config)
         return [data]
 
@@ -222,7 +225,7 @@ class MuZeroSearchTree(SearchTree):
                 if isinstance(frame, LazyArray):
                     frame = frame.load_array()
                 state = th.tensor(frame, device=device).float()
-                pi, (v,_) = tree.search(net, state, player, device)
+                pi, (v, _) = tree.search(net, state, player, device)
                 move = tree.game_manager.select_move(pi, tau=config.tau)
 
     def run_on_training_end(self):
@@ -240,20 +243,20 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
     return data
 
 
-def c_p_self_play(net, tree, device, num_g, shared_storage: SharedStorage, num_worker_iters: int,
+def c_p_self_play(net, tree, device, config: MuZeroConfig, shared_storage: SharedStorage, num_worker_iters: int,
                   dir_path: str or None = None):
+    wandb.init(project=config.wandbd_project_name, name="Self play")
     net = net.to(device)
     net.eval()
     for iter_ in range(num_worker_iters):
-        for game in range(num_g):
-            # if not shared_storage.get_was_pitted():
-            #     # If the network was not yet decided on, slow down the process so the data won't get overpopulated with current params.
-            #     time.sleep(5)
-            if shared_storage.get_experimental_network_params() is None:
-                params = shared_storage.get_stable_network_params()
-            else:
-                params = shared_storage.get_experimental_network_params()
-            net.load_state_dict(params)
-            game_results = tree.play_one_game(net, device, dir_path=dir_path,
-                                              calculate_avg_num_children=game == num_g - 1)
-            shared_storage.add_list(game_results)
+        # for game in range(num_g):
+        # if not shared_storage.get_was_pitted():
+        #     # If the network was not yet decided on, slow down the process so the data won't get overpopulated with current params.
+        #     time.sleep(5)
+        if shared_storage.get_experimental_network_params() is None:
+            params = shared_storage.get_stable_network_params()
+        else:
+            params = shared_storage.get_experimental_network_params()
+        net.load_state_dict(params)
+        game_results = tree.play_one_game(net, device, dir_path=dir_path)
+        shared_storage.add_list(game_results)

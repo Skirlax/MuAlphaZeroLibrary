@@ -192,29 +192,21 @@ class Trainer:
         pool = self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
                                                     self.make_n_trees(self.muzero_alphazero_config.num_workers),
                                                     shared_storage, self.device,
-                                                    self.muzero_alphazero_config.self_play_games,
+                                                    self.muzero_alphazero_config,
                                                     self.muzero_alphazero_config.num_workers,
                                                     self.muzero_alphazero_config.num_worker_iters)
         self.logger.log(f"Successfully started a pool of {self.muzero_alphazero_config.num_workers} workers for "
-                        f"self-play (1/3).")
+                        f"self-play (1/2).")
         p2 = Process(target=self.network.continuous_weight_update,
                      args=(shared_storage, self.muzero_alphazero_config))
-        p3 = Process(target=self.arena.continuous_pit, args=(self.net_player.make_fresh_instance(),
-                                                             self.net_player.make_fresh_instance(),
-                                                             RandomPlayer(
-                                                                 self.game_manager.make_fresh_instance(),
-                                                                 **{}),
-                                                             self.muzero_alphazero_config.num_pit_games,
-                                                             self.muzero_alphazero_config.num_simulations,
-                                                             shared_storage, self.checkpointer, False, 1))
 
         p2.start()
-        self.logger.log("Successfully started continuous weight update process (2/3).")
-        p3.start()
-        self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
+        self.logger.log("Successfully started continuous weight update process (2/2).")
+        # p3.start()
+        # self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
 
         p2.join()
-        p3.join()
+        # p3.join()
         pool.close()
         pool.join()
 
