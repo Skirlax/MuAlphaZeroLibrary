@@ -192,6 +192,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
                     -1).tolist(), new_priorities)
         # TODO: Multiply v by 0.25 when reanalyze implemented.
+        v_loss *= 0.25
         loss = pi_loss + v_loss + r_loss
         if muzero_config.enable_per:
             loss *= th.tensor(weights, dtype=loss.dtype, device=loss.device)
@@ -257,7 +258,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             shared_storage.set_optimizer(self.optimizer.state_dict())
             # loss_avgs.append(avg)
             # losses.extend(iter_losses)
-            shared_storage.set_was_pitted(False)
+            # shared_storage.set_was_pitted(False)
             self.eval_net(shared_storage, muzero_config)
             if iter_ % 500 == 0 and iter_ != 0:
                 logger.log(f"Saving checkpoint at iteration {iter_}.")
