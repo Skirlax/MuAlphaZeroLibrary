@@ -147,7 +147,9 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
 class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
-                 linear_input_size: list[int], support_size: int, latent_size: list[int] = [6, 6],
+                 linear_input_size: list[int], support_size: int,
+                 state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
+                 latent_size: list[int] = [6, 6],
                  hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,
                  is_dynamics: bool = False):
         super(OriginalAlphaZerNetwork, self).__init__()
@@ -161,6 +163,10 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.muzero = muzero
         self.latent_size = latent_size
         self.is_dynamics = is_dynamics
+        self.state_linear_layers = state_linear_layers
+        self.pi_linear_layers = pi_linear_layers
+        self.v_linear_layers = v_linear_layers
+        self.linear_head_hidden_size = linear_head_hidden_size
         self.optimizer = None
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
 
@@ -168,11 +174,14 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.bn1 = nn.BatchNorm2d(num_channels)
         self.dropout = nn.Dropout(dropout)
         self.blocks = nn.ModuleList([OriginalAlphaZeroBlock(num_channels, num_channels) for _ in range(num_blocks)])
-        self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels)
+        self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels, v_linear_layers,
+                                    linear_head_hidden_size)
         if is_dynamics:
-            self.policy_head = StateHead(linear_input_size[2], num_channels, latent_size)
+            self.policy_head = StateHead(linear_input_size[2], num_channels, latent_size, state_linear_layers,
+                                         linear_head_hidden_size)
         else:
-            self.policy_head = PolicyHead(action_size, linear_input_size[1], num_channels)
+            self.policy_head = PolicyHead(action_size, linear_input_size[1], num_channels, pi_linear_layers,
+                                          linear_head_hidden_size)
 
     def forward(self, x, muzero: bool = False, return_support: bool = False):
         if not muzero:
@@ -206,7 +215,10 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def make_fresh_instance(self):
         return OriginalAlphaZerNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
-                                       self.linear_input_size, self.support_size, self.latent_size,
+                                       self.linear_input_size, self.support_size,
+                                       self.state_linear_layers, self.pi_linear_layers, self.v_linear_layers,
+                                       self.linear_head_hidden_size,
+                                       self.latent_size,
                                        hook_manager=self.hook_manager,
                                        num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
 
@@ -215,6 +227,10 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         return OriginalAlphaZerNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
                                        config.net_action_size, config.az_net_linear_input_size,
                                        hook_manager=hook_manager,
+                                       state_linear_layers=config.state_linear_layers,
+                                       pi_linear_layers=config.pi_linear_layers,
+                                       v_linear_layers=config.v_linear_layers,
+                                       linear_head_hidden_size=config.linear_head_hidden_size,
                                        num_blocks=config.num_blocks, muzero=config.muzero,
                                        support_size=config.support_size, latent_size=config.net_latent_size)
 
@@ -285,11 +301,13 @@ class OriginalAlphaZeroBlock(th.nn.Module):
 
 
 class ValueHead(th.nn.Module):
-    def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int):
+    def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int, num_layers: int,
+                 linear_hidden_size: int):
         super(ValueHead, self).__init__()
         self.conv = nn.Conv2d(num_channels, 1, 1)
         self.bn = nn.BatchNorm2d(1)
         self.fc1 = nn.Linear(linear_input_size, 256)
+        self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         if muzero:
             self.fc2 = nn.Linear(256, 2 * support_size + 1)
             self.act = nn.LogSoftmax(dim=1)
@@ -301,45 +319,55 @@ class ValueHead(th.nn.Module):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc(x))
         x = self.fc2(x)
         return self.act(x)
 
 
 class PolicyHead(th.nn.Module):
-    def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int):
+    def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int, num_layers: int,
+                 linear_hidden_size: int):
         super(PolicyHead, self).__init__()
         self.conv = nn.Conv2d(num_channels, 2, 1)
         self.bn = nn.BatchNorm2d(2)
         self.fc1 = nn.Linear(linear_input_size_policy, 256)
+        self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         self.fc2 = nn.Linear(256, action_size)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
 
 class StateHead(th.nn.Module):
-    def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int]):
+    def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int], num_layers: int,
+                 linear_hidden_size: int):
         super(StateHead, self).__init__()
         self.conv = nn.Conv2d(out_channels, 4, 1)
         self.bn = nn.BatchNorm2d(4)
-        self.fc1 = nn.Linear(linear_input_size, 256)
-        self.fc2 = nn.Linear(256, out_channels)
+        self.fc = HeadLinear(linear_input_size, out_channels, num_layers, linear_hidden_size)
         self.fc3 = nn.Linear(out_channels, latent_size[0] * latent_size[1] * out_channels)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc(x))
+        x = self.fc3(x)
         return x
 
 
-# class HeadLinear(nn.Module):
-#     def __init__(self,in_channels: int,out_channels: int,num_layers: int):
-#         super(HeadLinear, self).__init__()
-#         self.fc = nn.Sequential([])
+class HeadLinear(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, num_layers: int, hidden_size: int):
+        super(HeadLinear, self).__init__()
+        self.fc1 = nn.Linear(in_channels, hidden_size)
+        self.fc = nn.Sequential(*[nn.Linear(hidden_size, hidden_size) for _ in range(num_layers)])
+        self.fc2 = nn.Linear(hidden_size, out_channels)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc(x))
+        return self.fc2(x)

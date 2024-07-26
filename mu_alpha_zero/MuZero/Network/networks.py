@@ -24,6 +24,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
     def __init__(self, input_channels: int, dropout: float, action_size: int, num_channels: int, latent_size: list[int],
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
+                 state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -40,6 +41,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.linear_input_size = linear_input_size
         self.support_size = support_size
         self.num_blocks = num_blocks
+        self.state_linear_layers = state_linear_layers
+        self.pi_linear_layers = pi_linear_layers
+        self.v_linear_layers = v_linear_layers
+        self.linear_head_hidden_size = linear_head_hidden_size
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # self.action_embedding = th.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
@@ -48,11 +53,19 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                             dropout=dropout,
                                                             action_size=action_size,
                                                             linear_input_size=linear_input_size,
+                                                            state_linear_layers=state_linear_layers,
+                                                            pi_linear_layers=pi_linear_layers,
+                                                            v_linear_layers=v_linear_layers,
+                                                            linear_head_hidden_size=linear_head_hidden_size,
                                                             support_size=support_size, latent_size=latent_size,
                                                             num_blocks=num_blocks, muzero=True, is_dynamics=True)
             self.prediction_network = OriginalAlphaZerNetwork(in_channels=256, num_channels=num_out_channels,
                                                               dropout=dropout,
                                                               action_size=action_size,
+                                                              state_linear_layers=state_linear_layers,
+                                                              pi_linear_layers=pi_linear_layers,
+                                                              v_linear_layers=v_linear_layers,
+                                                              linear_head_hidden_size=linear_head_hidden_size,
                                                               linear_input_size=linear_input_size,
                                                               support_size=support_size, latent_size=latent_size,
                                                               num_blocks=num_blocks, muzero=True, is_dynamics=False)
@@ -68,6 +81,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return cls(config.num_net_in_channels, config.net_dropout, config.net_action_size, config.num_net_channels,
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
+                   config.state_linear_layers, config.pi_linear_layers, config.v_linear_layers,
+                   config.linear_head_hidden_size,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
@@ -106,7 +121,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return MuZeroNet(self.input_channels, self.dropout, self.action_size, self.num_channels, self.latent_size,
                          self.num_out_channels, self.linear_input_size, self.rep_input_channels,
                          hook_manager=self.hook_manager, use_original=self.use_original, support_size=self.support_size,
-                         num_blocks=self.num_blocks, use_pooling=self.use_pooling)
+                         num_blocks=self.num_blocks, use_pooling=self.use_pooling,
+                         state_linear_layers=self.state_linear_layers,
+                         pi_linear_layers=self.pi_linear_layers, v_linear_layers=self.v_linear_layers,
+                         linear_head_hidden_size=self.linear_head_hidden_size)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")

@@ -14,6 +14,10 @@ class Config:
     num_net_in_channels: int = 1
     net_dropout: float = 0.3
     net_action_size: int = 14
+    state_linear_layers = 10
+    pi_linear_layers = 10
+    v_linear_layers = 10
+    linear_head_hidden_size: int = 256
     num_simulations: int = 800
     self_play_games: int = 100
     num_iters: int = 50
@@ -72,9 +76,6 @@ class MuZeroConfig(Config):
     num_net_out_channels: int = 256
     num_net_in_channels: int = 1
     rep_input_channels: int = 128  # for atari where input is 96x96x3
-    reward_linear_layers = 10
-    pi_linear_layers = 10
-    v_linear_layers = 10
     net_dropout: float = 0.3
     net_action_size: int = 14
     num_simulations: int = 800
