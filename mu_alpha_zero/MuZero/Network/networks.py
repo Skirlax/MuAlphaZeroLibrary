@@ -228,11 +228,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             for i in range(len(game.datapoints)):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
-    def muzero_loss(self, y_hat, y, masks: th.Tensor or None = None):
-        if masks is not None:
-            masks = masks.reshape(y_hat.shape).to(self.device)
-            y_hat = masks * y_hat
-        return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
+    def muzero_loss(self, y_hat, y):
+        return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,
                                  checkpointer: CheckPointer, logger: Logger):
@@ -244,7 +241,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         muzero_config.epochs = 1
         muzero_config.eval_epochs = 1
         while len(
-                shared_storage.get_buffer()) < muzero_config.batch_size // 2:  # await reasonable buffer size
+                shared_storage.get_buffer()) < muzero_config.batch_size // 4:  # await reasonable buffer size
             time.sleep(5)
         logger.log("Finished waiting for target buffer size,starting training.")
         for iter_ in range(muzero_config.num_worker_iters):
