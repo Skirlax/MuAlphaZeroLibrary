@@ -198,7 +198,7 @@ class Trainer:
         self.logger.log(f"Successfully started a pool of {self.muzero_alphazero_config.num_workers} workers for "
                         f"self-play (1/2).")
         p2 = Process(target=self.network.continuous_weight_update,
-                     args=(shared_storage, self.muzero_alphazero_config))
+                     args=(shared_storage, self.muzero_alphazero_config, self.checkpointer, self.logger))
 
         p2.start()
         self.logger.log("Successfully started continuous weight update process (2/2).")

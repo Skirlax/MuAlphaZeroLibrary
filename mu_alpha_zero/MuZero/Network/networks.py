@@ -8,6 +8,8 @@ from torch import nn
 from torch.nn.functional import mse_loss
 
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZerNetwork
+from mu_alpha_zero.AlphaZero.checkpointer import CheckPointer
+from mu_alpha_zero.AlphaZero.logger import Logger
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
@@ -231,7 +233,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             y_hat = masks * y_hat
         return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
 
-    def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig):
+    def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,
+                                 checkpointer: CheckPointer, logger: Logger):
         wandb.init(project=muzero_config.wandbd_project_name, name="Continuous Weight Update")
         self.train()
         # losses = []
@@ -242,6 +245,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         while len(
                 shared_storage.get_buffer()) < muzero_config.batch_size // 2:  # await reasonable buffer size
             time.sleep(5)
+        logger.log("Finished waiting for target buffer size,starting training.")
         for iter_ in range(muzero_config.num_worker_iters):
             # if not shared_storage.get_was_pitted():
             #     time.sleep(5)
@@ -255,6 +259,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             # losses.extend(iter_losses)
             shared_storage.set_was_pitted(False)
             self.eval_net(shared_storage, muzero_config)
+            if iter_ % 500 == 0 and iter_ != 0:
+                logger.log(f"Saving checkpoint at iteration {iter_}.")
+                checkpointer.save_checkpoint(self, self, self.optimizer, muzero_config.lr, iter_, muzero_config)
             # wandb.log({"loss_avg": avg})
 
     def to_pickle(self, path: str):
