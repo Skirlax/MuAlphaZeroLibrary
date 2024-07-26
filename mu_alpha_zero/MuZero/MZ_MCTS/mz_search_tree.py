@@ -97,7 +97,8 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.concat_frames(current_player).permute(2, 0, 1).unsqueeze(0)).squeeze(0)
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
-        pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
+        if self.muzero_config.dirichlet_alpha > 0:
+            pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
         pi = mask_invalid_actions(self.game_manager.get_invalid_actions(state, current_player), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
