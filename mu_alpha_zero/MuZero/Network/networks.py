@@ -229,7 +229,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
     def muzero_loss(self, y_hat, y):
-        return -th.sum(y * y_hat, dim=1).unsqueeze(1)
+        return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,
                                  checkpointer: CheckPointer, logger: Logger):
