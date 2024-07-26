@@ -196,11 +196,11 @@ class MuZeroSearchTree(SearchTree):
 
     @staticmethod
     def start_continuous_self_play(nets: list, trees: list, shared_storage: SharedStorage,
-                                   device: th.device, num_games: int, num_jobs: int, num_worker_iters: int):
+                                   device: th.device, config: MuZeroConfig, num_jobs: int, num_worker_iters: int):
         pool = Pool(num_jobs)
         for i in range(num_jobs):
             pool.apply_async(c_p_self_play, args=(
-                nets[i], trees[i], copy.deepcopy(device), num_games // num_jobs, shared_storage, num_worker_iters,
+                nets[i], trees[i], copy.deepcopy(device), config, shared_storage, num_worker_iters,
                 shared_storage.get_dir_path())
                              )
 
