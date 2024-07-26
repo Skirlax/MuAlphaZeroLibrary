@@ -337,3 +337,9 @@ class StateHead(th.nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         return x
+
+
+# class HeadLinear(nn.Module):
+#     def __init__(self,in_channels: int,out_channels: int,num_layers: int):
+#         super(HeadLinear, self).__init__()
+#         self.fc = nn.Sequential([])

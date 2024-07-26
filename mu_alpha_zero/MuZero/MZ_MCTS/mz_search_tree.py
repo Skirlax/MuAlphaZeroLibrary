@@ -108,6 +108,8 @@ class MuZeroSearchTree(SearchTree):
             action = None
             while current_node.was_visited():
                 current_node, action = current_node.get_best_child(self.min_max_q[0], self.min_max_q[1],
+                                                                   self.muzero_config.gamma,
+                                                                   self.muzero_config.multiple_players,
                                                                    c=self.muzero_config.c, c2=self.muzero_config.c2)
                 path.append(current_node)
 
@@ -135,21 +137,24 @@ class MuZeroSearchTree(SearchTree):
         return action_probs, root_val_latent
 
     def backprop(self, v, path):
-        G = v
-        G_node = -v
+        # G = v
+        G_node = v
+        gamma = self.muzero_config.gamma
         for node in reversed(path):
-            gamma = 1 if G == v else self.muzero_config.gamma
+
             if self.muzero_config.multiple_players:
-                G = node.reward + gamma * (
-                    -G)  # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
-                G_node = node.reward + gamma * (-G_node)
+                # G = node.reward + gamma * (
+                #     -G)  # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
                 node.total_value += G_node
+                self.update_min_max_q(node.reward - node.get_self_value())
+                G_node = node.reward + gamma * (-G_node)
             else:
-                G = node.reward + gamma * G
-                node.total_value += G
-            node.update_q(G)
-            self.update_min_max_q(node.q)
+                node.total_value += G_node
+                self.update_min_max_q(node.reward + node.get_self_value())
+                G_node = node.reward + gamma * G_node
+            # node.update_q(G_node)
             node.times_visited += 1
+
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:
@@ -204,7 +209,7 @@ class MuZeroSearchTree(SearchTree):
         pool = Pool(num_jobs)
         for i in range(num_jobs):
             pool.apply_async(c_p_self_play, args=(
-                nets[i], trees[i], copy.deepcopy(device), config, i,shared_storage, num_worker_iters,
+                nets[i], trees[i], copy.deepcopy(device), config, i, shared_storage, num_worker_iters,
                 shared_storage.get_dir_path())
                              )
 
@@ -247,7 +252,8 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
     return data
 
 
-def c_p_self_play(net, tree, device, config: MuZeroConfig,p_num: int,shared_storage: SharedStorage, num_worker_iters: int,
+def c_p_self_play(net, tree, device, config: MuZeroConfig, p_num: int, shared_storage: SharedStorage,
+                  num_worker_iters: int,
                   dir_path: str or None = None):
     if p_num == 0:
         wandb.init(project=config.wandbd_project_name, name="Self play")
