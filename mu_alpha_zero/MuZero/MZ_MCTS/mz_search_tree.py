@@ -76,7 +76,10 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.add_frame(state, move, player)
             self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player), move, -player)
 
-        wandb.log({"Game length": game_length})
+        try:
+            wandb.log({"Game length": game_length})
+        except Exception:
+            pass
         data.compute_initial_priorities(self.muzero_config)
         return [data]
 
@@ -200,7 +203,7 @@ class MuZeroSearchTree(SearchTree):
         pool = Pool(num_jobs)
         for i in range(num_jobs):
             pool.apply_async(c_p_self_play, args=(
-                nets[i], trees[i], copy.deepcopy(device), config, shared_storage, num_worker_iters,
+                nets[i], trees[i], copy.deepcopy(device), config, i,shared_storage, num_worker_iters,
                 shared_storage.get_dir_path())
                              )
 
@@ -243,9 +246,10 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
     return data
 
 
-def c_p_self_play(net, tree, device, config: MuZeroConfig, shared_storage: SharedStorage, num_worker_iters: int,
+def c_p_self_play(net, tree, device, config: MuZeroConfig,p_num: int,shared_storage: SharedStorage, num_worker_iters: int,
                   dir_path: str or None = None):
-    wandb.init(project=config.wandbd_project_name, name="Self play")
+    if p_num == 0:
+        wandb.init(project=config.wandbd_project_name, name="Self play")
     net = net.to(device)
     net.eval()
     for iter_ in range(num_worker_iters):
