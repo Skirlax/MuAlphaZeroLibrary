@@ -151,6 +151,10 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.optimizer.step()
             if self.scheduler is not None:
                 self.scheduler.step()
+                try:
+                    wandb.log({"lr": self.scheduler.get_last_lr()[0]})
+                except:
+                    pass
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
                 sampled_game_data, loss.item(), loss_v, loss_pi, loss_r,
                 iteration))
