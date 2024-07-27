@@ -281,7 +281,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             # shared_storage.set_was_pitted(False)
             if iter_ % 100 == 0:
                 self.eval_net(shared_storage, muzero_config)
-            if iter_ % 500 == 0 and iter_ != 0:
+            if iter_ % 5 == 0 and iter_ != 0:
                 logger.log(f"Saving checkpoint at iteration {iter_}.")
                 checkpointer.save_checkpoint(self, self, self.optimizer, muzero_config.lr, iter_, muzero_config)
             # wandb.log({"loss_avg": avg})
