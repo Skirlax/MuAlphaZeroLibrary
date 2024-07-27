@@ -7,6 +7,8 @@
 
 from dataclasses import dataclass,field
 
+import torch.optim
+
 
 @dataclass
 class Config:
@@ -17,6 +19,8 @@ class Config:
     state_linear_layers = 10
     pi_linear_layers = 10
     v_linear_layers = 10
+    lr_scheduler: torch.optim.lr_scheduler = None
+    lr_scheduler_kwargs: dict = None
     linear_head_hidden_size: int = 256
     num_simulations: int = 800
     self_play_games: int = 100

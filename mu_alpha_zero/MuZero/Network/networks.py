@@ -37,6 +37,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.num_channels = num_channels
         self.latent_size = latent_size
         self.optimizer = None
+        self.scheduler = None
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
         self.support_size = support_size
@@ -131,6 +132,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
                                            weight_decay=muzero_config.l2)
+        if self.scheduler is None and muzero_config.lr_scheduler is not None:
+            self.scheduler = muzero_config.lr_scheduler(self.optimizer)
         losses = []
         iteration = 0
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
@@ -146,6 +149,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            if self.scheduler is not None:
+                self.scheduler.step()
             self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE, args=(
                 sampled_game_data, loss.item(), loss_v, loss_pi, loss_r,
                 iteration))
