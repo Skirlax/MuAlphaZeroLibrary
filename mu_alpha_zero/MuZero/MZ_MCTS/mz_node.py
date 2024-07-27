@@ -40,8 +40,7 @@ class MzAlphaZeroNode(AlphaZeroNode):
             return c * self.select_probability * math.sqrt(parent.times_visited + 1e-8)
         q = self.scale_q(min_q, max_q,gamma,multiple_players)
         utc = q + self.select_probability * (
-                (math.sqrt(parent.times_visited)) / (1 + self.times_visited)) * (
-                      c + math.log((parent.times_visited + c2 + 1) / c2))
+                (math.sqrt(parent.times_visited)) / (1 + self.times_visited))
 
         return utc
 

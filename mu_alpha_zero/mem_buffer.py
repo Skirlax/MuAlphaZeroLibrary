@@ -253,16 +253,22 @@ class DataPoint:
 
 
 class MuZeroFrameBuffer:
-    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int):
+    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int,ignore_actions: bool = False):
         self.max_size = frame_buffer_size
         self.noop_action = noop_action
+        self.ignore_actions = ignore_actions
         self.action_space_size = action_space_size
         self.buffers = {1: deque(maxlen=frame_buffer_size), -1: deque(maxlen=frame_buffer_size)}
 
     def add_frame(self, frame, action, player):
+        if self.ignore_actions:
+            self.buffers[player].append(frame)
+            return
         self.buffers[player].append((frame, action))
 
     def concat_frames(self, player):
+        if self.ignore_actions:
+            return th.cat([th.tensor(frame, dtype=th.float32) for frame in self.buffers[player]], dim=2)
         frames_with_actions = [th.cat((th.tensor(frame, dtype=th.float32),
                                        th.full((frame.shape[0], frame.shape[1], 1), action, dtype=th.float32)), dim=2)
                                for frame, action in self.buffers[player]]
@@ -271,7 +277,10 @@ class MuZeroFrameBuffer:
 
     def init_buffer(self, init_state, player):
         for _ in range(self.max_size):
-            self.buffers[player].append((init_state, scale_action(self.noop_action, self.action_space_size)))
+            if not self.ignore_actions:
+                self.buffers[player].append((init_state, scale_action(self.noop_action, self.action_space_size)))
+            else:
+                self.buffers[player].append(init_state)
 
     def __len__(self, player):
         return len(self.buffers[player])

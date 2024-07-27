@@ -38,7 +38,7 @@ class MuZeroSearchTree(SearchTree):
         if self.muzero_config.enable_frame_buffer:
             return MuZeroFrameBuffer(self.muzero_config.frame_buffer_size, self.game_manager.get_noop(),
                                      self.muzero_config.net_action_size)
-        return MuZeroFrameBuffer(1, self.game_manager.get_noop(), self.muzero_config.net_action_size)
+        return MuZeroFrameBuffer(1, self.game_manager.get_noop(), self.muzero_config.net_action_size,ignore_actions=True)
 
     def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
                       calculate_avg_num_children: bool = False) -> list[SingleGameData]:
