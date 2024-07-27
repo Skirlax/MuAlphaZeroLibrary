@@ -256,13 +256,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # losses = []
         # loss_avgs = []
         # num_epochs = muzero_config.epochs
-        muzero_config.epochs = 1
-        muzero_config.eval_epochs = 1
+        muzero_config.epochs = 100
+        muzero_config.eval_epochs = 100
         while len(
                 shared_storage.get_buffer()) < muzero_config.batch_size // 4:  # await reasonable buffer size
             time.sleep(5)
         logger.log("Finished waiting for target buffer size,starting training.")
-        for iter_ in range(muzero_config.num_worker_iters):
+        for iter_ in range(muzero_config.num_worker_iters // 100):
             # if not shared_storage.get_was_pitted():
             #     time.sleep(5)
             #     continue
@@ -270,11 +270,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             # for epoch in range(num_epochs):
             avg, iter_losses = self.train_net(shared_storage, muzero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
-            shared_storage.set_optimizer(self.optimizer.state_dict())
+            # shared_storage.set_optimizer(self.optimizer.state_dict())
             # loss_avgs.append(avg)
             # losses.extend(iter_losses)
             # shared_storage.set_was_pitted(False)
-            self.eval_net(shared_storage, muzero_config)
+            if iter_ % 100 == 0:
+                self.eval_net(shared_storage, muzero_config)
             if iter_ % 500 == 0 and iter_ != 0:
                 logger.log(f"Saving checkpoint at iteration {iter_}.")
                 checkpointer.save_checkpoint(self, self, self.optimizer, muzero_config.lr, iter_, muzero_config)
