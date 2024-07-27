@@ -12,6 +12,8 @@ class MzAlphaZeroNode(AlphaZeroNode):
         best_child = None
         best_action = None
         for action, child in self.children.items():
+            if child.select_probability == 0:
+                continue
             child_utc = child.calculate_utc_score(min_q, max_q,gamma,multiple_players, c=c, c2=c2)
             if child_utc > best_utc:
                 best_utc = child_utc
