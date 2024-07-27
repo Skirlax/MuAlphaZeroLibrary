@@ -133,7 +133,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
                                            weight_decay=muzero_config.l2)
         if self.scheduler is None and muzero_config.lr_scheduler is not None:
-            self.scheduler = muzero_config.lr_scheduler(self.optimizer)
+            self.scheduler = muzero_config.lr_scheduler(self.optimizer, **muzero_config.lr_scheduler_kwargs)
         losses = []
         iteration = 0
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
