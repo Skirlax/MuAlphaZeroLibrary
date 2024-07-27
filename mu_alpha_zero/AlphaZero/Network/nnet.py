@@ -304,8 +304,8 @@ class ValueHead(th.nn.Module):
     def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int, num_layers: int,
                  linear_hidden_size: int):
         super(ValueHead, self).__init__()
-        self.conv = nn.Conv2d(num_channels, 1, 1)
-        self.bn = nn.BatchNorm2d(1)
+        self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
+        self.bn = nn.BatchNorm2d(linear_hidden_size)
         self.fc1 = nn.Linear(linear_input_size, 256)
         self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         if muzero:
@@ -328,8 +328,8 @@ class PolicyHead(th.nn.Module):
     def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int, num_layers: int,
                  linear_hidden_size: int):
         super(PolicyHead, self).__init__()
-        self.conv = nn.Conv2d(num_channels, 2, 1)
-        self.bn = nn.BatchNorm2d(2)
+        self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
+        self.bn = nn.BatchNorm2d(linear_hidden_size)
         self.fc1 = nn.Linear(linear_input_size_policy, 256)
         self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         self.fc2 = nn.Linear(256, action_size)
@@ -347,8 +347,8 @@ class StateHead(th.nn.Module):
     def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int], num_layers: int,
                  linear_hidden_size: int):
         super(StateHead, self).__init__()
-        self.conv = nn.Conv2d(out_channels, 4, 1)
-        self.bn = nn.BatchNorm2d(4)
+        self.conv = nn.Conv2d(out_channels, linear_hidden_size, 1)
+        self.bn = nn.BatchNorm2d(linear_hidden_size)
         self.fc = HeadLinear(linear_input_size, out_channels, num_layers, linear_hidden_size)
         self.fc3 = nn.Linear(out_channels, latent_size[0] * latent_size[1] * out_channels)
 
