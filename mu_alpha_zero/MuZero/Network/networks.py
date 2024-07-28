@@ -125,8 +125,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return pi, v
 
     def representation_forward(self, x: th.Tensor):
-        x = self.representation_network(x, muzero=True)
-        return x
+        state = self.representation_network(x, muzero=True)
+        try:
+            state = state.view(self.num_out_channels, self.latent_size[0], self.latent_size[1])
+        except RuntimeError:
+            # The state is batched
+            state = state.view(-1, self.num_out_channels, self.latent_size[0], self.latent_size[1])
+        return state
 
     def forward_recurrent(self, hidden_state_with_action: th.Tensor, all_predict: bool, return_support: bool = False):
         next_state, reward = self.dynamics_forward(hidden_state_with_action, predict=all_predict,
