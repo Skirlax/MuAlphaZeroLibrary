@@ -23,16 +23,19 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
-            tensor_action = th.zeros((observations.shape[2],)).scatter(0, th.tensor(action), 1).unsqueeze(0)
+            tensor_action = th.zeros((observations.shape[2],), device=observations.device).scatter(0, th.tensor(action),
+                                                                                                   1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
 
         elif config.actions_are == "rows":
-            tensor_action = th.zeros((observations.shape[1],)).scatter(0, th.tensor(action), 1).unsqueeze(0)
+            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action),
+                                                                                                   1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
         elif config.actions_are == "board":
             # unravel to 2d
             action = [action % observations.shape[1], action % observations.shape[2]]
-            tensor_action = th.zeros((1, observations.shape[1], observations.shape[2]))[action[0], action[1]] = 1
+            tensor_action = th.zeros((1, observations.shape[1], observations.shape[2]), device=observations.device)[
+                action[0], action[1]] = 1
         else:
             raise ValueError("Invalid config.actions_are value.")
     return add_actions_to_obs(observations, tensor_action)
