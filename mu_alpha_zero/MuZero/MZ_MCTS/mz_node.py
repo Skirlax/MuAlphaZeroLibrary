@@ -38,8 +38,6 @@ class MzAlphaZeroNode(AlphaZeroNode):
 
     def calculate_utc_score(self, min_q: float, max_q: float, gamma: float,multiple_players: bool, c=1.5, c2=19652):
         parent = self.parent()
-        if parent.times_visited == 0:
-            return c * self.select_probability * math.sqrt(parent.times_visited + 1e-8)
         q = self.scale_q(min_q, max_q,gamma,multiple_players)
         utc = q + self.select_probability * (
                 (math.sqrt(parent.times_visited)) / (1 + self.times_visited)) * (
