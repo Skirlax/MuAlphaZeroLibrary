@@ -61,7 +61,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    v_linear_layers=v_linear_layers,
                                                                    linear_head_hidden_size=linear_head_hidden_size,
                                                                    support_size=support_size, latent_size=latent_size,
-                                                                   num_blocks=num_blocks, muzero=True, is_dynamics=False,
+                                                                   num_blocks=num_blocks, muzero=True,
+                                                                   is_dynamics=False,
                                                                    is_representation=True)
         else:
             self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
@@ -224,7 +225,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             rewards = scalar_to_support(rewards, muzero_config.support_size)
             values = scalar_to_support(scalar_values, muzero_config.support_size)
             hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
-                match_action_with_obs_batch(hidden_state, moves), False, return_support=True)
+                match_action_with_obs_batch(hidden_state, moves, muzero_config), False, return_support=True)
             hidden_state.register_hook(lambda grad: grad * 0.5)
             current_pi_loss = self.muzero_loss(pred_pis, pis)
             current_v_loss = self.muzero_loss(pred_vs, values)
@@ -336,7 +337,7 @@ class RepresentationNet(th.nn.Module):
             self.pool2 = th.nn.Identity()
         self.relu = th.nn.ReLU()
 
-    def forward(self, x: th.Tensor,muzero:bool = False):
+    def forward(self, x: th.Tensor, muzero: bool = False):
         # x.unsqueeze(0)
         x = x.to(self.device)
         x = self.relu(self.conv1(x))

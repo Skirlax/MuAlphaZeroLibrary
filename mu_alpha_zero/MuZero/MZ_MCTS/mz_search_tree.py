@@ -117,7 +117,8 @@ class MuZeroSearchTree(SearchTree):
 
             # action = scale_action(action, self.game_manager.get_num_actions())
 
-            current_node_state_with_action = match_action_with_obs(current_node.parent().state, action)
+            current_node_state_with_action = match_action_with_obs(current_node.parent().state, action,
+                                                                   self.muzero_config)
             next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
                                                                   predict=True)
             next_state = scale_hidden_state(next_state)

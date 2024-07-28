@@ -16,7 +16,10 @@ def add_actions_to_obs(observations: th.Tensor, actions: th.Tensor, dim=0):
 
 def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroConfig):
     if config.is_atari:
-        tensor_action = th.zeros((config.net_action_size,), dtype=th.float32, device=observations.device).scatter(0, th.tensor(action), 1)
+        tensor_action = th.zeros((config.net_action_size,), dtype=th.float32, device=observations.device).scatter(0,
+                                                                                                                  th.tensor(
+                                                                                                                      action),
+                                                                                                                  1)
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
@@ -28,16 +31,16 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
         elif config.actions_are == "board":
             # unravel to 2d
-            action = [action % observations.shape[1],action % observations.shape[2]]
+            action = [action % observations.shape[1], action % observations.shape[2]]
             tensor_action = th.zeros((1, observations.shape[1], observations.shape[2]))[action[0], action[1]] = 1
         else:
             raise ValueError("Invalid config.actions_are value.")
     return add_actions_to_obs(observations, tensor_action)
 
 
-def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int]):
+def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int], config: MuZeroConfig):
     for index in range(observation_batch.shape[0]):
-        observation_batch[index] = match_action_with_obs(observation_batch[index], action_batch[index])
+        observation_batch[index] = match_action_with_obs(observation_batch[index], action_batch[index], config)
     # tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action, dtype=th.float32,
     #                    device=observation_batch.device) for action in action_batch]
     # actions = th.cat(tensors, dim=0)
