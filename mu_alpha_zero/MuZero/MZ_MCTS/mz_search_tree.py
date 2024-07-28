@@ -64,7 +64,6 @@ class MuZeroSearchTree(SearchTree):
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
-            move = scale_action(move, self.game_manager.get_num_actions())
             frame = self.buffer.concat_frames(player).detach().cpu().numpy()
             data_point = DataPoint(pi, v, rew, move, player, frame if dir_path is None else LazyArray(frame, dir_path))
             # data.append(
@@ -75,8 +74,9 @@ class MuZeroSearchTree(SearchTree):
                 break
             if self.muzero_config.multiple_players:
                 player = -player
-            self.buffer.add_frame(state, move, player)
-            self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player), move, -player)
+            self.buffer.add_frame(state, scale_action(move, self.game_manager.get_num_actions()), player)
+            self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player),
+                                  scale_action(move, self.game_manager.get_num_actions()), -player)
 
         try:
             wandb.log({"Game length": game_length})
@@ -115,7 +115,7 @@ class MuZeroSearchTree(SearchTree):
                                                                    c=self.muzero_config.c, c2=self.muzero_config.c2)
                 path.append(current_node)
 
-            action = scale_action(action, self.game_manager.get_num_actions())
+            # action = scale_action(action, self.game_manager.get_num_actions())
 
             current_node_state_with_action = match_action_with_obs(current_node.parent().state, action)
             next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
