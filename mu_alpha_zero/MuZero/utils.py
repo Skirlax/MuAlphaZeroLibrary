@@ -23,12 +23,12 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
-            tensor_action = th.zeros((observations.shape[2],), device=observations.device).scatter(0, th.tensor(action),
+            tensor_action = th.zeros((observations.shape[2],), device=observations.device).scatter(0, th.tensor(action,device=observations.device),
                                                                                                    1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
 
         elif config.actions_are == "rows":
-            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action),
+            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action,device=observations.device),
                                                                                                    1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
         elif config.actions_are == "board":
