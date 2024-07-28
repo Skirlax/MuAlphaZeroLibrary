@@ -50,7 +50,21 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.linear_head_hidden_size = linear_head_hidden_size
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         # self.action_embedding = th.nn.Embedding(action_size, 256)
-        self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
+        if not is_atari:
+            self.representation_network = OriginalAlphaZeroNetwork(in_channels=rep_input_channels,
+                                                                   num_channels=num_out_channels,
+                                                                   dropout=dropout,
+                                                                   action_size=action_size,
+                                                                   linear_input_size=linear_input_size,
+                                                                   state_linear_layers=state_linear_layers,
+                                                                   pi_linear_layers=pi_linear_layers,
+                                                                   v_linear_layers=v_linear_layers,
+                                                                   linear_head_hidden_size=linear_head_hidden_size,
+                                                                   support_size=support_size, latent_size=latent_size,
+                                                                   num_blocks=num_blocks, muzero=True, is_dynamics=False,
+                                                                   is_representation=True)
+        else:
+            self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
             self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=257, num_channels=num_out_channels,
                                                              dropout=dropout,
@@ -111,7 +125,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return pi, v
 
     def representation_forward(self, x: th.Tensor):
-        x = self.representation_network(x)
+        x = self.representation_network(x, muzero=True)
         return x
 
     def forward_recurrent(self, hidden_state_with_action: th.Tensor, all_predict: bool, return_support: bool = False):
@@ -317,7 +331,7 @@ class RepresentationNet(th.nn.Module):
             self.pool2 = th.nn.Identity()
         self.relu = th.nn.ReLU()
 
-    def forward(self, x: th.Tensor):
+    def forward(self, x: th.Tensor,muzero:bool = False):
         # x.unsqueeze(0)
         x = x.to(self.device)
         x = self.relu(self.conv1(x))
