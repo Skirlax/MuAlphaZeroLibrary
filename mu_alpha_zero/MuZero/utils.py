@@ -14,17 +14,35 @@ def add_actions_to_obs(observations: th.Tensor, actions: th.Tensor, dim=0):
     return th.cat((observations, actions), dim=dim)
 
 
-def match_action_with_obs(observations: th.Tensor, action: int):
-    action = th.full((1, observations.shape[1], observations.shape[2]), action, dtype=th.float32,
-                     device=observations.device)
-    return add_actions_to_obs(observations, action)
+def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroConfig):
+    if config.is_atari:
+        tensor_action = th.zeros((config.net_action_size,), dtype=th.float32, device=observations.device).scatter(0, th.tensor(action), 1)
+        tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
+    else:
+        if config.actions_are == "columns":
+            tensor_action = th.zeros((1, observations.shape[2],)).scatter(0, th.tensor(action), 1)
+            tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
+
+        elif config.actions_are == "rows":
+            tensor_action = th.zeros((1, observations.shape[1],)).scatter(0, th.tensor(action), 1)
+            tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
+        elif config.actions_are == "board":
+            # unravel to 2d
+            action = [action % observations.shape[1],action % observations.shape[2]]
+            tensor_action = th.zeros((1, observations.shape[1], observations.shape[2]))[action[0], action[1]] = 1
+        else:
+            raise ValueError("Invalid config.actions_are value.")
+    return add_actions_to_obs(observations, tensor_action)
 
 
 def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int]):
-    tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action, dtype=th.float32,
-                       device=observation_batch.device) for action in action_batch]
-    actions = th.cat(tensors, dim=0)
-    return add_actions_to_obs(observation_batch, actions, dim=1)
+    for index in range(observation_batch.shape[0]):
+        observation_batch[index] = match_action_with_obs(observation_batch[index], action_batch[index])
+    # tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action, dtype=th.float32,
+    #                    device=observation_batch.device) for action in action_batch]
+    # actions = th.cat(tensors, dim=0)
+    return observation_batch
+    # return add_actions_to_obs(observation_batch, actions, dim=1)
 
 
 def resize_obs(observations: np.ndarray, size: tuple[int, int], resize: bool) -> np.ndarray:
@@ -52,8 +70,8 @@ def scale_hidden_state(hidden_state: th.Tensor):
     if len(hidden_state.shape) == 3:
         hidden_state = hidden_state.unsqueeze(0)
         was_reshaped = True
-    max_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).max(dim=2,keepdim=True)[0].unsqueeze(-1)
-    min_ = hidden_state.view(hidden_state.size(0),hidden_state.size(1),-1).min(dim=2,keepdim=True)[0].unsqueeze(-1)
+    max_ = hidden_state.view(hidden_state.size(0), hidden_state.size(1), -1).max(dim=2, keepdim=True)[0].unsqueeze(-1)
+    min_ = hidden_state.view(hidden_state.size(0), hidden_state.size(1), -1).min(dim=2, keepdim=True)[0].unsqueeze(-1)
     max_min_dif = max_ - min_
     max_min_dif[max_min_dif == 0] = 1e-5
     hidden_state = (hidden_state - min_) / max_min_dif
@@ -70,7 +88,6 @@ def invert_scale_reward_value(value: th.Tensor, e: float = 0.001):
             ** 2
             - 1
     )
-
 
 
 def scale_reward(reward: float):

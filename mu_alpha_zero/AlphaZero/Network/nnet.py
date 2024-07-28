@@ -144,15 +144,15 @@ class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
         self.hook_manager.process_hook_executes(self, self.run_at_training_end.__name__, __file__, HookAt.ALL)
 
 
-class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
+class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
                  linear_input_size: list[int], support_size: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
                  latent_size: list[int] = [6, 6],
                  hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,
-                 is_dynamics: bool = False):
-        super(OriginalAlphaZerNetwork, self).__init__()
+                 is_dynamics: bool = False,is_representation: bool = False):
+        super(OriginalAlphaZeroNetwork, self).__init__()
         self.in_channels = in_channels
         self.num_channels = num_channels
         self.dropout_p = dropout
@@ -163,6 +163,7 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.muzero = muzero
         self.latent_size = latent_size
         self.is_dynamics = is_dynamics
+        self.is_representation = is_representation
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
         self.v_linear_layers = v_linear_layers
@@ -174,14 +175,17 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.bn1 = nn.BatchNorm2d(num_channels)
         self.dropout = nn.Dropout(dropout)
         self.blocks = nn.ModuleList([OriginalAlphaZeroBlock(num_channels, num_channels) for _ in range(num_blocks)])
-        self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels, v_linear_layers,
-                                    linear_head_hidden_size)
-        if is_dynamics:
-            self.policy_head = StateHead(linear_input_size[2], num_channels, latent_size, state_linear_layers,
-                                         linear_head_hidden_size)
+        if not is_representation:
+            self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels, v_linear_layers,
+                                        linear_head_hidden_size)
         else:
-            self.policy_head = PolicyHead(action_size, linear_input_size[1], num_channels, pi_linear_layers,
-                                          linear_head_hidden_size)
+            self.value_head = th.nn.Identity()
+        if is_dynamics or is_representation:
+            self.policy_state_head = StateHead(linear_input_size[2], num_channels, latent_size, state_linear_layers,
+                                               linear_head_hidden_size)
+        else:
+            self.policy_state_head = PolicyHead(action_size, linear_input_size[1], num_channels, pi_linear_layers,
+                                                linear_head_hidden_size)
 
     def forward(self, x, muzero: bool = False, return_support: bool = False):
         if not muzero:
@@ -191,7 +195,9 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
             x = block(x)
         x = self.dropout(x)
         val_h_output = self.value_head(x)
-        pol_h_output = self.policy_head(x)
+        pol_h_output = self.policy_state_head(x)
+        if self.is_representation:
+            return pol_h_output
         if not return_support:
             # multiply arange by softmax probabilities
             val_h_output = th.exp(val_h_output)
@@ -214,25 +220,25 @@ class OriginalAlphaZerNetwork(nn.Module, GeneralAlphZeroNetwork):
         return -th.sum(y * masked_y_hat) / y.size()[0]
 
     def make_fresh_instance(self):
-        return OriginalAlphaZerNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
-                                       self.linear_input_size, self.support_size,
-                                       self.state_linear_layers, self.pi_linear_layers, self.v_linear_layers,
-                                       self.linear_head_hidden_size,
-                                       self.latent_size,
-                                       hook_manager=self.hook_manager,
-                                       num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
+        return OriginalAlphaZeroNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
+                                        self.linear_input_size, self.support_size,
+                                        self.state_linear_layers, self.pi_linear_layers, self.v_linear_layers,
+                                        self.linear_head_hidden_size,
+                                        self.latent_size,
+                                        hook_manager=self.hook_manager,
+                                        num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
 
     @classmethod
     def make_from_config(cls, config: Config, game_manager: None, hook_manager: HookManager or None = None):
-        return OriginalAlphaZerNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
-                                       config.net_action_size, config.az_net_linear_input_size,
-                                       hook_manager=hook_manager,
-                                       state_linear_layers=config.state_linear_layers,
-                                       pi_linear_layers=config.pi_linear_layers,
-                                       v_linear_layers=config.v_linear_layers,
-                                       linear_head_hidden_size=config.linear_head_hidden_size,
-                                       num_blocks=config.num_blocks, muzero=config.muzero,
-                                       support_size=config.support_size, latent_size=config.net_latent_size)
+        return OriginalAlphaZeroNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
+                                        config.net_action_size, config.az_net_linear_input_size,
+                                        hook_manager=hook_manager,
+                                        state_linear_layers=config.state_linear_layers,
+                                        pi_linear_layers=config.pi_linear_layers,
+                                        v_linear_layers=config.v_linear_layers,
+                                        linear_head_hidden_size=config.linear_head_hidden_size,
+                                        num_blocks=config.num_blocks, muzero=config.muzero,
+                                        support_size=config.support_size, latent_size=config.net_latent_size)
 
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
         losses = []

@@ -5,14 +5,15 @@
 # 18432 for (8x8) board
 # 8192 for (6x6) atari
 
-from dataclasses import dataclass,field
+from dataclasses import dataclass, field
+from typing import Literal
 
 import torch.optim
 
 
 @dataclass
 class Config:
-    num_net_channels: int = 512
+    num_net_channels: int = 256
     num_net_in_channels: int = 1
     net_dropout: float = 0.3
     net_action_size: int = 14
@@ -46,9 +47,9 @@ class Config:
     num_blocks: int = 8
     l2: float = 1e-4
     eval_epochs: int = 50
-    net_latent_size: list[int] = field(default_factory=lambda:[6,6])
+    net_latent_size: list[int] = field(default_factory=lambda: [6, 6])
     support_size: int = 300
-    unravel: bool = True # unravel the to board in arena
+    unravel: bool = True  # unravel the to board in arena
     requires_player_to_reset: bool = False
     arena_running_muzero: bool = False
     use_wandb: bool = False
@@ -122,9 +123,9 @@ class MuZeroConfig(Config):
     balance_term: float = 1
     enable_per: bool = True
     num_td_steps: int = 10
-
-
-
+    is_atari: bool = False
+    frame_buffer_ignores_actions: bool = False
+    actions_are: Literal["columns", "rows", "board"] = "board"
 
 
 @dataclass

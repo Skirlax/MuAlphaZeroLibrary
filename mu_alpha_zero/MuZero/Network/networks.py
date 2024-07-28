@@ -7,7 +7,7 @@ import wandb
 from torch import nn
 from torch.nn.functional import mse_loss
 
-from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZerNetwork
+from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZeroNetwork
 from mu_alpha_zero.AlphaZero.checkpointer import CheckPointer
 from mu_alpha_zero.AlphaZero.logger import Logger
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
@@ -25,6 +25,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
+                 is_atari: bool,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -41,6 +42,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
         self.support_size = support_size
+        self.is_atari = is_atari
         self.num_blocks = num_blocks
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
@@ -50,26 +52,26 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # self.action_embedding = th.nn.Embedding(action_size, 256)
         self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
-            self.dynamics_network = OriginalAlphaZerNetwork(in_channels=257, num_channels=num_out_channels,
-                                                            dropout=dropout,
-                                                            action_size=action_size,
-                                                            linear_input_size=linear_input_size,
-                                                            state_linear_layers=state_linear_layers,
-                                                            pi_linear_layers=pi_linear_layers,
-                                                            v_linear_layers=v_linear_layers,
-                                                            linear_head_hidden_size=linear_head_hidden_size,
-                                                            support_size=support_size, latent_size=latent_size,
-                                                            num_blocks=num_blocks, muzero=True, is_dynamics=True)
-            self.prediction_network = OriginalAlphaZerNetwork(in_channels=256, num_channels=num_out_channels,
-                                                              dropout=dropout,
-                                                              action_size=action_size,
-                                                              state_linear_layers=state_linear_layers,
-                                                              pi_linear_layers=pi_linear_layers,
-                                                              v_linear_layers=v_linear_layers,
-                                                              linear_head_hidden_size=linear_head_hidden_size,
-                                                              linear_input_size=linear_input_size,
-                                                              support_size=support_size, latent_size=latent_size,
-                                                              num_blocks=num_blocks, muzero=True, is_dynamics=False)
+            self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=257, num_channels=num_out_channels,
+                                                             dropout=dropout,
+                                                             action_size=action_size,
+                                                             linear_input_size=linear_input_size,
+                                                             state_linear_layers=state_linear_layers,
+                                                             pi_linear_layers=pi_linear_layers,
+                                                             v_linear_layers=v_linear_layers,
+                                                             linear_head_hidden_size=linear_head_hidden_size,
+                                                             support_size=support_size, latent_size=latent_size,
+                                                             num_blocks=num_blocks, muzero=True, is_dynamics=True)
+            self.prediction_network = OriginalAlphaZeroNetwork(in_channels=256, num_channels=num_out_channels,
+                                                               dropout=dropout,
+                                                               action_size=action_size,
+                                                               state_linear_layers=state_linear_layers,
+                                                               pi_linear_layers=pi_linear_layers,
+                                                               v_linear_layers=v_linear_layers,
+                                                               linear_head_hidden_size=linear_head_hidden_size,
+                                                               linear_input_size=linear_input_size,
+                                                               support_size=support_size, latent_size=latent_size,
+                                                               num_blocks=num_blocks, muzero=True, is_dynamics=False)
         else:
             self.dynamics_network = DynamicsNet(in_channels=257, num_channels=num_channels, dropout=dropout,
                                                 latent_size=latent_size, out_channels=num_out_channels)
@@ -83,7 +85,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    config.state_linear_layers, config.pi_linear_layers, config.v_linear_layers,
-                   config.linear_head_hidden_size,
+                   config.linear_head_hidden_size, config.is_atari,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
@@ -125,7 +127,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          num_blocks=self.num_blocks, use_pooling=self.use_pooling,
                          state_linear_layers=self.state_linear_layers,
                          pi_linear_layers=self.pi_linear_layers, v_linear_layers=self.v_linear_layers,
-                         linear_head_hidden_size=self.linear_head_hidden_size)
+                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
