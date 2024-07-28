@@ -96,7 +96,7 @@ class MuZeroSearchTree(SearchTree):
         root_node = MzAlphaZeroNode(current_player=current_player)
         # print(self.buffer.buffers[current_player][-1][0][:,:,0])
         state_ = network_wrapper.representation_forward(
-            self.buffer.concat_frames(current_player).permute(2, 0, 1).unsqueeze(0)).squeeze(0)
+            self.buffer.concat_frames(current_player).permute(2, 0, 1).unsqueeze(0).to(device)).squeeze(0)
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         if self.muzero_config.dirichlet_alpha > 0:
