@@ -42,13 +42,8 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
 
 
 def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int], config: MuZeroConfig):
-    for index in range(observation_batch.shape[0]):
-        observation_batch[index] = match_action_with_obs(observation_batch[index], action_batch[index], config)
-    # tensors = [th.full((1, 1, observation_batch.shape[2], observation_batch.shape[3]), action, dtype=th.float32,
-    #                    device=observation_batch.device) for action in action_batch]
-    # actions = th.cat(tensors, dim=0)
-    return observation_batch
-    # return add_actions_to_obs(observation_batch, actions, dim=1)
+    tensors = [match_action_with_obs(observation_batch[index], action_batch[index], config).unsqueeze(0) for index in range(len(action_batch))]
+    return th.cat(tensors, dim=0)
 
 
 def resize_obs(observations: np.ndarray, size: tuple[int, int], resize: bool) -> np.ndarray:
