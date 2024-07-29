@@ -197,8 +197,12 @@ class SingleGameData:
                 val = val * config.gamma ** config.num_td_steps
             else:
                 val = 0
-            for idx in range(index + 1, future_index):
+            for idx in range(index, future_index + 1):
+                if idx > len(self.datapoints):
+                    break
                 actual_reward_index = idx - 1
+                if actual_reward_index < 0:
+                    continue
                 d_point = self.datapoints[actual_reward_index]
                 val += (
                            d_point.reward if d_point.player == data_point.player else -d_point.reward) * config.gamma ** idx
