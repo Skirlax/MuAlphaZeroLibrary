@@ -151,7 +151,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
-        if memory_buffer.train_length() == 0:
+        if memory_buffer.train_length() <= 1:
             return 0, []
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         if self.optimizer is None:
