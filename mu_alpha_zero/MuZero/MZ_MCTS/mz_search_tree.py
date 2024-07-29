@@ -44,6 +44,8 @@ class MuZeroSearchTree(SearchTree):
 
     def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
                       calculate_avg_num_children: bool = False) -> list[SingleGameData]:
+
+        self.buffer = self.init_frame_buffer()
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
@@ -56,6 +58,7 @@ class MuZeroSearchTree(SearchTree):
         data = SingleGameData()
         game_length = 0
         for step in range(num_steps):
+            self.min_max_q = [float("inf"), -float("inf")]
             game_length += 1
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))

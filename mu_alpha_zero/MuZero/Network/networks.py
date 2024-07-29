@@ -15,7 +15,7 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scalar_to_support, support_to_scalar
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scalar_to_support, support_to_scalar,scale_hidden_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
@@ -150,6 +150,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
+        if memory_buffer.train_length() == 0:
+            return 0, []
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_config.lr,
@@ -210,6 +212,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
         values = scalar_to_support(scalar_values, muzero_config.support_size)
         hidden_state = self.representation_forward(init_states)
+        hidden_state = scale_hidden_state(hidden_state)
         pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=True)
         pi_loss, v_loss, r_loss = 0, 0, 0
         pi_loss += self.muzero_loss(pred_pis, pis)
@@ -226,6 +229,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             values = scalar_to_support(scalar_values, muzero_config.support_size)
             hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
                 match_action_with_obs_batch(hidden_state, moves, muzero_config), False, return_support=True)
+            hidden_state = scale_hidden_state(hidden_state)
             hidden_state.register_hook(lambda grad: grad * 0.5)
             current_pi_loss = self.muzero_loss(pred_pis, pis)
             current_v_loss = self.muzero_loss(pred_vs, values)
@@ -287,13 +291,13 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # losses = []
         # loss_avgs = []
         # num_epochs = muzero_config.epochs
-        muzero_config.epochs = 100
-        muzero_config.eval_epochs = 100
-        while len(
-                shared_storage.get_buffer()) < muzero_config.batch_size // 4:  # await reasonable buffer size
-            time.sleep(5)
+        muzero_config.epochs = 1
+        muzero_config.eval_epochs = 1
+        # while len(
+        #         shared_storage.get_buffer()) < muzero_config.batch_size // 4:  # await reasonable buffer size
+        #     time.sleep(5)
         logger.log("Finished waiting for target buffer size,starting training.")
-        for iter_ in range(muzero_config.num_worker_iters // 100):
+        for iter_ in range(muzero_config.num_worker_iters):
             # if not shared_storage.get_was_pitted():
             #     time.sleep(5)
             #     continue
@@ -307,7 +311,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             # shared_storage.set_was_pitted(False)
             if iter_ % 100 == 0:
                 self.eval_net(shared_storage, muzero_config)
-            if iter_ % 5 == 0 and iter_ != 0:
+            if iter_ % 250 == 0 and iter_ != 0:
                 logger.log(f"Saving checkpoint at iteration {iter_}.")
                 checkpointer.save_checkpoint(self, self, self.optimizer, muzero_config.lr, iter_, muzero_config)
             # wandb.log({"loss_avg": avg})

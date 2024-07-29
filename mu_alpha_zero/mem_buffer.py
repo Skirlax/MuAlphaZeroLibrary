@@ -70,6 +70,9 @@ class MemBuffer(GeneralMemoryBuffer):
     def get_dir_path(self):
         return self.dir_path
 
+    def train_length(self):
+        return len(self.buffer)
+
     def add_list(self, experience_list, percent_eval: int = 10):
         if len(self.buffer) >= 10:
             prob = random.random()
@@ -130,7 +133,7 @@ class MemBuffer(GeneralMemoryBuffer):
             weights = 1 / (weights * weights.shape[0]) ** config.beta
         else:
             weights = np.ones((len(positions),))
-        return positions, game_priorities, weights.reshape(-1,1)
+        return positions, game_priorities, weights.reshape(-1, 1)
 
     def reset_priorities(self):
         self.priorities = None
@@ -203,7 +206,7 @@ class SingleGameData:
             # sum_ += self.datapoints[index].priority
             self.game_priority = max(self.game_priority, self.datapoints[index].priority)
 
-    def normalize(self,config: MuZeroConfig):
+    def normalize(self, config: MuZeroConfig):
         if not config.enable_per:
             return self
         sum_ = 0
@@ -213,7 +216,7 @@ class SingleGameData:
             datapoint.priority /= sum_
         return self
 
-    def sample_position(self,config: MuZeroConfig):
+    def sample_position(self, config: MuZeroConfig):
         if config.enable_per:
             priorities = [x.priority for x in self.datapoints]
             index = numpy.random.choice(np.arange(len(self.datapoints)), size=(1,),
@@ -243,7 +246,7 @@ class SingleGameData:
 
 class DataPoint:
     def __init__(self, pi: dict, v: float, reward: float, move: int, player: int, frame: np.ndarray or None):
-        self.pi = [x for x in pi.values()] if isinstance(pi,dict) else pi
+        self.pi = [x for x in pi.values()] if isinstance(pi, dict) else pi
         self.v = v
         self.reward = reward
         self.move = move
@@ -253,7 +256,7 @@ class DataPoint:
 
 
 class MuZeroFrameBuffer:
-    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int,ignore_actions: bool = False):
+    def __init__(self, frame_buffer_size, noop_action: int, action_space_size: int, ignore_actions: bool = False):
         self.max_size = frame_buffer_size
         self.noop_action = noop_action
         self.ignore_actions = ignore_actions

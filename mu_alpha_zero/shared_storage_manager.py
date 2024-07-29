@@ -30,6 +30,10 @@ class SharedStorage:
         with self.lock:
             return self.mem_buffer.eval_length()
 
+    def train_length(self):
+        with self.lock:
+            return self.mem_buffer.train_length()
+
     def add_list(self, *args, **kwargs):
         with self.lock:
             return self.mem_buffer.add_list(*args, **kwargs)
@@ -61,7 +65,6 @@ class SharedStorage:
     def reset_priorities(self):
         with self.lock:
             return self.mem_buffer.reset_priorities()
-
 
 
 class SharedStorageManager(BaseManager):
