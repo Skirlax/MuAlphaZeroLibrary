@@ -188,8 +188,6 @@ class SingleGameData:
         self.datapoints.append(experience_point)
 
     def compute_initial_priorities(self, config: MuZeroConfig):
-        if not config.enable_per:
-            return
         for index, data_point in enumerate(self.datapoints):
             future_index = index + config.num_td_steps
             if future_index < len(self.datapoints):
@@ -199,12 +197,15 @@ class SingleGameData:
                 val = val * config.gamma ** config.num_td_steps
             else:
                 val = 0
-            for idx, d_point in enumerate(self.datapoints[index: future_index + 1]):
+            for idx in range(index + 1, future_index):
+                actual_reward_index = idx - 1
+                d_point = self.datapoints[actual_reward_index]
                 val += (
                            d_point.reward if d_point.player == data_point.player else -d_point.reward) * config.gamma ** idx
-            self.datapoints[index].priority = abs(self.datapoints[index].v - val) ** config.alpha
-            # sum_ += self.datapoints[index].priority
-            self.game_priority = max(self.game_priority, self.datapoints[index].priority)
+            if config.enable_per:
+                self.datapoints[index].priority = abs(self.datapoints[index].v - val) ** config.alpha
+                self.game_priority = max(self.game_priority, self.datapoints[index].priority)
+            self.datapoints[index].v = val
 
     def normalize(self, config: MuZeroConfig):
         if not config.enable_per:
