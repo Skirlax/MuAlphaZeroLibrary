@@ -15,7 +15,8 @@ from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scalar_to_support, support_to_scalar,scale_hidden_state
+from mu_alpha_zero.MuZero.utils import match_action_with_obs_batch, scalar_to_support, support_to_scalar, \
+    scale_hidden_state
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
@@ -261,11 +262,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         if index == 0:
             init_states = [np.array(x.datapoints[index].frame) for x in experience_batch]
             init_states = tensor_from_x(np.array(init_states)).permute(0, 3, 1, 2)
-        rewards = np.array([x.datapoints[index].reward for x in experience_batch])
+        move_reward_index = max(0, index - 1)
+        rewards = np.array([x.datapoints[move_reward_index].reward for x in experience_batch])
         rewards = tensor_from_x(rewards)
         values = np.array([x.datapoints[index].v for x in experience_batch])
         values = tensor_from_x(values)
-        moves = [x.datapoints[index].move for x in experience_batch]
+        moves = [x.datapoints[move_reward_index].move for x in experience_batch]
         # moves = np.array([x.datapoints[index].move for x in experience_batch])
         # moves = tensor_from_x(moves)
         pis = np.array([x.datapoints[index].pi for x in experience_batch])
