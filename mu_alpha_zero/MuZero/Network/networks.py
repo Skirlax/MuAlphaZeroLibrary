@@ -246,7 +246,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
                     -1).tolist(), new_priorities)
         # TODO: Multiply v by 0.25 when reanalyze implemented.
-        # v_loss *= 0.25
+        v_loss *= 0.25
         loss = pi_loss + v_loss + r_loss
         if muzero_config.enable_per:
             loss *= th.tensor(weights, dtype=loss.dtype, device=loss.device)
