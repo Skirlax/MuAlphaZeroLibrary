@@ -111,9 +111,10 @@ def scalar_to_support(x: th.Tensor, support_size: int, is_atari: bool):
     upper_p = x - x.floor()
     support = th.zeros((x.size(0), 2 * support_size + 1), device=x.device)
     support.scatter_(1, (support_size + x.floor()).type(th.int64), lower_p)
-    if support_size + x.floor() + 1 < 2 * support_size + 1:
-        support.scatter_(1, (
-                support_size + x.floor() + 1).type(th.int64), upper_p)
+    upper_index = (support_size + x.floor() + 1)
+    upper_index[upper_index >= 2 * support_size] = 0
+    support.scatter_(1, (
+        upper_index).type(th.int64), upper_p)
     return support
 
 
