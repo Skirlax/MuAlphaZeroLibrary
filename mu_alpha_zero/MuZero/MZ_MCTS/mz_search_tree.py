@@ -1,5 +1,6 @@
 import copy
 import gc
+import random
 import time
 
 import wandb
@@ -223,19 +224,12 @@ class MuZeroSearchTree(SearchTree):
 
     @staticmethod
     def reanalyze(net, tree, device, shared_storage: SharedStorage, config: MuZeroConfig):
-        def get_first_n(n: int, mem: SharedStorage):
-            buffer = mem.get_buffer()
-            data = []
-            for i in range(n):
-                data.append((buffer[i], i))
-            return data
-
         wandb.init(project=config.wandbd_project_name, name="Reanalyze")
         net = net.to(device)
         while len(shared_storage.get_buffer()) < 100:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
-            data = get_first_n(1, shared_storage)
+            data = random.choice(shared_storage.get_buffer())
             net.eval()
             if shared_storage.get_experimental_network_params() is not None:
                 net.load_state_dict(shared_storage.get_experimental_network_params())
@@ -253,7 +247,7 @@ class MuZeroSearchTree(SearchTree):
                     state = th.tensor(frame, device=device).float()
                     pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
                     data_point.v = v
-                    data_point.pi = pi
+                    data_point.pi = [x for x in pi.values()]
                 game.compute_initial_priorities(config)
 
     def run_on_training_end(self):
