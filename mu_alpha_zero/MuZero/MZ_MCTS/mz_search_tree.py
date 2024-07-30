@@ -241,6 +241,7 @@ class MuZeroSearchTree(SearchTree):
                 net.load_state_dict(shared_storage.get_experimental_network_params())
             else:
                 net.load_state_dict(shared_storage.get_stable_network_params())
+            wandb.log({"reanalyze_iteration":iter_})
             for game, i in data:
                 tree = tree.make_fresh_instance()
                 for data_point in game.datapoints:
@@ -253,7 +254,6 @@ class MuZeroSearchTree(SearchTree):
                     pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
                     data_point.v = v
                     data_point.pi = pi
-                    wandb.log({"reanalyze_iteration":iter_})
                 game.compute_initial_priorities(config)
 
     def run_on_training_end(self):
