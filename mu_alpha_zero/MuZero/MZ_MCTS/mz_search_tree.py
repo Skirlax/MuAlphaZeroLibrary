@@ -248,6 +248,7 @@ class MuZeroSearchTree(SearchTree):
                     pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
                     data_point.v = v
                     data_point.pi = pi
+                game.compute_initial_priorities(config)
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
