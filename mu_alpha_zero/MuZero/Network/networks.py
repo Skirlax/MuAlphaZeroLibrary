@@ -61,6 +61,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    pi_linear_layers=pi_linear_layers,
                                                                    v_linear_layers=v_linear_layers,
                                                                    linear_head_hidden_size=linear_head_hidden_size,
+                                                                   is_atari=is_atari,
                                                                    support_size=support_size, latent_size=latent_size,
                                                                    num_blocks=num_blocks, muzero=True,
                                                                    is_dynamics=False,
@@ -76,6 +77,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              pi_linear_layers=pi_linear_layers,
                                                              v_linear_layers=v_linear_layers,
                                                              linear_head_hidden_size=linear_head_hidden_size,
+                                                             is_atari=is_atari,
                                                              support_size=support_size, latent_size=latent_size,
                                                              num_blocks=num_blocks, muzero=True, is_dynamics=True)
             self.prediction_network = OriginalAlphaZeroNetwork(in_channels=256, num_channels=num_out_channels,
@@ -85,6 +87,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                pi_linear_layers=pi_linear_layers,
                                                                v_linear_layers=v_linear_layers,
                                                                linear_head_hidden_size=linear_head_hidden_size,
+                                                               is_atari=is_atari,
                                                                linear_input_size=linear_input_size,
                                                                support_size=support_size, latent_size=latent_size,
                                                                num_blocks=num_blocks, muzero=True, is_dynamics=False)
