@@ -236,19 +236,18 @@ class MuZeroSearchTree(SearchTree):
             else:
                 net.load_state_dict(shared_storage.get_stable_network_params())
             wandb.log({"reanalyze_iteration":iter_})
-            for game, i in data.datapoints:
-                tree = tree.make_fresh_instance()
-                for data_point in game.datapoints:
-                    if isinstance(data_point.frame, LazyArray):
-                        frame = data_point.frame.load_array()
-                    else:
-                        frame = data_point.frame
+            tree = tree.make_fresh_instance()
+            for data_point in data.datapoints:
+                if isinstance(data_point.frame, LazyArray):
+                    frame = data_point.frame.load_array()
+                else:
+                    frame = data_point.frame
 
-                    state = th.tensor(frame, device=device).float()
-                    pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
-                    data_point.v = v
-                    data_point.pi = [x for x in pi.values()]
-                game.compute_initial_priorities(config)
+                state = th.tensor(frame, device=device).float()
+                pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
+                data_point.v = v
+                data_point.pi = [x for x in pi.values()]
+                data.compute_initial_priorities(config)
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
