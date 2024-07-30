@@ -234,13 +234,18 @@ class MuZeroSearchTree(SearchTree):
         while len(shared_storage.get_buffer()) < config.batch_size * 6:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
-            data = get_first_n(config.batch_size * 2, shared_storage)
-            for pi, v, (rew, move, pred_v, player), frame in data:
-                if isinstance(frame, LazyArray):
-                    frame = frame.load_array()
-                state = th.tensor(frame, device=device).float()
-                pi, (v, _) = tree.search(net, state, player, device)
-                move = tree.game_manager.select_move(pi, tau=config.tau)
+            data = get_first_n(1, shared_storage)
+            for game, i in data:
+                for data_point in game.datapoints:
+                    if isinstance(data_point.frame, LazyArray):
+                        frame = data_point.frame.load_array()
+                    else:
+                        frame = data_point.frame
+                    state = th.tensor(frame, device=device).float()
+                    pi, (v, _) = tree.search(net, state, data_point.player, device)
+                    data_point.v = v
+                    data_point.pi = pi
+
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
