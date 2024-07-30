@@ -231,11 +231,15 @@ class MuZeroSearchTree(SearchTree):
             return data
 
         net = net.to(device)
-        net.eval()
         while len(shared_storage.get_buffer()) < 100:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
             data = get_first_n(1, shared_storage)
+            net.eval()
+            if shared_storage.get_experimental_network_params() is not None:
+                net.load_state_dict(shared_storage.get_experimental_network_params())
+            else:
+                net.load_state_dict(shared_storage.get_stable_network_params())
             for game, i in data:
                 tree = tree.make_fresh_instance()
                 for data_point in game.datapoints:
@@ -271,7 +275,6 @@ def c_p_self_play(net, tree, device, config: MuZeroConfig, p_num: int, shared_st
     if p_num == 0:
         wandb.init(project=config.wandbd_project_name, name="Self play")
     net = net.to(device)
-    net.eval()
     for iter_ in range(num_worker_iters):
         # for game in range(num_g):
         # if not shared_storage.get_was_pitted():
@@ -281,6 +284,7 @@ def c_p_self_play(net, tree, device, config: MuZeroConfig, p_num: int, shared_st
             params = shared_storage.get_stable_network_params()
         else:
             params = shared_storage.get_experimental_network_params()
+        net.eval()
         net.load_state_dict(params)
         game_results = tree.play_one_game(net, device, dir_path=dir_path)
         shared_storage.add_list(game_results)
