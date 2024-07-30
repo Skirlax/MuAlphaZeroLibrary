@@ -210,14 +210,18 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     def calculate_losses(self, experience_batch, weights, device, muzero_config):
         init_states, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(0, experience_batch, device)
+        loss_fn = muzero_config.value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
-        values = scalar_to_support(scalar_values, muzero_config.support_size)
+        if muzero_config.loss_gets_support:
+            values = scalar_to_support(scalar_values, muzero_config.support_size)
+        else:
+            values = scalar_values
         hidden_state = self.representation_forward(init_states)
         hidden_state = scale_hidden_state(hidden_state)
-        pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=True)
+        pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=muzero_config.loss_gets_support)
         pi_loss, v_loss, r_loss = 0, 0, 0
         pi_loss += self.muzero_loss(pred_pis, pis)
-        v_loss += self.muzero_loss(pred_vs, values)
+        v_loss += loss_fn(pred_vs, values)
         new_priorities = [[] for x in range(pred_pis.size(0))]
         if muzero_config.enable_per:
             self.populate_priorities((th.abs(support_to_scalar(pred_vs,
@@ -226,15 +230,20 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         for i in range(1, muzero_config.K + 1):
             _, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(i, experience_batch,
                                                                                     device)
-            rewards = scalar_to_support(rewards, muzero_config.support_size)
-            values = scalar_to_support(scalar_values, muzero_config.support_size)
+            if muzero_config.loss_gets_support:
+                rewards = scalar_to_support(rewards, muzero_config.support_size)
+                values = scalar_to_support(scalar_values, muzero_config.support_size)
+            else:
+                values = scalar_values
+
             hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
-                match_action_with_obs_batch(hidden_state, moves, muzero_config), False, return_support=True)
+                match_action_with_obs_batch(hidden_state, moves, muzero_config), False,
+                return_support=muzero_config.loss_gets_support)
             hidden_state = scale_hidden_state(hidden_state)
             hidden_state.register_hook(lambda grad: grad * 0.5)
             current_pi_loss = self.muzero_loss(pred_pis, pis)
-            current_v_loss = self.muzero_loss(pred_vs, values)
-            current_r_loss = self.muzero_loss(pred_rs, rewards)
+            current_v_loss = loss_fn(pred_vs, values)
+            current_r_loss = loss_fn(pred_rs, rewards)
             current_r_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
             current_v_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
             current_pi_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
