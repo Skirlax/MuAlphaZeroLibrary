@@ -236,7 +236,7 @@ class MuZeroSearchTree(SearchTree):
             else:
                 net.load_state_dict(shared_storage.get_stable_network_params())
             wandb.log({"reanalyze_iteration":iter_})
-            for game, i in data:
+            for game, i in data.datapoints:
                 tree = tree.make_fresh_instance()
                 for data_point in game.datapoints:
                     if isinstance(data_point.frame, LazyArray):
