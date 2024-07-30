@@ -56,6 +56,7 @@ class Config:
     num_worker_iters: int = 100_000
     enable_frame_buffer: bool = True
     recalculate_p_on_every_call: bool = False
+    is_atari: bool = False
     wandbd_project_name: str = "mz"
 
     def to_dict(self):
@@ -123,7 +124,6 @@ class MuZeroConfig(Config):
     balance_term: float = 1
     enable_per: bool = True
     num_td_steps: int = 10
-    is_atari: bool = False
     _value_reward_loss: torch.nn.Module or Callable = torch.nn.MSELoss()
     loss_gets_support: bool = False
     frame_buffer_ignores_actions: bool = False

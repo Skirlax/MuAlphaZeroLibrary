@@ -149,9 +149,10 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
                  linear_input_size: list[int], support_size: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
+                 is_atari: bool,
                  latent_size: list[int] = [6, 6],
                  hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,
-                 is_dynamics: bool = False,is_representation: bool = False):
+                 is_dynamics: bool = False, is_representation: bool = False):
         super(OriginalAlphaZeroNetwork, self).__init__()
         self.in_channels = in_channels
         self.num_channels = num_channels
@@ -168,6 +169,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.pi_linear_layers = pi_linear_layers
         self.v_linear_layers = v_linear_layers
         self.linear_head_hidden_size = linear_head_hidden_size
+        self.is_atari = is_atari
         self.optimizer = None
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
 
@@ -204,7 +206,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
             support_range = th.arange(-self.support_size, self.support_size + 1, 1, dtype=th.float32,
                                       device=x.device).unsqueeze(0)
             output = th.sum(val_h_output * support_range, dim=1)
-            output = invert_scale_reward_value(output)
+            if self.is_atari:
+                output = invert_scale_reward_value(output)
             return pol_h_output, output.unsqueeze(1)
         return pol_h_output, val_h_output
 
@@ -224,6 +227,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                         self.linear_input_size, self.support_size,
                                         self.state_linear_layers, self.pi_linear_layers, self.v_linear_layers,
                                         self.linear_head_hidden_size,
+                                        self.is_atari,
                                         self.latent_size,
                                         hook_manager=self.hook_manager,
                                         num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
@@ -238,6 +242,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                         v_linear_layers=config.v_linear_layers,
                                         linear_head_hidden_size=config.linear_head_hidden_size,
                                         num_blocks=config.num_blocks, muzero=config.muzero,
+                                        is_atari=config.is_atari,
                                         support_size=config.support_size, latent_size=config.net_latent_size)
 
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:

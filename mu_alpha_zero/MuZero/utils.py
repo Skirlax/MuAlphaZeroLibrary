@@ -102,9 +102,10 @@ def muzero_loss(y_hat, y):
     return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
 
-def scalar_to_support(x: th.Tensor, support_size: int):
+def scalar_to_support(x: th.Tensor, support_size: int,is_atari: bool):
     # x is of shape: [batch_size,1] at unroll step t
-    x = scale_reward_value(x)
+    if is_atari:
+        x = scale_reward_value(x)
     x = th.clamp(x, -support_size, support_size)
     lower_p = 1 - (x - x.floor())
     upper_p = x - x.floor()
@@ -119,10 +120,11 @@ def scalar_to_support(x: th.Tensor, support_size: int):
     return support
 
 
-def support_to_scalar(x: th.Tensor, support_size: int):
+def support_to_scalar(x: th.Tensor, support_size: int, is_atari: bool):
     support = th.arange(-support_size, support_size + 1, 1, dtype=x.dtype, device=x.device).unsqueeze(0)
     output = th.sum(x * support, dim=1)
-    output = invert_scale_reward_value(output)
+    if is_atari:
+        output = invert_scale_reward_value(output)
     return output.unsqueeze(1)
 
 

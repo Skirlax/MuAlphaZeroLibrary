@@ -213,7 +213,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loss_fn = muzero_config._value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
         if muzero_config.loss_gets_support:
-            values = scalar_to_support(scalar_values, muzero_config.support_size)
+            values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.is_atari)
         else:
             values = scalar_values
         hidden_state = self.representation_forward(init_states)
@@ -225,14 +225,15 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         new_priorities = [[] for x in range(pred_pis.size(0))]
         if muzero_config.enable_per:
             self.populate_priorities((th.abs(support_to_scalar(pred_vs,
-                                                               muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
+                                                               muzero_config.support_size,
+                                                               muzero_config.is_atari) - scalar_values) ** muzero_config.alpha).reshape(
                 -1).tolist(), new_priorities)
         for i in range(1, muzero_config.K + 1):
             _, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(i, experience_batch,
                                                                                     device)
             if muzero_config.loss_gets_support:
-                rewards = scalar_to_support(rewards, muzero_config.support_size)
-                values = scalar_to_support(scalar_values, muzero_config.support_size)
+                rewards = scalar_to_support(rewards, muzero_config.support_size, muzero_config.is_atari)
+                values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.is_atari)
             else:
                 values = scalar_values
 
@@ -252,7 +253,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             r_loss += current_r_loss
             if muzero_config.enable_per:
                 self.populate_priorities((th.abs(support_to_scalar(pred_vs,
-                                                                   muzero_config.support_size) - scalar_values) ** muzero_config.alpha).reshape(
+                                                                   muzero_config.support_size,
+                                                                   muzero_config.is_atari) - scalar_values) ** muzero_config.alpha).reshape(
                     -1).tolist(), new_priorities)
         # TODO: Multiply v by 0.25 when reanalyze implemented.
         # v_loss *= 0.25
