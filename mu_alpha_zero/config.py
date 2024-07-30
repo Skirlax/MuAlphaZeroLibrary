@@ -59,7 +59,7 @@ class Config:
     wandbd_project_name: str = "mz"
 
     def to_dict(self):
-        return self.__dict__
+        return {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
 
     @staticmethod
     def from_args(args: dict):
@@ -124,7 +124,7 @@ class MuZeroConfig(Config):
     enable_per: bool = True
     num_td_steps: int = 10
     is_atari: bool = False
-    value_reward_loss: torch.nn.Module or Callable = torch.nn.MSELoss()
+    _value_reward_loss: torch.nn.Module or Callable = torch.nn.MSELoss()
     loss_gets_support: bool = False
     frame_buffer_ignores_actions: bool = False
     actions_are: Literal["columns", "rows", "board"] = "board"

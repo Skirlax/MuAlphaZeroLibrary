@@ -210,7 +210,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
 
     def calculate_losses(self, experience_batch, weights, device, muzero_config):
         init_states, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(0, experience_batch, device)
-        loss_fn = muzero_config.value_reward_loss
+        loss_fn = muzero_config._value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
         if muzero_config.loss_gets_support:
             values = scalar_to_support(scalar_values, muzero_config.support_size)
