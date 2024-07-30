@@ -259,7 +259,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loss = pi_loss + v_loss + r_loss
         if muzero_config.enable_per:
             loss *= th.tensor(weights, dtype=loss.dtype, device=loss.device)
-        loss = loss.sum()
+        loss = loss.mean()
         if muzero_config.enable_per:
             self.update_priorities(new_priorities, experience_batch)
         return loss, v_loss.sum(), pi_loss.sum(), r_loss.sum()
@@ -293,7 +293,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
     def muzero_loss(self, y_hat, y):
-        return -th.sum(y * y_hat, dim=1).unsqueeze(1) / y.size()[0]
+        return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,
                                  checkpointer: CheckPointer, logger: Logger):
