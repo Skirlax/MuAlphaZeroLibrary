@@ -230,6 +230,7 @@ class MuZeroSearchTree(SearchTree):
                 data.append((buffer[i], i))
             return data
 
+        wandb.init(project=config.wandbd_project_name, name="Reanalyze")
         net = net.to(device)
         while len(shared_storage.get_buffer()) < 100:
             time.sleep(5)
@@ -252,6 +253,7 @@ class MuZeroSearchTree(SearchTree):
                     pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
                     data_point.v = v
                     data_point.pi = pi
+                    wandb.log({"reanalyze_iteration":iter_})
                 game.compute_initial_priorities(config)
 
     def run_on_training_end(self):
