@@ -262,7 +262,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loss = loss.mean()
         if muzero_config.enable_per:
             self.update_priorities(new_priorities, experience_batch)
-        return loss, v_loss.sum(), pi_loss.sum(), r_loss.sum()
+        return loss, v_loss.mean(), pi_loss.mean(), r_loss.mean()
 
     def get_batch_for_unroll_index(self, index: int, experience_batch, device) -> tuple[
         th.Tensor, th.Tensor, th.Tensor, list, th.Tensor]:
