@@ -205,7 +205,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                       device=x.device).unsqueeze(0)
             output = th.sum(val_h_output * support_range, dim=1)
             output = invert_scale_reward_value(output)
-            return pol_h_output, output.unsqueeze(0)
+            return pol_h_output, output.unsqueeze(1)
         return pol_h_output, val_h_output
 
     @th.no_grad()
