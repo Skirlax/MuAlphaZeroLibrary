@@ -231,7 +231,7 @@ class MuZeroSearchTree(SearchTree):
 
         net = net.to(device)
         net.eval()
-        while len(shared_storage.get_buffer()) < config.batch_size * 6:
+        while len(shared_storage.get_buffer()) < 100:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
             data = get_first_n(1, shared_storage)
