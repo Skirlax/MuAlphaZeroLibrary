@@ -1,0 +1,77 @@
+Index: mu_alpha_zero/MuZero/JavaGateway/gym_env_wrapper.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import base64\r\n\r\nimport numpy as np\r\nfrom fastapi import APIRouter\r\n\r\nfrom mu_alpha_zero.General.mz_game import MuZeroGame\r\n\r\n\r\nclass GymEnvWrapper:\r\n    def __init__(self, env: MuZeroGame):\r\n        self.env_instance = env\r\n        self.router = APIRouter()\r\n        self.register_routes()\r\n\r\n    def register_routes(self):\r\n        self.router.add_api_route(\"/frame_skip_step/{action}/{player}/{frame_skip}\", self.frame_skip_step,\r\n                                  methods=[\"GET\"])\r\n        self.router.add_api_route(\"/reset\", self.reset, methods=[\"GET\"])\r\n        self.router.add_api_route(\"/get_noop\", self.get_noop, methods=[\"GET\"])\r\n        self.router.add_api_route(\"/get_num_actions\", self.get_num_actions, methods=[\"GET\"])\r\n        self.router.add_api_route(\"/game_result/{player}\", self.game_result, methods=[\"GET\"])\r\n\r\n    def frame_skip_step(self, action: int, player: int, frame_skip: int):\r\n        if player == 0:\r\n            player = None\r\n        state, reward, done = self.env_instance.frame_skip_step(action, player, frame_skip)\r\n        return {\"state\": self.encode_array(state), \"reward\": reward, \"done\": done}\r\n\r\n    def reset(self):\r\n        state = self.env_instance.reset()\r\n        return {\"state\": self.encode_array(state)}\r\n\r\n    def get_noop(self):\r\n        return self.env_instance.get_noop()\r\n\r\n    def get_num_actions(self):\r\n        return self.env_instance.get_num_actions()\r\n\r\n    def game_result(self, player: int):\r\n        if player == 0:\r\n            player = None\r\n        return self.env_instance.game_result(player)\r\n\r\n    def encode_array(self, array: np.ndarray):\r\n        return base64.b64encode(array.tobytes()).decode(\"utf-8\")\r\n
+===================================================================
+diff --git a/mu_alpha_zero/MuZero/JavaGateway/gym_env_wrapper.py b/mu_alpha_zero/MuZero/JavaGateway/gym_env_wrapper.py
+--- a/mu_alpha_zero/MuZero/JavaGateway/gym_env_wrapper.py	
++++ b/mu_alpha_zero/MuZero/JavaGateway/gym_env_wrapper.py	
+@@ -1,8 +1,11 @@
+ import base64
++import multiprocessing
+ 
+ import numpy as np
+-from fastapi import APIRouter
++import uvicorn
++from fastapi import APIRouter, FastAPI
+ 
++from mu_alpha_zero import Asteroids
+ from mu_alpha_zero.General.mz_game import MuZeroGame
+ 
+ 
+@@ -11,6 +14,8 @@
+         self.env_instance = env
+         self.router = APIRouter()
+         self.register_routes()
++        self.app = FastAPI()
++        self.app.include_router(self.router)
+ 
+     def register_routes(self):
+         self.router.add_api_route("/frame_skip_step/{action}/{player}/{frame_skip}", self.frame_skip_step,
+@@ -24,11 +29,12 @@
+         if player == 0:
+             player = None
+         state, reward, done = self.env_instance.frame_skip_step(action, player, frame_skip)
+-        return {"state": self.encode_array(state), "reward": reward, "done": done}
++        return {"state": self.encode_array(state), "reward": reward, "done": done,
++                "shape": ','.join([str(x) for x in state.shape])}
+ 
+     def reset(self):
+         state = self.env_instance.reset()
+-        return {"state": self.encode_array(state)}
++        return {"state": self.encode_array(state), "shape": ','.join([str(x) for x in state.shape])}
+ 
+     def get_noop(self):
+         return self.env_instance.get_noop()
+@@ -43,3 +49,31 @@
+ 
+     def encode_array(self, array: np.ndarray):
+         return base64.b64encode(array.tobytes()).decode("utf-8")
++
++    def get_app(self):
++        return self.app
++
++
++class GymManagerProcess:
++    def __init__(self, env: MuZeroGame):
++        self.env = env
++        self.process = None
++
++    def start(self):
++        self.process = multiprocessing.Process(target=self.run_server)
++        self.process.start()
++
++    def run_server(self):
++        env_wrapper = GymEnvWrapper(self.env)
++        uvicorn.run(env_wrapper.get_app(), host="127.0.0.1", port=8000)
++
++    def stop(self):
++        self.process.kill()
++
++    def is_alive(self):
++        return self.process.poll() is None
++
++
++if __name__ == "__main__":
++    manager = GymManagerProcess(Asteroids())
++    manager.start()
