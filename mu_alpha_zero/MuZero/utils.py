@@ -23,12 +23,14 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
-            tensor_action = th.zeros((observations.shape[2],), device=observations.device).scatter(0, th.tensor(action,device=observations.device),
+            tensor_action = th.zeros((observations.shape[2],), device=observations.device).scatter(0, th.tensor(action,
+                                                                                                                device=observations.device),
                                                                                                    1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
 
         elif config.actions_are == "rows":
-            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action,device=observations.device),
+            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action,
+                                                                                                                device=observations.device),
                                                                                                    1).unsqueeze(0)
             tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
         elif config.actions_are == "board":
@@ -42,7 +44,8 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
 
 
 def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int], config: MuZeroConfig):
-    tensors = [match_action_with_obs(observation_batch[index], action_batch[index], config).unsqueeze(0) for index in range(len(action_batch))]
+    tensors = [match_action_with_obs(observation_batch[index], action_batch[index], config).unsqueeze(0) for index in
+               range(len(action_batch))]
     return th.cat(tensors, dim=0)
 
 
@@ -93,6 +96,10 @@ def invert_scale_reward_value(value: th.Tensor, e: float = 0.001):
 
 def scale_reward(reward: float):
     return math.log(reward + 1, 5)
+
+
+def muzero_loss(y_hat, y):
+    return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
 
 def scalar_to_support(x: th.Tensor, support_size: int):
