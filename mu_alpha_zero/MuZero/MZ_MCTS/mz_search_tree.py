@@ -58,7 +58,6 @@ class MuZeroSearchTree(SearchTree):
         data = SingleGameData()
         game_length = 0
         for step in range(num_steps):
-            self.min_max_q = [float("inf"), -float("inf")]
             game_length += 1
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))
@@ -89,8 +88,9 @@ class MuZeroSearchTree(SearchTree):
         return [data]
 
     def search(self, network_wrapper, state: np.ndarray, current_player: int or None, device: th.device,
-               tau: float or None = None, calculate_avg_num_children: bool = False):
-        if self.buffer.__len__(current_player) == 0:
+               tau: float or None = None, calculate_avg_num_children: bool = False, use_state_directly: bool = False):
+        self.min_max_q = [float("inf"), -float("inf")]
+        if self.buffer.__len__(current_player) == 0 and not use_state_directly:
             self.buffer.init_buffer(state, current_player)
         num_simulations = self.muzero_config.num_simulations
         if tau is None:
@@ -98,8 +98,9 @@ class MuZeroSearchTree(SearchTree):
 
         root_node = MzAlphaZeroNode(current_player=current_player)
         # print(self.buffer.buffers[current_player][-1][0][:,:,0])
+        game_state = state if use_state_directly else self.buffer.concat_frames(current_player)
         state_ = network_wrapper.representation_forward(
-            self.buffer.concat_frames(current_player).permute(2, 0, 1).unsqueeze(0).to(device)).squeeze(0)
+            game_state.permute(2, 0, 1).unsqueeze(0).to(device)).squeeze(0)
         state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         if self.muzero_config.dirichlet_alpha > 0:
@@ -236,16 +237,17 @@ class MuZeroSearchTree(SearchTree):
         for iter_ in range(config.num_worker_iters):
             data = get_first_n(1, shared_storage)
             for game, i in data:
+                tree = tree.make_fresh_instance()
                 for data_point in game.datapoints:
                     if isinstance(data_point.frame, LazyArray):
                         frame = data_point.frame.load_array()
                     else:
                         frame = data_point.frame
+
                     state = th.tensor(frame, device=device).float()
-                    pi, (v, _) = tree.search(net, state, data_point.player, device)
+                    pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
                     data_point.v = v
                     data_point.pi = pi
-
 
     def run_on_training_end(self):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
