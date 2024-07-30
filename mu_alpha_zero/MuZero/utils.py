@@ -102,7 +102,7 @@ def muzero_loss(y_hat, y):
     return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
 
-def scalar_to_support(x: th.Tensor, support_size: int,is_atari: bool):
+def scalar_to_support(x: th.Tensor, support_size: int, is_atari: bool):
     # x is of shape: [batch_size,1] at unroll step t
     if is_atari:
         x = scale_reward_value(x)
@@ -111,12 +111,9 @@ def scalar_to_support(x: th.Tensor, support_size: int,is_atari: bool):
     upper_p = x - x.floor()
     support = th.zeros((x.size(0), 2 * support_size + 1), device=x.device)
     support.scatter_(1, (support_size + x.floor()).type(th.int64), lower_p)
-    try:
+    if support_size + x.floor() + 1 < 2 * support_size + 1:
         support.scatter_(1, (
                 support_size + x.floor() + 1).type(th.int64), upper_p)
-    except RuntimeError:
-        # The value was so large it got clamped to 300 and as such support_size + x.floor() + 1 is 651 - out of bounds.
-        pass
     return support
 
 
