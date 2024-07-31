@@ -195,7 +195,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         x = F.relu(self.bn1(self.conv1(x)))
         for block in self.blocks:
             x = block(x)
-        x = self.dropout(x)
+        # x = self.dropout(x)
         val_h_output = self.value_head(x)
         pol_h_output = self.policy_state_head(x)
         if self.is_representation:
@@ -318,7 +318,7 @@ class ValueHead(th.nn.Module):
         self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
         self.bn = nn.BatchNorm2d(linear_hidden_size)
         self.fc1 = nn.Linear(linear_input_size, 256)
-        self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
+        # self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         if muzero:
             self.fc2 = nn.Linear(256, 2 * support_size + 1)
             self.act = nn.LogSoftmax(dim=1)
@@ -329,7 +329,7 @@ class ValueHead(th.nn.Module):
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
-        x = F.relu(self.fc1(x))
+        # x = F.relu(self.fc1(x))
         x = F.relu(self.fc(x))
         x = self.fc2(x)
         return self.act(x)
@@ -342,14 +342,14 @@ class PolicyHead(th.nn.Module):
         self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
         self.bn = nn.BatchNorm2d(linear_hidden_size)
         self.fc1 = nn.Linear(linear_input_size_policy, 256)
-        self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
+        # self.fc = HeadLinear(256, 256, num_layers, linear_hidden_size)
         self.fc2 = nn.Linear(256, action_size)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
         x = F.relu(self.fc1(x))
-        x = F.relu(self.fc(x))
+        # x = F.relu(self.fc(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
@@ -360,14 +360,14 @@ class StateHead(th.nn.Module):
         super(StateHead, self).__init__()
         self.conv = nn.Conv2d(out_channels, linear_hidden_size, 1)
         self.bn = nn.BatchNorm2d(linear_hidden_size)
-        self.fc = HeadLinear(linear_input_size, out_channels, num_layers, linear_hidden_size)
+        # self.fc = HeadLinear(linear_input_size, out_channels, num_layers, linear_hidden_size)
         self.fc3 = nn.Linear(out_channels, latent_size[0] * latent_size[1] * out_channels)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
-        x = F.relu(self.fc(x))
-        x = F.relu(self.fc3(x))
+        # x = F.relu(self.fc(x))
+        x = self.fc3(x)
         return x
 
 
