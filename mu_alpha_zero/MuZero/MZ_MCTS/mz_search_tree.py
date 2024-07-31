@@ -243,7 +243,7 @@ class MuZeroSearchTree(SearchTree):
                 net.load_state_dict(shared_storage.get_stable_network_params())
             wandb.log({"reanalyze_iteration": iter_})
             tree = tree.make_fresh_instance()
-            for data_point in data.datapoints:
+            for data_point in data.datapoints[:-1]:
                 if isinstance(data_point.frame, LazyArray):
                     frame = data_point.frame.load_array()
                 else:
