@@ -251,9 +251,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             current_pi_loss = self.muzero_loss(pred_pis, pis)
             current_v_loss = loss_fn(pred_vs, values)
             current_r_loss = loss_fn(pred_rs, rewards)
-            current_r_loss.register_hook(lambda grad: grad * (1/ th.tensor(grad_scales[i],device=device)))
-            current_v_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)))
-            current_pi_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)))
+            current_r_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
+            current_v_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
+            current_pi_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
             pi_loss += current_pi_loss
             v_loss += current_v_loss
             r_loss += current_r_loss
