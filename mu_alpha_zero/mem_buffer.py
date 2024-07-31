@@ -198,14 +198,11 @@ class SingleGameData:
             else:
                 val = 0
             for idx in range(index, future_index + 1):
-                if idx > len(self.datapoints):
+                if idx >= len(self.datapoints):
                     break
-                actual_reward_index = idx - 1
-                if actual_reward_index < 0:
-                    continue
-                d_point = self.datapoints[actual_reward_index]
+                d_point = self.datapoints[idx]
                 val += (
-                           d_point.reward if d_point.player == data_point.player else -d_point.reward) * config.gamma ** idx
+                           -d_point.reward if d_point.player == data_point.player else d_point.reward) * config.gamma ** idx
             if config.enable_per:
                 self.datapoints[index].priority = abs(self.datapoints[index].v - val) ** config.alpha
                 self.game_priority = max(self.game_priority, self.datapoints[index].priority)

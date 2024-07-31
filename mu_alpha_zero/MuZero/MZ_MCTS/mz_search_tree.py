@@ -57,6 +57,9 @@ class MuZeroSearchTree(SearchTree):
         if self.muzero_config.multiple_players:
             self.buffer.init_buffer(self.game_manager.get_state_for_passive_player(state, -player), -player)
         data = SingleGameData()
+        frame = self.buffer.concat_frames(player).detach().cpu().numpy()
+        data.add_data_point(
+            DataPoint(None, None, 0, None, player, frame if dir_path is None else LazyArray(frame, dir_path)))
         game_length = 0
         for step in range(num_steps):
             game_length += 1
@@ -67,12 +70,10 @@ class MuZeroSearchTree(SearchTree):
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
-            frame = self.buffer.concat_frames(player).detach().cpu().numpy()
-            data_point = DataPoint(pi, v, rew, move, player, frame if dir_path is None else LazyArray(frame, dir_path))
+
             # data.append(
             #     (pi, v, (rew, move, float(pred_v[0]), player),
             #      ))
-            data.add_data_point(data_point)
             if done:
                 break
             if self.muzero_config.multiple_players:
@@ -80,6 +81,13 @@ class MuZeroSearchTree(SearchTree):
             self.buffer.add_frame(state, scale_action(move, self.game_manager.get_num_actions()), player)
             self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player),
                                   scale_action(move, self.game_manager.get_num_actions()), -player)
+            data.datapoints[-1].v = v
+            data.datapoints[-1].pi = [x for x in pi.values()]
+            data.datapoints[-1].move = move
+            frame = self.buffer.concat_frames(player).detach().cpu().numpy()
+            data.add_data_point(
+                DataPoint(None, None, rew, None, player, frame if dir_path is None else LazyArray(frame, dir_path)))
+
 
         try:
             wandb.log({"Game length": game_length})
@@ -149,7 +157,7 @@ class MuZeroSearchTree(SearchTree):
         G_node = v
         gamma = self.muzero_config.gamma
         for node in reversed(path):
-
+            node.times_visited += 1
             if self.muzero_config.multiple_players:
                 # G = node.reward + gamma * (
                 #     -G)  # G should be from the perspective of the parent as the parent is selecting from the children based on what's good for them.
@@ -161,7 +169,6 @@ class MuZeroSearchTree(SearchTree):
                 self.update_min_max_q(node.reward + node.get_self_value())
                 G_node = node.reward + gamma * G_node
             # node.update_q(G_node)
-            node.times_visited += 1
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[
         int, int, int]:
@@ -235,7 +242,7 @@ class MuZeroSearchTree(SearchTree):
                 net.load_state_dict(shared_storage.get_experimental_network_params())
             else:
                 net.load_state_dict(shared_storage.get_stable_network_params())
-            wandb.log({"reanalyze_iteration":iter_})
+            wandb.log({"reanalyze_iteration": iter_})
             tree = tree.make_fresh_instance()
             for data_point in data.datapoints:
                 if isinstance(data_point.frame, LazyArray):
@@ -244,7 +251,7 @@ class MuZeroSearchTree(SearchTree):
                     frame = data_point.frame
 
                 state = th.tensor(frame, device=device).float()
-                pi, (v, _) = tree.search(net, state, data_point.player, device,use_state_directly=True)
+                pi, (v, _) = tree.search(net, state, data_point.player, device, use_state_directly=True)
                 data_point.v = v
                 data_point.pi = [x for x in pi.values()]
             data.compute_initial_priorities(config)
