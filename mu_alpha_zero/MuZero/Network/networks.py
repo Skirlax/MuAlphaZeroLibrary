@@ -167,10 +167,11 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loader = lambda: memory_buffer.batch_with_priorities(muzero_config.enable_per,
                                                              muzero_config.batch_size, muzero_config)
         for epoch in range(muzero_config.epochs):
-            sampled_game_data, grad_scales,priorities, weights = loader()
+            sampled_game_data, grad_scales, priorities, weights = loader()
             if len(sampled_game_data) <= 1:
                 continue
-            loss, loss_v, loss_pi, loss_r = self.calculate_losses(sampled_game_data,grad_scales, weights, device, muzero_config)
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(sampled_game_data, grad_scales, weights, device,
+                                                                  muzero_config)
             wandb.log({"combined_loss": loss.item(), "loss_v": loss_v.item(), "loss_pi": loss_pi.item(),
                        "loss_r": loss_r.item()})
             losses.append(loss.item())
@@ -204,14 +205,15 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              muzero_config,
                                                              is_eval=True)
         for epoch in range(muzero_config.eval_epochs):
-            experience_batch,grad_scales, priorities, weights = loader()
+            experience_batch, grad_scales, priorities, weights = loader()
             if len(experience_batch) <= 1:
                 continue
-            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch,grad_scales, weights, device, muzero_config)
+            loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, grad_scales, weights, device,
+                                                                  muzero_config)
             wandb.log({"eval_combined_loss": loss.item(), "eval_loss_v": loss_v.item(), "eval_loss_pi": loss_pi.item(),
                        "eval_loss_r": loss_r.item()})
 
-    def calculate_losses(self, experience_batch, grad_scales,weights, device, muzero_config):
+    def calculate_losses(self, experience_batch, grad_scales, weights, device, muzero_config):
         init_states, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(0, experience_batch, device)
         loss_fn = muzero_config._value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
@@ -226,6 +228,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         pi_loss += self.muzero_loss(pred_pis, pis)
         v_loss += loss_fn(pred_vs, values)
         new_priorities = [[] for x in range(pred_pis.size(0))]
+        grad_scales = [[grad_scales[0][i],grad_scales[1][i],grad_scales[2][i]] for i in range(len(grad_scales[0]))]
         if muzero_config.enable_per:
             self.populate_priorities((th.abs(support_to_scalar(pred_vs,
                                                                muzero_config.support_size,
@@ -248,9 +251,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             current_pi_loss = self.muzero_loss(pred_pis, pis)
             current_v_loss = loss_fn(pred_vs, values)
             current_r_loss = loss_fn(pred_rs, rewards)
-            current_r_loss.register_hook(lambda grad: print(grad))
-            current_v_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
-            current_pi_loss.register_hook(lambda grad: grad * (1 / muzero_config.K))
+            current_r_loss.register_hook(lambda grad: grad * (1/ th.tensor(grad_scales[i])))
+            current_v_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i])))
+            current_pi_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i])))
             pi_loss += current_pi_loss
             v_loss += current_v_loss
             r_loss += current_r_loss

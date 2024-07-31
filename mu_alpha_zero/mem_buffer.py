@@ -235,6 +235,7 @@ class SingleGameData:
         game_data = SingleGameData()
         grad_scales = []
         for unroll_index in range(index, index + config.K + 1):
+            grad_scales.append(min(len(self.datapoints) - index, config.K))
             if unroll_index < len(self.datapoints):
                 game_data.add_data_point(self.datapoints[unroll_index])
             else:
@@ -246,7 +247,6 @@ class SingleGameData:
                     0,
                     None
                 ))
-                grad_scales.append(min(len(self.datapoints) - unroll_index, config.K))
         return game_data,grad_scales
 
 
