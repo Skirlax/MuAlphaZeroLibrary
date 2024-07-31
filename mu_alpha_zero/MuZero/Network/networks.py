@@ -228,7 +228,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         pi_loss += self.muzero_loss(pred_pis, pis)
         v_loss += loss_fn(pred_vs, values)
         new_priorities = [[] for x in range(pred_pis.size(0))]
-        grad_scales = [[grad_scales[0][i],grad_scales[1][i],grad_scales[2][i]] for i in range(len(grad_scales[0]))]
+        grad_scales = [[grad_scales[x][i] for x in range(len(grad_scales))] for i in range(len(grad_scales[0]))]
         if muzero_config.enable_per:
             self.populate_priorities((th.abs(support_to_scalar(pred_vs,
                                                                muzero_config.support_size,
