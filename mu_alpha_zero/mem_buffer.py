@@ -127,13 +127,15 @@ class MemBuffer(GeneralMemoryBuffer):
         sampled_indexes = np.random.choice(np.arange(len(buf)), replace=False, size=min(batch_size, len(buf)),
                                            p=game_priorities).tolist()
         positions = [buf[index].normalize(config).sample_position_with_unroll(config) for index in sampled_indexes]
+        grad_scales = [x[1] for x in positions]
+        positions = [x[0] for x in positions]
         if config.enable_per:
             weights = [positions[i].datapoints[0].priority * game_priorities[i] for i in range(len(positions))]
             weights = np.array(weights)
             weights = 1 / (weights * weights.shape[0]) ** config.beta
         else:
             weights = np.ones((len(positions),))
-        return positions, game_priorities, weights.reshape(-1, 1)
+        return positions,grad_scales ,game_priorities, weights.reshape(-1, 1)
 
     def reset_priorities(self):
         self.priorities = None
@@ -231,6 +233,7 @@ class SingleGameData:
     def sample_position_with_unroll(self, config: MuZeroConfig):
         position, index = self.sample_position(config)
         game_data = SingleGameData()
+        grad_scales = []
         for unroll_index in range(index, index + config.K + 1):
             if unroll_index < len(self.datapoints):
                 game_data.add_data_point(self.datapoints[unroll_index])
@@ -243,7 +246,8 @@ class SingleGameData:
                     0,
                     None
                 ))
-        return game_data
+                grad_scales.append(min(len(self.datapoints) - unroll_index, config.K))
+        return game_data,grad_scales
 
 
 class DataPoint:
