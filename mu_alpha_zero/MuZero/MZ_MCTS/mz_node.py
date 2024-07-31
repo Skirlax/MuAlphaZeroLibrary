@@ -12,8 +12,8 @@ class MzAlphaZeroNode(AlphaZeroNode):
         best_utc = -float("inf")
         best_child = None
         best_action = None
-        best_children = []
-        best_actions = []
+        # best_children = []
+        # best_actions = []
         for action, child in self.children.items():
             if child.select_probability == 0:
                 continue
@@ -22,12 +22,12 @@ class MzAlphaZeroNode(AlphaZeroNode):
                 best_utc = child_utc
                 best_child = child
                 best_action = action
-                best_children.append(child)
-                best_actions.append(action)
+                # best_children.append(child)
+                # best_actions.append(action)
 
-        random_idx = random.randint(0, len(best_children) - 1)
-        best_child = best_children[random_idx]
-        best_action = best_actions[random_idx]
+        # random_idx = random.randint(0, len(best_children) - 1)
+        # best_child = best_children[random_idx]
+        # best_action = best_actions[random_idx]
         return best_child, best_action
 
     def get_value_pred(self, prediction_forward: callable):
@@ -47,6 +47,8 @@ class MzAlphaZeroNode(AlphaZeroNode):
 
     def calculate_utc_score(self, min_q: float, max_q: float, gamma: float, multiple_players: bool, c=1.5, c2=19652):
         parent = self.parent()
+        if self.times_visited == 0:
+            return c * self.select_probability * math.sqrt(parent.times_visited + 1e-8)
         q = self.scale_q(min_q, max_q, gamma, multiple_players)
         utc = q + self.select_probability * (
                 (math.sqrt(parent.times_visited)) / (1 + self.times_visited)) * (
