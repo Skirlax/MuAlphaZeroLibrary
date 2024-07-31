@@ -23,7 +23,7 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
-            tensor_action = th.full(observations.shape, scale_action(action, config.net_action_size),
+            tensor_action = th.full((1,observations.size(1),observations.size(2)), scale_action(action, config.net_action_size),
                                     device=observations.device)
 
         elif config.actions_are == "rows":

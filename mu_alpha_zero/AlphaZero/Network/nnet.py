@@ -329,8 +329,8 @@ class ValueHead(th.nn.Module):
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
         x = x.reshape(x.size(0), -1)
-        # x = F.relu(self.fc1(x))
-        x = F.relu(self.fc(x))
+        x = F.relu(self.fc1(x))
+        # x = F.relu(self.fc(x))
         x = self.fc2(x)
         return self.act(x)
 
@@ -358,10 +358,10 @@ class StateHead(th.nn.Module):
     def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int], num_layers: int,
                  linear_hidden_size: int):
         super(StateHead, self).__init__()
-        self.conv = nn.Conv2d(out_channels, linear_hidden_size, 1)
-        self.bn = nn.BatchNorm2d(linear_hidden_size)
+        self.conv = nn.Conv2d(out_channels, out_channels, 1)
+        self.bn = nn.BatchNorm2d(out_channels)
         # self.fc = HeadLinear(linear_input_size, out_channels, num_layers, linear_hidden_size)
-        self.fc3 = nn.Linear(out_channels, latent_size[0] * latent_size[1] * out_channels)
+        self.fc3 = nn.Linear(linear_input_size, latent_size[0] * latent_size[1] * out_channels)
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))

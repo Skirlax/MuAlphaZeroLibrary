@@ -69,7 +69,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         else:
             self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
-            self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=257, num_channels=num_out_channels,
+            self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=num_channels + 1, num_channels=num_out_channels,
                                                              dropout=dropout,
                                                              action_size=action_size,
                                                              linear_input_size=linear_input_size,
@@ -80,7 +80,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              is_atari=is_atari,
                                                              support_size=support_size, latent_size=latent_size,
                                                              num_blocks=num_blocks, muzero=True, is_dynamics=True)
-            self.prediction_network = OriginalAlphaZeroNetwork(in_channels=256, num_channels=num_out_channels,
+            self.prediction_network = OriginalAlphaZeroNetwork(in_channels=num_channels, num_channels=num_out_channels,
                                                                dropout=dropout,
                                                                action_size=action_size,
                                                                state_linear_layers=state_linear_layers,
