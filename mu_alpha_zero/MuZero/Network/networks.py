@@ -276,12 +276,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         if index == 0:
             init_states = [np.array(x.datapoints[index].frame) for x in experience_batch]
             init_states = tensor_from_x(np.array(init_states)).permute(0, 3, 1, 2)
-        move_reward_index = max(0, index - 1)
-        rewards = np.array([x.datapoints[move_reward_index].reward for x in experience_batch])
+        move_index = max(0, index - 1)
+        rewards = np.array([x.datapoints[index].reward for x in experience_batch])
         rewards = tensor_from_x(rewards)
         values = np.array([x.datapoints[index].v for x in experience_batch])
         values = tensor_from_x(values)
-        moves = [x.datapoints[move_reward_index].move for x in experience_batch]
+        moves = [x.datapoints[move_index].move for x in experience_batch]
         # moves = np.array([x.datapoints[index].move for x in experience_batch])
         # moves = tensor_from_x(moves)
         pis = np.array([x.datapoints[index].pi for x in experience_batch])
