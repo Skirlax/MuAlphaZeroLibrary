@@ -74,8 +74,6 @@ class MuZeroSearchTree(SearchTree):
             # data.append(
             #     (pi, v, (rew, move, float(pred_v[0]), player),
             #      ))
-            if done:
-                break
             if self.muzero_config.multiple_players:
                 player = -player
             self.buffer.add_frame(state, scale_action(move, self.game_manager.get_num_actions()), player)
@@ -86,8 +84,9 @@ class MuZeroSearchTree(SearchTree):
             data.datapoints[-1].move = move
             frame = self.buffer.concat_frames(player).detach().cpu().numpy()
             data.add_data_point(
-                DataPoint(None, None, rew, None, player, frame if dir_path is None else LazyArray(frame, dir_path)))
-
+                DataPoint(np.ones((len(data.datapoints[-1].pi))) / len(data.datapoints[-1].pi), 0, rew, random.randint(0,len(data.datapoints[-1].pi) -1), player, frame if dir_path is None else LazyArray(frame, dir_path)))
+            if done:
+                break
 
         try:
             wandb.log({"Game length": game_length})
