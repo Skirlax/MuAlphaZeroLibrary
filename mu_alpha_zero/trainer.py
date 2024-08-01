@@ -201,16 +201,16 @@ class Trainer:
                      args=(shared_storage, self.muzero_alphazero_config, self.checkpointer, self.logger))
 
         p2.start()
-        p3 = Process(target=self.mcts.reanalyze, args=(
-            self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
-            self.muzero_alphazero_config))
-        p3.start()
+        # p3 = Process(target=self.mcts.reanalyze, args=(
+        #     self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
+        #     self.muzero_alphazero_config))
+        # p3.start()
         self.logger.log("Successfully started continuous weight update process (2/2).")
         # p3.start()
         # self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
 
         p2.join()
-        p3.join()
+        # p3.join()
         # p3.join()
         pool.close()
         pool.join()
