@@ -20,7 +20,7 @@ from mu_alpha_zero.MuZero.MZ_MCTS.mz_node import MzAlphaZeroNode
 from mu_alpha_zero.MuZero.Network.networks import MuZeroNet
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_action, scale_state, \
-    scale_hidden_state, mask_invalid_actions
+    scale_hidden_state, mask_invalid_actions, get_opponent_action
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer, SingleGameData, DataPoint
 from mu_alpha_zero.shared_storage_manager import SharedStorage
@@ -62,10 +62,14 @@ class MuZeroSearchTree(SearchTree):
             DataPoint(None, None, 0, None, player, frame if dir_path is None else LazyArray(frame, dir_path),
                       self.game_manager.get_invalid_actions(state, player)))
         game_length = 0
+        move = None
         for step in range(num_steps):
             game_length += 1
-            pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
-                    calculate_avg_num_children and step == 0))
+            if player == 1:
+                pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
+                        calculate_avg_num_children and step == 0))
+            else:
+                pi, v = get_opponent_action(state[:,:,0], move, -player, self.muzero_config.opponent, self, network_wrapper)
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
             # _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
