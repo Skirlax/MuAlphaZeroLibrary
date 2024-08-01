@@ -1,10 +1,11 @@
 import time
+from typing import Tuple, List, Any
 
 import numpy as np
 import torch as th
 import torch.nn.functional as F
 import wandb
-from torch import nn
+from torch import nn, Tensor
 from torch.nn.functional import mse_loss
 
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZeroNetwork
@@ -69,7 +70,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         else:
             self.representation_network = RepresentationNet(rep_input_channels, use_pooling=use_pooling)
         if use_original:
-            self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=num_channels + 1, num_channels=num_out_channels,
+            self.dynamics_network = OriginalAlphaZeroNetwork(in_channels=num_channels + 1,
+                                                             num_channels=num_out_channels,
                                                              dropout=dropout,
                                                              action_size=action_size,
                                                              linear_input_size=linear_input_size,
@@ -214,7 +216,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                        "eval_loss_r": loss_r.item()})
 
     def calculate_losses(self, experience_batch, grad_scales, weights, device, muzero_config):
-        init_states, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(0, experience_batch, device)
+        init_states, rewards, scalar_values, moves, pis, masks = self.get_batch_for_unroll_index(0, experience_batch,
+                                                                                                 device)
         loss_fn = muzero_config._value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
         if muzero_config.loss_gets_support:
@@ -225,7 +228,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         hidden_state = scale_hidden_state(hidden_state)
         pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=muzero_config.loss_gets_support)
         pi_loss, v_loss, r_loss = 0, 0, 0
-        pi_loss += self.muzero_loss(pred_pis, pis)
+        pi_loss += self.muzero_loss(pred_pis, pis,masks=masks)
         v_loss += loss_fn(pred_vs, values)
         new_priorities = [[] for x in range(pred_pis.size(0))]
         grad_scales = [[grad_scales[x][i] for x in range(len(grad_scales))] for i in range(len(grad_scales[0]))]
@@ -235,8 +238,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                muzero_config.is_atari) - scalar_values) ** muzero_config.alpha).reshape(
                 -1).tolist(), new_priorities)
         for i in range(1, muzero_config.K + 1):
-            _, rewards, scalar_values, moves, pis = self.get_batch_for_unroll_index(i, experience_batch,
-                                                                                    device)
+            _, rewards, scalar_values, moves, pis, masks = self.get_batch_for_unroll_index(i, experience_batch,
+                                                                                           device)
             if muzero_config.loss_gets_support:
                 rewards = scalar_to_support(rewards, muzero_config.support_size, muzero_config.is_atari)
                 values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.is_atari)
@@ -248,12 +251,15 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                 return_support=muzero_config.loss_gets_support)
             hidden_state = scale_hidden_state(hidden_state)
             hidden_state.register_hook(lambda grad: grad * 0.5)
-            current_pi_loss = self.muzero_loss(pred_pis, pis)
+            current_pi_loss = self.muzero_loss(pred_pis, pis,masks=masks)
             current_v_loss = loss_fn(pred_vs, values)
             current_r_loss = loss_fn(pred_rs, rewards)
-            current_r_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
-            current_v_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
-            current_pi_loss.register_hook(lambda grad: grad * (1 / th.tensor(grad_scales[i],device=device)).reshape(grad.shape))
+            current_r_loss.register_hook(
+                lambda grad: grad * (1 / th.tensor(grad_scales[i], device=device)).reshape(grad.shape))
+            current_v_loss.register_hook(
+                lambda grad: grad * (1 / th.tensor(grad_scales[i], device=device)).reshape(grad.shape))
+            current_pi_loss.register_hook(
+                lambda grad: grad * (1 / th.tensor(grad_scales[i], device=device)).reshape(grad.shape))
             pi_loss += current_pi_loss
             v_loss += current_v_loss
             r_loss += current_r_loss
@@ -273,7 +279,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         return loss, v_loss.mean(), pi_loss.mean(), r_loss.mean()
 
     def get_batch_for_unroll_index(self, index: int, experience_batch, device) -> tuple[
-        th.Tensor, th.Tensor, th.Tensor, list, th.Tensor]:
+        Tensor | None, Tensor, Tensor, list[Any], Tensor, Tensor]:
         tensor_from_x = lambda x: th.tensor(x, dtype=th.float32, device=device)
         init_states = None
         if index == 0:
@@ -289,7 +295,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         # moves = tensor_from_x(moves)
         pis = np.array([x.datapoints[index].pi for x in experience_batch])
         pis = tensor_from_x(pis)
-        return init_states, rewards.unsqueeze(1), values.unsqueeze(1), moves, pis
+        masks = np.array([x.datapoints[index].action_mask for x in experience_batch])
+        masks = tensor_from_x(masks)
+        return init_states, rewards.unsqueeze(1), values.unsqueeze(1), moves, pis, masks
 
     def populate_priorities(self, new_priorities: list, priorities_list: list):
         for idx, priority in enumerate(new_priorities):
@@ -300,7 +308,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             for i in range(len(game.datapoints)):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
-    def muzero_loss(self, y_hat, y):
+    def muzero_loss(self, y_hat, y,masks: th.Tensor or None = None) -> th.Tensor:
+        if masks is not None:
+            y_hat = y_hat * masks.reshape(y_hat.shape)
         return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,

@@ -135,7 +135,7 @@ class MemBuffer(GeneralMemoryBuffer):
             weights = 1 / (weights * weights.shape[0]) ** config.beta
         else:
             weights = np.ones((len(positions),))
-        return positions,grad_scales ,game_priorities, weights.reshape(-1, 1)
+        return positions, grad_scales, game_priorities, weights.reshape(-1, 1)
 
     def reset_priorities(self):
         self.priorities = None
@@ -245,13 +245,15 @@ class SingleGameData:
                     0,
                     random.randint(0, config.net_action_size - 1),
                     0,
-                    None
+                    None,
+                    np.zeros((config.net_action_size,))
                 ))
-        return game_data,grad_scales
+        return game_data, grad_scales
 
 
 class DataPoint:
-    def __init__(self, pi: dict, v: float, reward: float, move: int, player: int, frame: np.ndarray or None):
+    def __init__(self, pi: dict, v: float, reward: float, move: int, player: int, frame: np.ndarray or None,
+                 action_mask: np.ndarray):
         self.pi = [x for x in pi.values()] if isinstance(pi, dict) else pi
         self.v = v
         self.reward = reward
@@ -259,6 +261,7 @@ class DataPoint:
         self.player = player
         self.frame = frame
         self.priority = None
+        self.action_mask = action_mask
 
 
 class MuZeroFrameBuffer:
