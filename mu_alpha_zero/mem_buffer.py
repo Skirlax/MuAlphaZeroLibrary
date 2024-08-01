@@ -210,7 +210,6 @@ class SingleGameData:
                 self.game_priority = max(self.game_priority, self.datapoints[index].priority)
 
             self.datapoints[index].v = val
-        self.datapoints[-1].v = 0
         self.datapoints[0].v = 0
 
     def normalize(self, config: MuZeroConfig):

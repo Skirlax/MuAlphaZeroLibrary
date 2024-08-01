@@ -309,8 +309,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
     def muzero_loss(self, y_hat, y,masks: th.Tensor or None = None) -> th.Tensor:
-        if masks is not None:
-            y_hat = y_hat * masks.reshape(y_hat.shape)
+        # if masks is not None:
+        #     y_hat = y_hat * masks.reshape(y_hat.shape)
         return -th.sum(y * y_hat, dim=1).unsqueeze(1)
 
     def continuous_weight_update(self, shared_storage: SharedStorage, muzero_config: MuZeroConfig,
