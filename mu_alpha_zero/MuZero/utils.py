@@ -211,7 +211,7 @@ def get_opponent_action(game_state: np.ndarray, last_move: int, last_player: int
         res = tree.search(net, game_state, -last_player, th.device("cuda" if th.cuda.is_available() else "cpu"))
         return res[0], res[1][0]
     elif opponent == "minimax":
-        return get_minimax_action_connect4(game_state, last_move, last_player)
+        return get_minimax_action_connect4(game_state[:,:,0], last_move, last_player)
 
 
 def get_minimax_action_connect4(game_state: np.ndarray, last_move: int, last_player: int) -> tuple[dict, None]:

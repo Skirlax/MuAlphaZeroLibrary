@@ -68,7 +68,7 @@ class MuZeroSearchTree(SearchTree):
                 pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                         calculate_avg_num_children and step == 0))
             else:
-                pi, v = get_opponent_action(state[:,:,0], move, -player, self.muzero_config.opponent, self, network_wrapper)
+                pi, v = get_opponent_action(state, move, -player, self.muzero_config.opponent, self, network_wrapper)
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
             # _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
