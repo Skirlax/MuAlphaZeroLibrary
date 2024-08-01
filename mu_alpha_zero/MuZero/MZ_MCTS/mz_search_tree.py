@@ -87,8 +87,6 @@ class MuZeroSearchTree(SearchTree):
                 DataPoint(np.ones((len(data.datapoints[-1].pi))) / len(data.datapoints[-1].pi), 0, rew, random.randint(0,len(data.datapoints[-1].pi) -1), player, frame if dir_path is None else LazyArray(frame, dir_path)))
             if done:
                 break
-            self.game_manager.render()
-            time.sleep(1)
 
         try:
             wandb.log({"Game length": game_length})
