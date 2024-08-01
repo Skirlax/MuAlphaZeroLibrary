@@ -91,8 +91,6 @@ class MuZeroSearchTree(SearchTree):
                           self.game_manager.get_invalid_actions(state, player)))
             if done:
                 break
-            self.game_manager.render()
-            time.sleep(1)
 
         try:
             wandb.log({"Game length": game_length})
