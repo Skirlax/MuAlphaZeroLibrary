@@ -90,7 +90,11 @@ class MuZeroSearchTree(SearchTree):
                           frame if dir_path is None else LazyArray(frame, dir_path),
                           self.game_manager.get_invalid_actions(state, player)))
             if done:
+                # time.sleep(1)
+                # print(player)
+                # print(v)
                 break
+            # self.game_manager.render()
 
         try:
             wandb.log({"Game length": game_length})

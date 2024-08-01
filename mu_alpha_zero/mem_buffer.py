@@ -208,7 +208,10 @@ class SingleGameData:
             if config.enable_per:
                 self.datapoints[index].priority = abs(self.datapoints[index].v - val) ** config.alpha
                 self.game_priority = max(self.game_priority, self.datapoints[index].priority)
+
             self.datapoints[index].v = val
+        self.datapoints[-1].v = 0
+        self.datapoints[0].v = 0
 
     def normalize(self, config: MuZeroConfig):
         if not config.enable_per:
