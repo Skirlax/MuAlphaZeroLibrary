@@ -128,6 +128,7 @@ class MuZeroConfig(Config):
     loss_gets_support: bool = False
     frame_buffer_ignores_actions: bool = False
     actions_are: Literal["columns", "rows", "board"] = "board"
+    opponent: Literal["minimax", "muzero"] = "muzero"
 
 
 @dataclass

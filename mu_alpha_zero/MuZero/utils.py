@@ -23,7 +23,8 @@ def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroCo
         tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
     else:
         if config.actions_are == "columns":
-            tensor_action = th.full((1,observations.size(1),observations.size(2)), scale_action(action, config.net_action_size),
+            tensor_action = th.full((1, observations.size(1), observations.size(2)),
+                                    scale_action(action, config.net_action_size),
                                     device=observations.device)
 
         elif config.actions_are == "rows":
@@ -203,3 +204,23 @@ def mask_invalid_actions_batch(get_invalid_actions: Callable, pis: th.Tensor, pl
         invaid_actions = get_invalid_actions(pis[i], player)
         invalid_actions_ts[i] = invaid_actions
     return invalid_actions_ts
+
+
+def get_opponent_action(game_state: np.ndarray, last_move: int, last_player: int, opponent: str, tree, net) -> tuple:
+    if opponent == "muzero":
+        res = tree.search(net, game_state, -last_player, th.device("cuda" if th.cuda.is_available() else "cpu"))
+        return res[0], res[1][0]
+    elif opponent == "minimax":
+        return get_minimax_action_connect4(game_state, last_move, last_player)
+
+
+def get_minimax_action_connect4(game_state: np.ndarray, last_move: int, last_player: int) -> tuple[dict, None]:
+    from mu_alpha_zero.MuZero.MinimaxOpponent.board import Board
+    from mu_alpha_zero.MuZero.MinimaxOpponent.player import PlayerMM
+    board = Board.from_game_state(game_state, (last_player, last_move))
+    depth = 5
+    player = PlayerMM(depth, False)
+    move = player.findMove(board)
+    pi = [0.0] * game_state.shape[1]
+    pi[move] = 1.0
+    return {idx: el for idx, el in enumerate(pi)}, None
