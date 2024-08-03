@@ -241,7 +241,7 @@ class MuZeroSearchTree(SearchTree):
     def reanalyze(net, tree, device, shared_storage: SharedStorage, config: MuZeroConfig):
         wandb.init(project=config.wandbd_project_name, name="Reanalyze")
         net = net.to(device)
-        while len(shared_storage.get_buffer()) < 100:
+        while len(shared_storage.get_buffer()) < 10_000:
             time.sleep(5)
         for iter_ in range(config.num_worker_iters):
             data = random.choice(shared_storage.get_buffer())
@@ -252,13 +252,13 @@ class MuZeroSearchTree(SearchTree):
                 net.load_state_dict(shared_storage.get_stable_network_params())
             wandb.log({"reanalyze_iteration": iter_})
             tree = tree.make_fresh_instance()
-            for data_point in data.datapoints[:-1]:
+            for data_point in data.datapoints:
                 if isinstance(data_point.frame, LazyArray):
                     frame = data_point.frame.load_array()
                 else:
                     frame = data_point.frame
 
-                state = th.tensor(frame, device=device).float()
+                state = th.tensor(frame, device=device, dtype=th.float32)
                 pi, (v, _) = tree.search(net, state, data_point.player, device, use_state_directly=True)
                 data_point.v = v
                 data_point.pi = [x for x in pi.values()]
