@@ -95,6 +95,7 @@ class MuZeroSearchTree(SearchTree):
                 # print(v)
                 break
             # self.game_manager.render()
+            # time.sleep(0.5)
 
         try:
             wandb.log({"Game length": game_length})

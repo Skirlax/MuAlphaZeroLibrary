@@ -1,5 +1,6 @@
 import atexit
 import copy
+import time
 from abc import ABC, abstractmethod
 
 import jpype
@@ -141,6 +142,7 @@ class HumanPlayer(Player):
         self.init_kwargs(kwargs)
 
     def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
+        time.sleep(0.4)
         if self.game_manager.headless:
             raise RuntimeError("Cannot play with a human player in headless mode.")
         move = self.game_manager.get_human_input(board)
@@ -184,6 +186,48 @@ class JavaMinimaxPlayer(Player):
 
     def set_game_manager(self, game_manager):
         self.game_manager = game_manager
+
+class Connect4MinimaxPlayer(Player):
+
+    def __init__(self, game_manager, **kwargs):
+        self.game_manager = game_manager
+        self.name = self.__class__.__name__
+        self.kwargs = kwargs
+        self.init_kwargs(kwargs)
+
+    def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
+        time.sleep(0.4)
+        from mu_alpha_zero.MuZero.MinimaxOpponent.player import PlayerMM
+        from mu_alpha_zero.MuZero.MinimaxOpponent.board import Board
+        bd = Board.from_game_state(board[:,:,0],(1,kwargs["move"]))
+        player = PlayerMM(6, False)
+        move = player.findMove(bd)
+        return move
+
+
+    def make_fresh_instance(self):
+        return Connect4MinimaxPlayer(self.game_manager.make_fresh_instance(), **self.kwargs)
+
+    def set_game_manager(self, game_manager):
+        self.game_manager = game_manager
+
+
+class NoopPlayer(Player):
+
+    def __init__(self, game_manager, **kwargs):
+        self.game_manager = game_manager
+        self.name = self.__class__.__name__
+        self.kwargs = kwargs
+        self.init_kwargs(kwargs)
+
+    def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
+        return None
+
+    def make_fresh_instance(self):
+        pass
+
+    def set_game_manager(self, game_manager):
+        pass
 
 
 class MinimaxPlayer(Player):
