@@ -75,17 +75,17 @@ class Trainer:
             conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
         network = net_class.make_from_config(conf, hook_manager=hook_manager).to(device)
         opponent_network = network.make_fresh_instance().to(device)
-        optimizer = th.optim.Adam(network.parameters(), lr=lr)
+        optimizer = th.optim.Adam(network.parameters(), lr=conf.lr)
         # opponent_network = build_net_from_args(args, device)
         net_player = net_player_class(game.make_fresh_instance(),
                                       **{"network": network, "monte_carlo_tree_search": tree})
         network.load_state_dict(network_dict)
         opponent_network.load_state_dict(opponent_dict)
 
-        try:
-            optimizer.load_state_dict(optimizer_dict)
-        except ValueError:
-            print("Couldn't load optimizer dict.")
+        # try:
+        #     optimizer.load_state_dict(optimizer_dict)
+        # except ValueError:
+        #     print("Couldn't load optimizer dict.")
         if memory is None:
             memory = mem
         return cls(network, game, optimizer, memory, conf, checkpointer, tree, net_player, hook_manager, device,
