@@ -61,13 +61,15 @@ class Trainer:
                         net_player_class: Type[Player], checkpoint_path: str, checkpoint_dir: str, game: AlphaZeroGame,
                         headless: bool = True, hook_manager: HookManager or None = None,
                         checkpointer_verbose: bool = False, arena_override: GeneralArena or None = None,
-                        mem: GeneralMemoryBuffer or None = None):
+                        mem: GeneralMemoryBuffer or None = None,log_dir_override: str = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         checkpointer = CheckPointer(checkpoint_dir, verbose=checkpointer_verbose)
 
         network_dict, optimizer_dict, memory, lr, args, opponent_dict = checkpointer.load_checkpoint_from_path(
             checkpoint_path)
         conf = Config.from_args(args)
+        if log_dir_override is not None:
+            conf.log_dir = log_dir_override
         tree = tree_class(game.make_fresh_instance(), conf, hook_manager=hook_manager)
         if "fc1.weight" in network_dict:
             conf.az_net_linear_input_size = network_dict["fc1.weight"].shape[1]
@@ -201,16 +203,16 @@ class Trainer:
                      args=(shared_storage, self.muzero_alphazero_config, self.checkpointer, self.logger))
 
         p2.start()
-        # p3 = Process(target=self.mcts.reanalyze, args=(
-        #     self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
-        #     self.muzero_alphazero_config))
-        # p3.start()
+        p3 = Process(target=self.mcts.reanalyze, args=(
+            self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
+            self.muzero_alphazero_config))
+        p3.start()
         self.logger.log("Successfully started continuous weight update process (2/2).")
         # p3.start()
         # self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
 
         p2.join()
-        # p3.join()
+        p3.join()
         # p3.join()
         pool.close()
         pool.join()
