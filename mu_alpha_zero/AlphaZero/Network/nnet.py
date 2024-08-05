@@ -305,8 +305,12 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                  logger: Logger or None):
         wandb.init(project=alpha_zero_config.wandbd_project_name,name="Continuous Weight Update")
         self.train()
+        while shared_storage.train_length() < 200:
+            time.sleep(5)
         for iter_ in range(alpha_zero_config.num_worker_iters):
+            print(iter_)
             if not shared_storage.get_was_pitted():
+                print("Waiting for pitting to finish")
                 time.sleep(5)
                 continue
             self.load_state_dict(shared_storage.get_stable_network_params())
