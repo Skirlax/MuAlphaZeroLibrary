@@ -289,6 +289,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
         pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
         v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
+        masks = th.tensor(np.array(masks), dtype=th.float32, device=device).unsqueeze(1)
         pi_pred, v_pred = self.forward(states, muzero=muzero_alphazero_config.muzero)
         v_loss = mse_loss(v_pred, v)
         pi_loss = self.pi_loss(pi_pred, pi, masks, device)
