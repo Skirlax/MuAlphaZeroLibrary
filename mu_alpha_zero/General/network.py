@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from mu_alpha_zero.General.az_game import AlphaZeroGame
+
 from mu_alpha_zero.General.mz_game import MuZeroGame
 
 from mu_alpha_zero.Hooks.hook_manager import HookManager
@@ -17,7 +19,7 @@ class GeneralNetwork(ABC):
 
     @classmethod
     @abstractmethod
-    def make_from_config(cls, config: Config, hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config, game_manager: AlphaZeroGame,hook_manager: HookManager or None = None):
         """
         Builds the network from the given arguments dict.
         """
