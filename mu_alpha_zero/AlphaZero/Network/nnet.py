@@ -290,6 +290,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         states, pi, v, _, masks = experience_batch[0], experience_batch[1], experience_batch[2], experience_batch[3], \
             experience_batch[4]
+        pi = [x.values() for x in pi]
         # game = [[y.frame,y.pi,y.v,y.action_mask] for y in experience_batch.datapoints]
         # states, pi, v, masks = zip(*game)
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
