@@ -94,12 +94,10 @@ class MemBuffer(GeneralMemoryBuffer):
             random.shuffle(self.buffer)
 
     def batch(self, batch_size: int, is_eval: bool = False):
-        batched_buffer = []
         buf = self.buffer if not is_eval else self.eval_buffer
-        for idx in range(batch_size):
-            batched_buffer.append(random.choice(buf))
+        batched = np.random.choice(np.arange(len(buf)), size=min(len(buf),batch_size), replace=False).flatten().tolist()
+        return batched
 
-        return batched_buffer
 
     def __call__(self, batch_size, is_eval: bool = False) -> list:
         return self.batch(batch_size, is_eval=is_eval)
