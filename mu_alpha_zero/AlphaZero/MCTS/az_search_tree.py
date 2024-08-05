@@ -127,7 +127,7 @@ class McSearchTree(SearchTree):
                 path.append(current_node)
 
             # leaf node reached
-            next_state = self.game_manager.get_next_state(current_node.parent().state,
+            next_state = self.game_manager.get_next_state(current_node.parent().state.copy(),
                                                           self.game_manager.network_to_board(action),
                                                           current_node.parent().current_player)
             next_state_ = self.game_manager.get_canonical_form(next_state, current_node.current_player)
