@@ -97,7 +97,9 @@ class MemBuffer(GeneralMemoryBuffer):
         buf = self.buffer if not is_eval else self.eval_buffer
         indeces = np.random.choice(np.arange(len(buf)), size=min(len(buf), batch_size),
                                    replace=False).flatten().tolist()
-        return [buf[i] for i in indeces]
+        items = [buf[i] for i in indeces]
+        batch = [[items[x][i] for i in range(len(items))] for x in range(len(items[0]))]
+        return batch
 
     def __call__(self, batch_size, is_eval: bool = False) -> list:
         return self.batch(batch_size, is_eval=is_eval)
