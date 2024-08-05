@@ -251,6 +251,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                         support_size=config.support_size, latent_size=config.net_latent_size)
 
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
+        if memory_buffer.train_length() <= 1:
+            return 0, []
         losses = []
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
@@ -271,6 +273,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         return sum(losses) / len(losses), losses
 
     def eval_net(self, memory_buffer, muzero_alphazero_config: Config) -> None:
+        if memory_buffer.eval_length() <= 1:
+            return
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
