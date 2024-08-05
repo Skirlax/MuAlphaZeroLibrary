@@ -71,9 +71,9 @@ class McSearchTree(SearchTree):
                     results["-1"] += 1
 
                 if -1 < r < 1:
-                    game_history = [(x[0], x[1], r, x[3]) for x in game_history]
+                    game_history = [(x[0], x[1], r, x[3],x[4]) for x in game_history]
                 else:
-                    game_history = [(x[0], x[1], r * current_player * x[3], x[3]) for x in game_history]
+                    game_history = [(x[0], x[1], r * current_player * x[3], x[3],x[4]) for x in game_history]
                 break
             current_player *= -1
 
