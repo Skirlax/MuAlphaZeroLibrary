@@ -7,7 +7,6 @@ import torch as th
 from IPython import get_ipython
 
 
-from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet
 from mu_alpha_zero.AlphaZero.constants import SAMPLE_AZ_ARGS as test_args
 from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.config import Config, AlphaZeroConfig
@@ -175,15 +174,15 @@ def az_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, 
     study.optimize(objective, n_trials=n_trials)
 
 
-def build_net_from_config(muzero_config: Config, device) -> AlphaZeroNet:
+def build_net_from_config(muzero_config: Config, device):
+    from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet
     network = AlphaZeroNet(muzero_config.num_net_in_channels, muzero_config.num_net_channels,
                            muzero_config.net_dropout, muzero_config.net_action_size,
                            muzero_config.az_net_linear_input_size)
     return network.to(device)
 
 
-def build_all_from_config(muzero_alphazero_config: Config, device, lr=None, buffer_size=None) -> tuple[
-    AlphaZeroNet, th.optim.Optimizer, MemBuffer]:
+def build_all_from_config(muzero_alphazero_config: Config, device, lr=None, buffer_size=None):
     if lr is None:
         lr = muzero_alphazero_config.lr
     if buffer_size is None:
