@@ -204,7 +204,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         pol_h_output = self.policy_state_head(x)
         if self.is_representation:
             return pol_h_output
-        if not return_support:
+        if not return_support and self.muzero:
             from mu_alpha_zero.MuZero.utils import invert_scale_reward_value
             # multiply arange by softmax probabilities
             val_h_output = th.exp(val_h_output)
