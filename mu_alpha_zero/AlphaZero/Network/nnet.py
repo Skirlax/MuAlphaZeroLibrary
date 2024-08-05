@@ -303,8 +303,6 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                  logger: Logger or None):
         wandb.init(project=alpha_zero_config.wandbd_project_name,name="Continuous Weight Update")
         self.train()
-        alpha_zero_config.epochs = 1
-        alpha_zero_config.eval_epochs = 1
         for iter_ in range(alpha_zero_config.num_worker_iters):
             if not shared_storage.get_was_pitted():
                 time.sleep(5)
