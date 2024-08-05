@@ -43,7 +43,6 @@ class AlphaZeroGame(ABC):
         """
         pass
 
-    @staticmethod
     @abstractmethod
     def get_canonical_form(self, board: np.ndarray, player: int) -> np.ndarray:
         """
