@@ -1,6 +1,7 @@
 import atexit
 import glob
 import os
+import time
 
 import numpy as np
 import torch as th
@@ -10,12 +11,15 @@ import wandb
 from torch.nn.functional import mse_loss
 from torch.nn.modules.module import T
 
+from mu_alpha_zero.AlphaZero.checkpointer import CheckPointer
+from mu_alpha_zero.AlphaZero.logger import Logger
 from mu_alpha_zero.General.network import GeneralAlphZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig, Config
 from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.MuZero.utils import invert_scale_reward_value
+from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
 class AlphaZeroNet(nn.Module, GeneralAlphZeroNetwork):
@@ -250,7 +254,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
-        memory_buffer.shuffle()
+        # memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
             for experience_batch in memory_buffer(muzero_alphazero_config.batch_size):
                 if len(experience_batch) <= 1:
@@ -271,7 +275,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
-        memory_buffer.shuffle(is_eval=True)
+        # memory_buffer.shuffle(is_eval=True)
         for epoch in range(muzero_alphazero_config.eval_epochs):
             for experience_batch in memory_buffer(muzero_alphazero_config.batch_size, is_eval=True):
                 if len(experience_batch) <= 1:
@@ -293,6 +297,22 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         pi_loss = self.pi_loss(pi_pred, pi, masks, device)
         loss = v_loss + pi_loss
         return loss, v_loss, pi_loss
+
+    def continuous_weight_update(self, shared_storage: SharedStorage, alpha_zero_config: AlphaZeroConfig,
+                                 checkpointer: CheckPointer or None,
+                                 logger: Logger or None):
+        wandb.init(project=alpha_zero_config.wandbd_project_name,name="Continuous Weight Update")
+        self.train()
+        alpha_zero_config.epochs = 1
+        alpha_zero_config.eval_epochs = 1
+        for iter_ in range(alpha_zero_config.num_worker_iters):
+            if not shared_storage.get_was_pitted():
+                time.sleep(5)
+                continue
+            self.load_state_dict(shared_storage.get_stable_network_params())
+            avg_iter_losses = self.train_net(shared_storage,alpha_zero_config)
+            shared_storage.set_experimental_network_params(self.state_dict())
+            shared_storage.set_was_pitted(False)
 
 
 class OriginalAlphaZeroBlock(th.nn.Module):

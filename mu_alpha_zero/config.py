@@ -161,3 +161,4 @@ class AlphaZeroConfig(Config):
     log_dir: str = None
     pushbullet_token: str = None
     muzero: bool = False
+    augment_with_symmetries: bool = True

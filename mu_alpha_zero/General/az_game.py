@@ -117,3 +117,10 @@ class AlphaZeroGame(ABC):
         Returns a list of invalid actions for the given player.
         """
         pass
+
+    @abstractmethod
+    def network_to_board(self,move: int):
+        """
+        Return "unraveled" move to the given state, if required.
+        """
+        pass

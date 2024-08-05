@@ -96,9 +96,8 @@ class MemBuffer(GeneralMemoryBuffer):
     def batch(self, batch_size: int, is_eval: bool = False):
         batched_buffer = []
         buf = self.buffer if not is_eval else self.eval_buffer
-        buffer_len = len(buf)
-        for idx in range(0, buffer_len, batch_size):
-            batched_buffer.append(list(buf)[idx:min(idx + batch_size, buffer_len)])
+        for idx in range(batch_size):
+            batched_buffer.append(random.choice(buf))
 
         return batched_buffer
 
@@ -254,8 +253,8 @@ class SingleGameData:
 
 
 class DataPoint:
-    def __init__(self, pi: dict, v: float, reward: float, move: int, player: int, frame: np.ndarray or None,
-                 action_mask: np.ndarray):
+    def __init__(self, pi: dict, v: float, reward: float or None, move: int or None, player: int, frame: np.ndarray or None,
+                 action_mask: np.ndarray or None):
         self.pi = [x for x in pi.values()] if isinstance(pi, dict) else pi
         self.v = v
         self.reward = reward

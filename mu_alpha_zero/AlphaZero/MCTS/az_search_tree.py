@@ -1,5 +1,10 @@
 import copy
-from multiprocessing import Pool
+
+import wandb
+from multiprocess import set_start_method
+
+set_start_method("spawn", force=True)
+from multiprocess.pool import Pool
 
 import numpy as np
 import torch as th
@@ -13,6 +18,8 @@ from mu_alpha_zero.General.search_tree import SearchTree
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig
+from mu_alpha_zero.mem_buffer import SingleGameData, DataPoint
+from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
 class McSearchTree(SearchTree):
@@ -23,7 +30,7 @@ class McSearchTree(SearchTree):
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.root_node = None
 
-    def play_one_game(self, network: GeneralNetwork, device: th.device) -> tuple[list, int, int, int]:
+    def play_one_game(self, network: GeneralNetwork, device: th.device) -> tuple[SingleGameData, int, int, int]:
         """
         Plays a single game using the Monte Carlo Tree Search algorithm.
 
@@ -46,7 +53,7 @@ class McSearchTree(SearchTree):
         results = {"1": 0, "-1": 0, "D": 0}
         while True:
             pi, _ = self.search(network, state, current_player, device)
-            move = self.game_manager.select_move(pi,tau=self.alpha_zero_config.tau)
+            move = self.game_manager.select_move(pi, tau=self.alpha_zero_config.tau)
             # self.step_root([move])
             self.step_root(None)
             # pi = [x for x in pi.values()]
@@ -69,10 +76,15 @@ class McSearchTree(SearchTree):
             current_player *= -1
 
         # game_history = make_channels(game_history)
-        game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
+        if self.alpha_zero_config.augment_with_symmetries:
+            game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
+        game = SingleGameData()
+        for state, pi, v, player in game_history:
+            data_point = DataPoint(pi, v, None, None, player, state, None)
+            game.add_data_point(data_point)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
-        return game_history, results["1"], results["-1"], results["D"]
+        return game, results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
         """
@@ -201,6 +213,17 @@ class McSearchTree(SearchTree):
                 memory.add_list(result[3])
         return wins_p1, wins_p2, draws
 
+    @staticmethod
+    def start_continuous_self_play(nets: list, trees: list, shared_storage: SharedStorage, device: th.device,
+                                   config: AlphaZeroConfig, num_jobs: int, num_worker_iters: int) -> Pool:
+        pool = Pool(num_jobs)
+        for i in range(num_jobs):
+            pool.apply_async(c_p_self_play, args=(
+                nets[i], trees[i], copy.deepcopy(device), config, i, shared_storage, num_worker_iters
+            ))
+
+        return pool
+
 
 def p_self_play(net, tree, device, num_games, memory):
     wins_p1, wins_p2, draws = 0, 0, 0
@@ -217,3 +240,23 @@ def p_self_play(net, tree, device, num_games, memory):
     if memory is None:
         return wins_p1, wins_p2, draws, data
     return wins_p1, wins_p2, draws
+
+
+def c_p_self_play(net, tree, device, config: AlphaZeroConfig, p_num: int, shared_storage: SharedStorage,
+                  num_worker_iters: int):
+    if p_num == 0:
+        wandb.init(project=config.wandbd_project_name, name="Self play")
+
+    net = net.to(device)
+    for iter_ in range(num_worker_iters):
+        # if shared_storage.get_experimental_network_params() is None:
+        #     params = shared_storage.get_stable_network_params()
+        # else:
+        #     params = shared_storage.get_experimental_network_params()
+        params = shared_storage.get_stable_network_params()
+        net.load_state_dict(params)
+        net.eval()
+        game_results, wins_p1, wins_p2, draws = tree.play_one_game(net, device)
+        shared_storage.add_list(game_results)
+        if p_num == 0:
+            wandb.log({"Iteration": iter_, "Wins p1": wins_p1, "Wins p2": wins_p2, "Draws": draws})

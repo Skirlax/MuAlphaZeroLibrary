@@ -66,6 +66,10 @@ class SharedStorage:
         with self.lock:
             return self.mem_buffer.reset_priorities()
 
+    def __call__(self, *args, **kwargs):
+        with self.lock:
+            return self.mem_buffer.batch(*args, **kwargs)
+
 
 class SharedStorageManager(BaseManager):
     pass
