@@ -257,7 +257,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                            weight_decay=muzero_alphazero_config.l2)
         # memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
-            for experience_batch in memory_buffer(muzero_alphazero_config.batch_size):
+            for experience_batch in memory_buffer.batch(muzero_alphazero_config.batch_size):
                 loss, v_loss, pi_loss = self.calculate_loss(experience_batch, muzero_alphazero_config)
                 losses.append(loss.item())
                 wandb.log({"combined_loss": loss.item(), "loss_v": v_loss.item(), "loss_pi": pi_loss.item()})
@@ -276,7 +276,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                            weight_decay=muzero_alphazero_config.l2)
         # memory_buffer.shuffle(is_eval=True)
         for epoch in range(muzero_alphazero_config.eval_epochs):
-            for experience_batch in memory_buffer(muzero_alphazero_config.batch_size, is_eval=True):
+            for experience_batch in memory_buffer.batch(muzero_alphazero_config.batch_size, is_eval=True):
                 loss, v_loss, pi_loss = self.calculate_loss(experience_batch, muzero_alphazero_config)
                 wandb.log(
                     {"eval_combined_loss": loss.item(), "eval_loss_v": v_loss.item(), "eval_loss_pi": pi_loss.item()})
