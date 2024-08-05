@@ -110,8 +110,7 @@ class McSearchTree(SearchTree):
             [self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size).reshape(1,
                                                                                                        -1)  # add noise to encourage the exploration of even the moves with probability close to 0.
         probabilities = mask_invalid_actions(probabilities,
-                                             self.game_manager.get_invalid_actions(state.copy(), current_player),
-                                             self.game_manager.board_size)
+                                             self.game_manager.get_invalid_actions(state.copy(), current_player))
         probabilities = probabilities.flatten().tolist()
         self.root_node.expand(state, probabilities)
         for simulation in range(num_simulations):
@@ -137,8 +136,7 @@ class McSearchTree(SearchTree):
                 next_state_ = th.tensor(next_state_, dtype=th.float32, device=device).unsqueeze(0)
                 probabilities, v = network.predict(next_state_, muzero=False)
                 probabilities = mask_invalid_actions(probabilities, self.game_manager.get_invalid_actions(next_state,
-                                                                                                          current_node.current_player),
-                                                     self.game_manager.board_size)
+                                                                                                          current_node.current_player))
                 v = v.flatten().tolist()[0]
                 probabilities = probabilities.flatten().tolist()
                 current_node.expand(next_state, probabilities)

@@ -67,24 +67,28 @@ def make_channels_from_single(state: np.ndarray):
     return np.stack([state, player_one_state, player_minus_one_state, empty_state], axis=0)
 
 
-def mask_invalid_actions(probabilities: np.ndarray, mask: np.ndarray, board_size) -> np.ndarray:
-    to_print = ""  # for debugging
-    # mask = np.where(observations != 0, -5, observations)
-    # mask = np.where(mask == 0, 1, mask)
-    # mask = np.where(mask == -5, 0, mask)
-    valids = probabilities.reshape(-1, board_size ** 2) * mask.reshape(-1, board_size ** 2)
+def mask_invalid_actions(probabilities: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    mask = mask.reshape(probabilities.shape)
+    valids = probabilities * mask
     valids_sum = valids.sum()
-    if valids_sum == 0:
-        # When no valid moves are available (shouldn't happen) sum of valids is 0, making the returned valids an array
-        # of nan's (result of division by zero). In this case, we create a uniform probability distribution.
-        to_print += f"Sum of valid probabilities is 0. Creating a uniform probability...\nMask:\n{mask}"
-        valids = np.full(valids.shape, 1.0 / np.prod(valids.shape))
-    else:
-        valids = valids / valids_sum  # normalize
-
-    if len(to_print) > 0:
-        print(to_print, file=open("masking_message.txt", "w"))
-    return valids
+    return valids / valids_sum
+    # to_print = ""  # for debugging
+    # # mask = np.where(observations != 0, -5, observations)
+    # # mask = np.where(mask == 0, 1, mask)
+    # # mask = np.where(mask == -5, 0, mask)
+    # valids = probabilities.reshape(-1, board_size ** 2) * mask.reshape(-1, board_size ** 2)
+    # valids_sum = valids.sum()
+    # if valids_sum == 0:
+    #     # When no valid moves are available (shouldn't happen) sum of valids is 0, making the returned valids an array
+    #     # of nan's (result of division by zero). In this case, we create a uniform probability distribution.
+    #     to_print += f"Sum of valid probabilities is 0. Creating a uniform probability...\nMask:\n{mask}"
+    #     valids = np.full(valids.shape, 1.0 / np.prod(valids.shape))
+    # else:
+    #     valids = valids / valids_sum  # normalize
+    #
+    # if len(to_print) > 0:
+    #     print(to_print, file=open("masking_message.txt", "w"))
+    # return valids
 
 
 def mask_invalid_actions_batch(states: th.tensor) -> th.tensor:
