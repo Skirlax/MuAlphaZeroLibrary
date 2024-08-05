@@ -2,6 +2,7 @@ import atexit
 import glob
 import os
 import time
+from itertools import chain
 
 import numpy as np
 import torch as th
@@ -287,12 +288,11 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
     def calculate_loss(self, experience_batch, muzero_alphazero_config):
         from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        states, pi, v = zip(*experience_batch)
+        states, pi, v,masks = list(chain.from_iterable([[[y.frame,y.pi,y.v,y.action_mask] for y in x] for x in experience_batch]))
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
         pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
         v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
         pi_pred, v_pred = self.forward(states, muzero=muzero_alphazero_config.muzero)
-        masks = mask_invalid_actions_batch(states)
         v_loss = mse_loss(v_pred, v)
         pi_loss = self.pi_loss(pi_pred, pi, masks, device)
         loss = v_loss + pi_loss
@@ -311,6 +311,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
             avg_iter_losses = self.train_net(shared_storage,alpha_zero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
             shared_storage.set_was_pitted(False)
+            if iter_ % alpha_zero_config.eval_interval == 0 and iter_ != 0:
+                self.eval_net(shared_storage, alpha_zero_config)
 
 
 class OriginalAlphaZeroBlock(th.nn.Module):

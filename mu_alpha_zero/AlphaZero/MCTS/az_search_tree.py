@@ -80,7 +80,8 @@ class McSearchTree(SearchTree):
             game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
         game = SingleGameData()
         for state, pi, v, player in game_history:
-            data_point = DataPoint(pi, v, None, None, player, state, None)
+            data_point = DataPoint(pi, v, None, None, player, state,
+                                   self.game_manager.get_invalid_actions(state, player))
             game.add_data_point(data_point)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))

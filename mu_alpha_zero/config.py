@@ -20,6 +20,7 @@ class Config:
     state_linear_layers = 10
     pi_linear_layers = 10
     v_linear_layers = 10
+    eval_interval: int = 100
     lr_scheduler: torch.optim.lr_scheduler = None
     lr_scheduler_kwargs: dict = None
     linear_head_hidden_size: int = 256
