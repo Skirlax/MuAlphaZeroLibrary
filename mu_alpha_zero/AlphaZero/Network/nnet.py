@@ -288,7 +288,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
     def calculate_loss(self, experience_batch, muzero_alphazero_config):
         from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        states, pi, v, _, masks = zip(*experience_batch)
+        states, pi, v, _, masks = experience_batch[0], experience_batch[1], experience_batch[2], experience_batch[3], \
+            experience_batch[4]
         # game = [[y.frame,y.pi,y.v,y.action_mask] for y in experience_batch.datapoints]
         # states, pi, v, masks = zip(*game)
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
