@@ -180,7 +180,7 @@ class Trainer:
         self.logger.pushbullet_log(LoggingMessageTemplates.TRAINING_END_PSB())
         return self.network
 
-    def train_parallel(self):
+    def train_parallel(self,use_reanalyze: bool = False, use_pitting: bool = False):
         self.muzero_alphazero_config.recalculate_p_on_every_call = True
         self.opponent_network.to(self.device)
         self.logger.log(LoggingMessageTemplates.TRAINING_START(self.muzero_alphazero_config.num_iters))
@@ -203,16 +203,32 @@ class Trainer:
                      args=(shared_storage, self.muzero_alphazero_config, self.checkpointer, self.logger))
 
         p2.start()
-        p3 = Process(target=self.mcts.reanalyze, args=(
-            self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
-            self.muzero_alphazero_config))
-        p3.start()
-        self.logger.log("Successfully started continuous weight update process (2/2).")
+        if use_reanalyze:
+            p3 = Process(target=self.mcts.reanalyze, args=(
+                self.network.make_fresh_instance(), self.mcts.make_fresh_instance(), self.device, shared_storage,
+                self.muzero_alphazero_config))
+            p3.start()
+        if use_pitting:
+            p4 = Process(target=self.arena.continuous_pit,args=(
+                self.net_player.make_fresh_instance(),
+                self.net_player.make_fresh_instance(),
+                RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
+                self.muzero_alphazero_config.num_pit_games,
+                self.muzero_alphazero_config.num_simulations,
+                shared_storage,
+                self.checkpointer,
+                False,
+                1
+            ))
+            p4.start()
         # p3.start()
         # self.logger.log("Successfully started pitting process (3/3). MuZero is now training...")
 
         p2.join()
-        p3.join()
+        if use_reanalyze:
+            p3.join()
+        if use_pitting:
+            p4.join()
         # p3.join()
         pool.close()
         pool.join()

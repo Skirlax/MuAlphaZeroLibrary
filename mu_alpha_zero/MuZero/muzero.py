@@ -89,7 +89,7 @@ class MuZero:
                                                headless=headless,
                                                hook_manager=hook_manager,
                                                checkpointer_verbose=checkpointer_verbose,
-                                               mem=memory,log_dir_override=logdir_override)
+                                               mem=memory, log_dir_override=logdir_override)
         self.net = self.trainer.get_network()
         self.tree = self.trainer.get_tree()
         self.args = self.trainer.get_args()
@@ -98,9 +98,9 @@ class MuZero:
         net_not_none(self.net)
         self.trainer.train()
 
-    def train_parallel(self):
+    def train_parallel(self, use_reanalyze: bool):
         net_not_none(self.net)
-        self.trainer.train_parallel()
+        self.trainer.train_parallel(use_reanalyze=use_reanalyze, use_pitting=False)
 
     def predict(self, x: np.ndarray, tau: float = 0) -> int:
         net_not_none(self.net)

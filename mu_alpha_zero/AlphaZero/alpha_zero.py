@@ -52,6 +52,10 @@ class AlphaZero:
         net_not_none(self.net)
         self.trainer.train()
 
+    def train_parallel(self, use_pitting: bool):
+        net_not_none(self.net)
+        self.trainer.train_parallel(False, use_pitting)
+
     def predict(self, x: np.ndarray, tau: float = 0) -> int:
         net_not_none(self.net)
         assert x.shape == (self.args["board_size"], self.args["board_size"], self.args[
