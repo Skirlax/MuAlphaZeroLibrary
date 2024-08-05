@@ -19,7 +19,6 @@ from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.config import AlphaZeroConfig, Config
 from mu_alpha_zero.mem_buffer import MemBuffer
-from mu_alpha_zero.MuZero.utils import invert_scale_reward_value
 from mu_alpha_zero.shared_storage_manager import SharedStorage
 
 
@@ -206,6 +205,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         if self.is_representation:
             return pol_h_output
         if not return_support:
+            from mu_alpha_zero.MuZero.utils import invert_scale_reward_value
             # multiply arange by softmax probabilities
             val_h_output = th.exp(val_h_output)
             support_range = th.arange(-self.support_size, self.support_size + 1, 1, dtype=th.float32,
