@@ -288,8 +288,9 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
     def calculate_loss(self, experience_batch, muzero_alphazero_config):
         from mu_alpha_zero.AlphaZero.utils import mask_invalid_actions_batch
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
-        game = [[y.frame,y.pi,y.v,y.action_mask] for y in experience_batch.datapoints]
-        states, pi, v, masks = zip(*game)
+        states, pi, v, _, masks = zip(*experience_batch)
+        # game = [[y.frame,y.pi,y.v,y.action_mask] for y in experience_batch.datapoints]
+        # states, pi, v, masks = zip(*game)
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
         pi = th.tensor(np.array(pi), dtype=th.float32, device=device)
         v = th.tensor(v, dtype=th.float32, device=device).unsqueeze(1)
@@ -303,7 +304,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
     def continuous_weight_update(self, shared_storage: SharedStorage, alpha_zero_config: AlphaZeroConfig,
                                  checkpointer: CheckPointer or None,
                                  logger: Logger or None):
-        wandb.init(project=alpha_zero_config.wandbd_project_name,name="Continuous Weight Update")
+        wandb.init(project=alpha_zero_config.wandbd_project_name, name="Continuous Weight Update")
         self.train()
         while shared_storage.train_length() < 200:
             time.sleep(5)
@@ -314,7 +315,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                 time.sleep(5)
                 continue
             self.load_state_dict(shared_storage.get_stable_network_params())
-            avg_iter_losses = self.train_net(shared_storage,alpha_zero_config)
+            avg_iter_losses = self.train_net(shared_storage, alpha_zero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
             shared_storage.set_was_pitted(False)
             if iter_ % alpha_zero_config.eval_interval == 0 and iter_ != 0:

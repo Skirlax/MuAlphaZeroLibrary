@@ -1,4 +1,5 @@
 import copy
+from typing import Tuple, List, Any, Dict
 
 import wandb
 from multiprocess import set_start_method
@@ -30,7 +31,8 @@ class McSearchTree(SearchTree):
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.root_node = None
 
-    def play_one_game(self, network: GeneralNetwork, device: th.device) -> tuple[SingleGameData, int, int, int]:
+    def play_one_game(self, network: GeneralNetwork, device: th.device) -> tuple[
+        list | list[tuple[int | Any, Any, float, int]], int, int, int]:
         """
         Plays a single game using the Monte Carlo Tree Search algorithm.
 
@@ -57,7 +59,7 @@ class McSearchTree(SearchTree):
             # self.step_root([move])
             self.step_root(None)
             # pi = [x for x in pi.values()]
-            game_history.append((state * current_player, pi, None, current_player))
+            game_history.append((state * current_player, pi, None, current_player,self.game_manager.get_invalid_actions(state, current_player)))
             state = self.game_manager.get_next_state(state, self.game_manager.network_to_board(move), current_player)
             r = self.game_manager.game_result(current_player, state)
             if r is not None:
@@ -78,14 +80,9 @@ class McSearchTree(SearchTree):
         # game_history = make_channels(game_history)
         if self.alpha_zero_config.augment_with_symmetries:
             game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
-        game = SingleGameData()
-        for state, pi, v, player in game_history:
-            data_point = DataPoint(pi, v, None, None, player, state,
-                                   self.game_manager.get_invalid_actions(state, player))
-            game.add_data_point(data_point)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
-        return [game], results["1"], results["-1"], results["D"]
+        return game_history, results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
         """
