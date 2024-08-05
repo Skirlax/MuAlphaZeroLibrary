@@ -85,7 +85,7 @@ class McSearchTree(SearchTree):
             game.add_data_point(data_point)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
-        return game, results["1"], results["-1"], results["D"]
+        return [game], results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
         """
