@@ -66,8 +66,12 @@ class Arena(GeneralArena):
             else:
                 state = self.game_manager.reset(player=current_player)
             if override_player_with_returned_state:
-                current_player = int(state[:, :, -1][0][0])
-                kwargs["current_player"] = current_player
+                if self.alpha_zero_config.arena_running_muzero:
+                    current_player = int(state[:, :, -1][0][0])
+                    kwargs["current_player"] = current_player
+                else:
+                    current_player = self.game_manager.current_player
+                    kwargs["current_player"] = current_player
 
             if self.alpha_zero_config.arena_running_muzero and self.alpha_zero_config.enable_frame_buffer:
                 try:
