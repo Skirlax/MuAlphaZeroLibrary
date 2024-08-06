@@ -66,7 +66,7 @@ class Config:
     @staticmethod
     def from_args(args: dict):
         missing = []
-        config = MuZeroConfig()
+        config = MuZeroConfig() if args.get("muzero") else AlphaZeroConfig
         for key, val in args.items():
             if key not in config.to_dict().keys():
                 missing.append(key)
