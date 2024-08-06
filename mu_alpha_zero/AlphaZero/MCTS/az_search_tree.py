@@ -2,10 +2,10 @@ import copy
 from typing import Tuple, List, Any, Dict
 
 import wandb
-from multiprocess import set_start_method
+from multiprocessing import set_start_method
 
 set_start_method("spawn", force=True)
-from multiprocess.pool import Pool
+from multiprocessing import Pool
 
 import numpy as np
 import torch as th
