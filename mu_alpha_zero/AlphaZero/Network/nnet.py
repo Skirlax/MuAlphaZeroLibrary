@@ -238,7 +238,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                         num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
 
     @classmethod
-    def make_from_config(cls, config: Config, game_manager: None, hook_manager: HookManager or None = None):
+    def make_from_config(cls, config: Config, hook_manager: HookManager or None = None):
         return OriginalAlphaZeroNetwork(config.num_net_in_channels, config.num_net_channels, config.net_dropout,
                                         config.net_action_size, config.az_net_linear_input_size,
                                         hook_manager=hook_manager,

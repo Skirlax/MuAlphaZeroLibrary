@@ -28,7 +28,7 @@ class AlphaZero:
     def create_new(self, alpha_zero_config: AlphaZeroConfig, network_class: Type[GeneralNetwork],
                    memory: GeneralMemoryBuffer, headless: bool = True, hook_manager: HookManager or None = None,
                    checkpointer_verbose: bool = False):
-        network = network_class.make_from_config(alpha_zero_config, self.game, hook_manager=hook_manager).to(
+        network = network_class.make_from_config(alpha_zero_config, hook_manager=hook_manager).to(
             self.device)
         tree = McSearchTree(self.game.make_fresh_instance(), alpha_zero_config)
         self.tree = tree
