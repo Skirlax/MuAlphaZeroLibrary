@@ -60,6 +60,31 @@ class RandomPlayer(Player):
         self.game_manager = game_manager
 
 
+class PerfectConnect4Player(Player):
+
+    def __init__(self, game_manager, **kwargs):
+        self.game_manager = game_manager
+        self.name = self.__class__.__name__
+        self.kwargs = kwargs
+        self.init_kwargs(kwargs)
+
+    def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
+        assert kwargs.get("move") is not None, "Please provide the last move made."
+        from mu_alpha_zero.PerfectConnect4Negamax.board import Board
+        from mu_alpha_zero.PerfectConnect4Negamax.solver import solve
+        bd = Board()
+        bd.play(kwargs["move"])
+        move = solve(bd)
+        return move
+
+
+    def make_fresh_instance(self):
+        pass
+
+    def set_game_manager(self, game_manager):
+        pass
+
+
 class NetPlayer(Player):
     def __init__(self, game_manager: TicTacToeGameManager, **kwargs):
         self.game_manager = game_manager
