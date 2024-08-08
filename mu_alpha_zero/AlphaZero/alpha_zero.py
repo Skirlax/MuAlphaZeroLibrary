@@ -41,10 +41,10 @@ class AlphaZero:
 
     def load_checkpoint(self, network_class: Type[GeneralNetwork], path: str, checkpoint_dir: str,
                         headless: bool = True, hook_manager: HookManager or None = None,
-                        checkpointer_verbose: bool = False):
+                        checkpointer_verbose: bool = False, memory: GeneralMemoryBuffer = None):
         self.trainer = Trainer.from_checkpoint(network_class, McSearchTree, NetPlayer, path, checkpoint_dir, self.game,
                                                headless=headless, hook_manager=hook_manager,
-                                               checkpointer_verbose=checkpointer_verbose)
+                                               checkpointer_verbose=checkpointer_verbose, mem=memory)
         self.net = self.trainer.get_network()
         self.tree = self.trainer.get_tree()
         self.args = self.trainer.get_args()
