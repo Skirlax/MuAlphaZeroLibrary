@@ -1,7 +1,7 @@
 import copy
-import multiprocess
+import multiprocessing
 # from pathos.helpers import mp as multiprocess
-from multiprocess.managers import BaseManager
+from multiprocessing.managers import BaseManager
 from mu_alpha_zero.mem_buffer import MemBuffer
 
 
@@ -10,7 +10,7 @@ class SharedStorage:
         self.mem_buffer = mem_buffer
         self.experimental_network_params: dict or None = None
         self.stable_network_params: dict or None = None
-        self.lock = multiprocess.context._default_context.Lock()
+        self.lock = multiprocessing.Lock()
         self.optimizer_state_dict = None
         self.was_pitted = True
 

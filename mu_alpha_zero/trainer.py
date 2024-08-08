@@ -1,5 +1,5 @@
-from multiprocess import set_start_method
-from multiprocess.context import Process
+from multiprocessing import set_start_method
+from multiprocessing import Process
 
 set_start_method("spawn", force=True)
 
