@@ -312,17 +312,14 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.train()
         while shared_storage.train_length() < 200:
             time.sleep(5)
+        params = shared_storage.get_stable_network_params()
+        self.load_state_dict(params)
         for iter_ in range(alpha_zero_config.num_worker_iters):
             # print(iter_)
             # if not shared_storage.get_was_pitted():
             #     print("Waiting for pitting to finish")
             #     time.sleep(5)
             #     continue
-            if shared_storage.get_experimental_network_params() is None:
-                params = shared_storage.get_stable_network_params()
-            else:
-                params = shared_storage.get_experimental_network_params()
-            self.load_state_dict(params)
             avg_iter_losses = self.train_net(shared_storage, alpha_zero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
             # shared_storage.set_was_pitted(False)
