@@ -246,11 +246,11 @@ def c_p_self_play(net, tree, device, config: AlphaZeroConfig, p_num: int, shared
 
     net = net.to(device)
     for iter_ in range(num_worker_iters):
-        # if shared_storage.get_experimental_network_params() is None:
-        #     params = shared_storage.get_stable_network_params()
-        # else:
-        #     params = shared_storage.get_experimental_network_params()
-        params = shared_storage.get_stable_network_params()
+        if shared_storage.get_experimental_network_params() is None:
+            params = shared_storage.get_stable_network_params()
+        else:
+            params = shared_storage.get_experimental_network_params()
+        # params = shared_storage.get_stable_network_params()
         net.load_state_dict(params)
         net.eval()
         game_results, wins_p1, wins_p2, draws = tree.play_one_game(net, device)

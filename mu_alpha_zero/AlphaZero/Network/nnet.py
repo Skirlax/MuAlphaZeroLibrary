@@ -307,19 +307,25 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                  checkpointer: CheckPointer or None,
                                  logger: Logger or None):
         wandb.init(project=alpha_zero_config.wandbd_project_name, name="Continuous Weight Update")
+        alpha_zero_config.epochs = 1
+        alpha_zero_config.eval_epochs = 50
         self.train()
         while shared_storage.train_length() < 200:
             time.sleep(5)
         for iter_ in range(alpha_zero_config.num_worker_iters):
-            print(iter_)
-            if not shared_storage.get_was_pitted():
-                print("Waiting for pitting to finish")
-                time.sleep(5)
-                continue
-            self.load_state_dict(shared_storage.get_stable_network_params())
+            # print(iter_)
+            # if not shared_storage.get_was_pitted():
+            #     print("Waiting for pitting to finish")
+            #     time.sleep(5)
+            #     continue
+            if shared_storage.get_experimental_network_params() is None:
+                params = shared_storage.get_stable_network_params()
+            else:
+                params = shared_storage.get_experimental_network_params()
+            self.load_state_dict(params)
             avg_iter_losses = self.train_net(shared_storage, alpha_zero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
-            shared_storage.set_was_pitted(False)
+            # shared_storage.set_was_pitted(False)
             if iter_ % alpha_zero_config.eval_interval == 0 and iter_ != 0:
                 self.eval_net(shared_storage, alpha_zero_config)
 
