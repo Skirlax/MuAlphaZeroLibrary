@@ -325,6 +325,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
             # shared_storage.set_was_pitted(False)
             if iter_ % alpha_zero_config.eval_interval == 0 and iter_ != 0:
                 self.eval_net(shared_storage, alpha_zero_config)
+                checkpointer.save_checkpoint(self, self, self.optimizer, alpha_zero_config.lr, iter_, alpha_zero_config)
 
 
 class OriginalAlphaZeroBlock(th.nn.Module):
