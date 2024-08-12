@@ -271,7 +271,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                 self.optimizer.step()
                 if self.scheduler is not None:
                     self.scheduler.step()
-                    wandb.log({"lr": self.scheduler.get_last_lr()[0]})
+                    wandb.log({"lr": self.scheduler.get_last_lr()[-1]})
                 self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE,
                                                         args=(experience_batch, loss.item(), epoch))
 
