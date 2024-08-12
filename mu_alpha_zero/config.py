@@ -164,3 +164,4 @@ class AlphaZeroConfig(Config):
     muzero: bool = False
     augment_with_symmetries: bool = True
     add_dirichlet_noise: bool = True
+

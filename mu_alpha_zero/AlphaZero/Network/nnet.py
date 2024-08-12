@@ -175,6 +175,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.linear_head_hidden_size = linear_head_hidden_size
         self.is_atari = is_atari
         self.optimizer = None
+        self.scheduler = None
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
 
         self.conv1 = nn.Conv2d(in_channels, num_channels, 3, padding=1)
@@ -257,6 +258,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
+        if muzero_alphazero_config.lr_scheduler is not None:
+            self.scheduler = muzero_alphazero_config.lr_scheduler(self.optimizer, **muzero_alphazero_config.lr_scheduler_kwargs)
         # memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
             for experience_batch in memory_buffer.batch(muzero_alphazero_config.batch_size):
@@ -266,6 +269,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+                if self.scheduler is not None:
+                    self.scheduler.step()
                 self.hook_manager.process_hook_executes(self, self.train_net.__name__, __file__, HookAt.MIDDLE,
                                                         args=(experience_batch, loss.item(), epoch))
 
