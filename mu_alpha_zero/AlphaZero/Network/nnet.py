@@ -258,7 +258,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         if self.optimizer is None:
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
-        if muzero_alphazero_config.lr_scheduler is not None:
+        if muzero_alphazero_config.lr_scheduler is not None and self.scheduler is None:
             self.scheduler = muzero_alphazero_config.lr_scheduler(self.optimizer, **muzero_alphazero_config.lr_scheduler_kwargs)
         # memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
