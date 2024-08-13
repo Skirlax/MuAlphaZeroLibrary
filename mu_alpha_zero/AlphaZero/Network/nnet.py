@@ -329,6 +329,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
             avg_iter_losses = self.train_net(shared_storage, alpha_zero_config)
             shared_storage.set_experimental_network_params(self.state_dict())
             shared_storage.set_training_iter(iter_)
+            shared_storage.add_combined_loss(avg_iter_losses[0])
             # shared_storage.set_was_pitted(False)
             if iter_ % alpha_zero_config.eval_interval == 0 and iter_ != 0:
                 self.eval_net(shared_storage, alpha_zero_config)
