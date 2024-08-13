@@ -126,7 +126,7 @@ def get_num_horizontal_conv_slides(board_size: int, kernel_size: int) -> int:
 
 
 def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, config: AlphaZeroConfig,
-                               net_class: Type[GeneralNetwork]):
+                               net_class: Type[GeneralNetwork],results_dir: str):
     """
     Performs a hyperparameter search using optuna. This method is meant to be called using the start_jobs.py script.
     For this method to work, a mysql database must be running on the storage address and an optuna study with the
@@ -215,7 +215,7 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
     config.show_tqdm = False
     study = optuna.create_study(study_name="AlphaZeroHyperparameterSearch", direction="minimize")
     study.optimize(objective, n_trials=n_trials)
-    with open("best_params.json", "w") as f:
+    with open(f"{results_dir}/best_params.json", "w") as f:
         json.dump(study.best_params, f)
 
 
