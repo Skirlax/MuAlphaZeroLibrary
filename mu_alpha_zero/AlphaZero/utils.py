@@ -149,9 +149,6 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         for value in target_values:
             setattr(config, value[0], get_function_from_value(value, trial))
 
-        memory = MemBuffer(config.max_buffer_size)
-        az.create_new(config, net_class, memory, headless=True)
-        az.train_parallel(True)
         az.trainer.opponent_network.load_state_dict(az.trainer.network.state_dict())
         shared_storage_manager = SharedStorageManager()
         shared_storage_manager.start()
