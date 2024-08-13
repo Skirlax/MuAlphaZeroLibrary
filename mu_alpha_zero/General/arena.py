@@ -21,8 +21,8 @@ class GeneralArena(ABC):
                        shared_storage: SharedStorage,
                        checkpointer: CheckPointer,
                        one_player: bool = False, start_player: int = 1):
-        wandb.init(project="MZ", name="Arena Pit")
         conf = self.muzero_config if hasattr(self, "muzero_config") else self.alpha_zero_config
+        wandb.init(project=conf.wandbd_project_name, name="Arena Pit")
         player1.network.eval()
         player2.network.eval()
         accept_num = 0
