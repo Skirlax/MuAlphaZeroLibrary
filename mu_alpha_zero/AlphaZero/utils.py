@@ -126,7 +126,7 @@ def get_num_horizontal_conv_slides(board_size: int, kernel_size: int) -> int:
 
 
 def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, config: AlphaZeroConfig,
-                               net_class: Type[GeneralNetwork],results_dir: str):
+                               net_class: Type[GeneralNetwork], results_dir: str, az):
     """
     Performs a hyperparameter search using optuna. This method is meant to be called using the start_jobs.py script.
     For this method to work, a mysql database must be running on the storage address and an optuna study with the
@@ -149,7 +149,6 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         for value in target_values:
             setattr(config, value[0], get_function_from_value(value, trial))
 
-        az = AlphaZero(target_game)
         memory = MemBuffer(config.max_buffer_size)
         az.create_new(config, net_class, memory, headless=True)
         az.train_parallel(True)
@@ -207,7 +206,6 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         del az, memory
         return shared_storage.get_combined_losses()[-1]
 
-    from mu_alpha_zero.AlphaZero.alpha_zero import AlphaZero
     from mu_alpha_zero.shared_storage_manager import SharedStorageManager, SharedStorage
     from mu_alpha_zero.AlphaZero.Arena.players import RandomPlayer
     from mu_alpha_zero.mem_buffer import MemBuffer
