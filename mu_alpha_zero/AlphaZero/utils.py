@@ -194,9 +194,6 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
                 continue
             last_len = len(shared_storage.get_combined_losses())
             trial.report(shared_storage.get_combined_losses()[-1], len(shared_storage.get_combined_losses()))
-
-            if trial.should_prune():
-                raise optuna.TrialPruned()
         pool.terminate()
         p2.terminate()
         p4.terminate()
