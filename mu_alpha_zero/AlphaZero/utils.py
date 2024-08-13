@@ -145,7 +145,7 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         if type(value[1]) == list:
             return trial.suggest_categorical(value[0], value[1])
 
-    def objective(trial: optuna.Trial):
+    def objective(trial: optuna.Trial,az,config):
         for value in target_values:
             setattr(config, value[0], get_function_from_value(value, trial))
 
