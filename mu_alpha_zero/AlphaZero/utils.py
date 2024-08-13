@@ -145,7 +145,7 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         if type(value[1]) == list:
             return trial.suggest_categorical(value[0], value[1])
 
-    def objective(trial: optuna.Trial,az,config):
+    def objective(trial: optuna.Trial):
         for value in target_values:
             setattr(config, value[0], get_function_from_value(value, trial))
 
@@ -199,8 +199,6 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         pool.terminate()
         p2.terminate()
         p4.terminate()
-        del pool, p2, p4
-        del az, memory
         return shared_storage.get_combined_losses()[-1]
 
     from mu_alpha_zero.shared_storage_manager import SharedStorageManager, SharedStorage
