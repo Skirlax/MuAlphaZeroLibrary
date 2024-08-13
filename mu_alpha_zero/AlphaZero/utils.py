@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 import time
-from typing import Type, Literal
+from typing import Type, Literal, Callable
 
 import numpy as np
 import optuna
@@ -126,7 +126,7 @@ def get_num_horizontal_conv_slides(board_size: int, kernel_size: int) -> int:
 
 
 def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, config: AlphaZeroConfig,
-                               net_class: Type[GeneralNetwork], results_dir: str, az):
+                               net_class: Type[GeneralNetwork], results_dir: str, az,refresh_az: Callable):
     """
     Performs a hyperparameter search using optuna. This method is meant to be called using the start_jobs.py script.
     For this method to work, a mysql database must be running on the storage address and an optuna study with the
@@ -146,6 +146,7 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
             return trial.suggest_categorical(value[0], value[1])
 
     def objective(trial: optuna.Trial):
+        refresh_az()
         for value in target_values:
             setattr(config, value[0], get_function_from_value(value, trial))
 
