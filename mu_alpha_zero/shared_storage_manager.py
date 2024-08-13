@@ -14,6 +14,7 @@ class SharedStorage:
         self.optimizer_state_dict = None
         self.was_pitted = True
         self.training_iter = 0
+        self.combined_losses = []
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
@@ -67,7 +68,7 @@ class SharedStorage:
         with self.lock:
             return self.mem_buffer.reset_priorities()
 
-    def batch(self,*args,**kwargs):
+    def batch(self, *args, **kwargs):
         with self.lock:
             return self.mem_buffer.batch(*args, **kwargs)
 
@@ -78,6 +79,14 @@ class SharedStorage:
     def get_training_iter(self):
         with self.lock:
             return self.training_iter
+
+    def add_combined_loss(self, loss: float):
+        with self.lock:
+            self.combined_losses.append(loss)
+
+    def get_combined_losses(self):
+        with self.lock:
+            return self.combined_losses
 
 
 class SharedStorageManager(BaseManager):

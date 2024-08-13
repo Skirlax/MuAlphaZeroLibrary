@@ -1,16 +1,18 @@
 import os
 import shutil
+import time
+from typing import Type, Literal
+
 import numpy as np
 import optuna
 # import pygraphviz
 import torch as th
 from IPython import get_ipython
 
-
 from mu_alpha_zero.AlphaZero.constants import SAMPLE_AZ_ARGS as test_args
 from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.config import Config, AlphaZeroConfig
-
+from mu_alpha_zero.General.network import GeneralNetwork
 
 
 class DotDict(dict):
@@ -122,55 +124,95 @@ def get_num_horizontal_conv_slides(board_size: int, kernel_size: int) -> int:
     return (board_size - kernel_size) + 1
 
 
-def az_optuna_parameter_search(n_trials: int, init_net_path: str, storage: str, study_name: str, game, config: AlphaZeroConfig):
+def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, config: AlphaZeroConfig,
+                               net_class: Type[GeneralNetwork]):
     """
     Performs a hyperparameter search using optuna. This method is meant to be called using the start_jobs.py script.
     For this method to work, a mysql database must be running on the storage address and an optuna study with the
     given name and the 'maximize' direction must exist.
 
     :param n_trials: num of trials to run the search for.
-    :param init_net_path: The path to the initial network to use for all trials.
-    :param storage: The mysql storage string. Specifies what database to use.
-    :param study_name: Name of the study to use.
-    :param game: The game instance to use.
     :param config: The config to use for the search.
     :return:
     """
 
-    def objective(trial):
-        num_mc_simulations = trial.suggest_int("num_mc_simulations", 60, 1600)
-        num_self_play_games = trial.suggest_int("num_self_play_games", 50, 200)
-        num_epochs = trial.suggest_int("num_epochs", 100, 400)
-        lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
-        temp = trial.suggest_float("temp", 0.5, 1.5)
-        arena_temp = trial.suggest_float("arena_temp", 1e-2, 0.5)
-        cpuct = trial.suggest_float("cpuct", 0.5, 5)
-        log_epsilon = trial.suggest_float("log_epsilon", 1e-10, 1e-7, log=True)
+    def get_function_from_value(value, trial: optuna.Trial):
+        if type(value[1]) == int:
+            return trial.suggest_int(value[0], value[1], value[2])
+        if type(value[1]) == float:
+            return trial.suggest_float(value[0], value[1], value[2])
+        if type(value[1]) == list:
+            return trial.suggest_categorical(value[0], value[1])
 
-        trial_config.num_simulations = num_mc_simulations
-        trial_config.self_play_games = num_self_play_games
-        trial_config.epochs = num_epochs
-        trial_config.lr = lr
-        trial_config.tau = temp
-        trial_config.c = cpuct
-        trial_config.arena_tau = arena_temp
-        trial_config.num_iters = 5
-        trial_config.log_epsilon = log_epsilon
-        search_tree = McSearchTree(game.make_fresh_instance(), trial_config)
-        trainer = Trainer.from_state_dict(init_net_path, trial_config, game, search_tree)
-        print(f"Trial {trial.number} started.")
-        trainer.train()
-        win_freq = trainer.get_arena_win_frequencies_mean()
-        trial.report(win_freq, trial.number)
-        print(f"Trial {trial.number} finished with win freq {win_freq}.")
-        del trainer
-        return win_freq
+    def objective(trial: optuna.Trial):
+        for value in target_values:
+            setattr(config, value[0], get_function_from_value(value, trial))
 
-    from mu_alpha_zero.trainer import Trainer  # import here to avoid circular imports
-    from mu_alpha_zero.AlphaZero.MCTS.az_search_tree import McSearchTree
-    trial_config = config
-    trial_config.show_tqdm = False
-    study = optuna.load_study(study_name=study_name, storage=storage)
+        az = AlphaZero(target_game)
+        memory = MemBuffer(config.max_buffer_size)
+        az.create_new(config, net_class, memory, headless=True)
+        az.train_parallel(True)
+        az.trainer.opponent_network.load_state_dict(az.trainer.network.state_dict())
+        shared_storage_manager = SharedStorageManager()
+        shared_storage_manager.start()
+        mem = shared_storage_manager.MemBuffer(az.trainer.memory.max_size, az.trainer.memory.disk,
+                                               az.trainer.memory.full_disk,
+                                               az.trainer.memory.dir_path, hook_manager=az.trainer.memory.hook_manager)
+        shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
+        shared_storage.set_stable_network_params(az.trainer.network.state_dict())
+        pool = az.trainer.mcts.start_continuous_self_play(
+            az.trainer.make_n_networks(az.trainer.muzero_alphazero_config.num_workers),
+            az.trainer.make_n_trees(az.trainer.muzero_alphazero_config.num_workers),
+            shared_storage, az.trainer.device,
+            az.trainer.muzero_alphazero_config,
+            az.trainer.muzero_alphazero_config.num_workers,
+            az.trainer.muzero_alphazero_config.num_worker_iters)
+        az.trainer.logger.log(
+            f"Successfully started a pool of {az.trainer.muzero_alphazero_config.num_workers} workers for "
+            f"self-play (1/2).")
+        p2 = Process(target=az.trainer.network.continuous_weight_update,
+                     args=(
+                         shared_storage, az.trainer.muzero_alphazero_config, az.trainer.checkpointer,
+                         az.trainer.logger))
+
+        p2.start()
+        p4 = Process(target=az.trainer.arena.continuous_pit, args=(
+            az.trainer.net_player.make_fresh_instance(),
+            az.trainer.net_player.make_fresh_instance(),
+            RandomPlayer(az.trainer.game_manager.make_fresh_instance(), **{}),
+            az.trainer.muzero_alphazero_config.num_pit_games,
+            az.trainer.muzero_alphazero_config.num_simulations,
+            shared_storage,
+            az.trainer.checkpointer,
+            False,
+            1
+        ))
+        p4.start()
+        last_len = 0
+        max_len = 2000
+        while len(shared_storage.get_combined_losses()) < max_len:
+            if len(shared_storage.get_combined_losses()) <= last_len:
+                time.sleep(2)
+                continue
+            last_len = len(shared_storage.get_combined_losses())
+            trial.report(shared_storage.get_combined_losses()[-1], len(shared_storage.get_combined_losses()))
+
+            if trial.should_prune():
+                raise optuna.TrialPruned()
+        pool.terminate()
+        p2.terminate()
+        p4.terminate()
+        del pool, p2, p4
+        del az, memory
+        return shared_storage.get_combined_losses()[-1]
+
+    from mu_alpha_zero.AlphaZero.alpha_zero import AlphaZero
+    from mu_alpha_zero.shared_storage_manager import SharedStorageManager, SharedStorage
+    from mu_alpha_zero.AlphaZero.Arena.players import RandomPlayer
+    from mu_alpha_zero.mem_buffer import MemBuffer
+    from multiprocess.context import Process
+    config.show_tqdm = False
+    study = optuna.create_study(study_name="AlphaZeroHyperparameterSearch", direction="minimize")
     study.optimize(objective, n_trials=n_trials)
 
 
