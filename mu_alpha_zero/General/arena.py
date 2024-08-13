@@ -28,21 +28,22 @@ class GeneralArena(ABC):
         accept_num = 0
         for iter_ in range(conf.num_worker_iters):
             tested_params = shared_storage.get_experimental_network_params()
-            if tested_params is None or shared_storage.get_was_pitted():
+            training_net_iter = shared_storage.get_training_iter()
+            if tested_params is None:
                 time.sleep(5)
                 continue
             player1.network.load_state_dict(tested_params)
             player2.network.load_state_dict(shared_storage.get_stable_network_params())
             results_p1, results_p2, _ = self.pit(player1, player2, num_games_to_play, num_mc_simulations,
                                                  one_player=one_player, start_player=start_player)
-            wandb.log({"wins_p1_vs_p2": results_p1, "wins_p2_vs_p1": results_p2})
+            wandb.log({f"wins_p1_vs_p2": results_p1, "wins_p2_vs_p1": results_p2, "training_iter": training_net_iter})
             not_zero = lambda x: x if x != 0 else 1
             if results_p1 / not_zero(results_p1 + results_p2) >= conf.update_threshold:
                 shared_storage.set_stable_network_params(tested_params)
-                accept_num += 1
-                checkpointer.save_checkpoint(player1.network, player2.network, shared_storage.get_optimizer(), conf.lr,
-                                             accept_num, conf)
-            shared_storage.set_was_pitted(True)
+                # accept_num += 1
+                # checkpointer.save_checkpoint(player1.network, player2.network, shared_storage.get_optimizer(), conf.lr,
+                #                              accept_num, conf)
+            # shared_storage.set_was_pitted(True)
 
             results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
                                                  one_player=one_player, start_player=start_player)

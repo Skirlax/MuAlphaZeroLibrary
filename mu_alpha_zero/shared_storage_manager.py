@@ -13,6 +13,7 @@ class SharedStorage:
         self.lock = multiprocess.context._default_context.Lock()
         self.optimizer_state_dict = None
         self.was_pitted = True
+        self.training_iter = 0
 
     def get_experimental_network_params(self):
         return copy.deepcopy(self.experimental_network_params)
@@ -69,6 +70,14 @@ class SharedStorage:
     def batch(self,*args,**kwargs):
         with self.lock:
             return self.mem_buffer.batch(*args, **kwargs)
+
+    def set_training_iter(self, training_iter):
+        with self.lock:
+            self.training_iter = training_iter
+
+    def get_training_iter(self):
+        with self.lock:
+            return self.training_iter
 
 
 class SharedStorageManager(BaseManager):
