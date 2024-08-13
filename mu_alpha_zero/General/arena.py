@@ -29,7 +29,7 @@ class GeneralArena(ABC):
         for iter_ in range(conf.num_worker_iters):
             tested_params = shared_storage.get_experimental_network_params()
             training_net_iter = shared_storage.get_training_iter()
-            if tested_params is None:
+            if tested_params is None or training_net_iter < 200:
                 time.sleep(5)
                 continue
             player1.network.load_state_dict(tested_params)
@@ -45,6 +45,6 @@ class GeneralArena(ABC):
                 #                              accept_num, conf)
             # shared_storage.set_was_pitted(True)
 
-            results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
-                                                 one_player=one_player, start_player=start_player)
-            wandb.log({"wins_p1_vs_random": results_p1, "wins_random_vs_p1": results_p2})
+            # results_p1, results_p2, _ = self.pit(player1, player_2_2, num_games_to_play, num_mc_simulations,
+            #                                      one_player=one_player, start_player=start_player)
+            # wandb.log({"wins_p1_vs_random": results_p1, "wins_random_vs_p1": results_p2})
