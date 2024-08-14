@@ -98,7 +98,9 @@ class MemBuffer(GeneralMemoryBuffer):
         indeces = np.random.choice(np.arange(len(buf)), size=min(len(buf), batch_size),
                                    replace=False).flatten().tolist()
         items = [buf[i] for i in indeces]
-        batch = [[[y[i] for y in items[i_]] for i_ in range(len(items))] for i in range(len(items[0]))]
+        item_names = ["frame", "pi", "v", "player", "action_mask"]
+        batch = [[[getattr(y[i], item_names[i]) for y in items[i_].datapoints] for i_ in range(len(items))] for i in
+                 range(5)]
         return batch
 
     def __call__(self, batch_size, is_eval: bool = False) -> list:
