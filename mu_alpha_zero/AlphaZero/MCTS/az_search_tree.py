@@ -52,6 +52,7 @@ class McSearchTree(SearchTree):
         state = self.game_manager.reset()
         current_player = 1
         game_history = []
+        game_data = SingleGameData()
         results = {"1": 0, "-1": 0, "D": 0}
         while True:
             pi, _ = self.search(network, state, current_player, device)
@@ -59,7 +60,8 @@ class McSearchTree(SearchTree):
             # self.step_root([move])
             self.step_root(None)
             # pi = [x for x in pi.values()]
-            game_history.append((state * current_player, pi, None, current_player,self.game_manager.get_invalid_actions(state, current_player)))
+            game_history.append((state * current_player, pi, None, current_player,
+                                 self.game_manager.get_invalid_actions(state, current_player)))
             state = self.game_manager.get_next_state(state, self.game_manager.network_to_board(move), current_player)
             r = self.game_manager.game_result(current_player, state)
             if r is not None:
@@ -71,9 +73,13 @@ class McSearchTree(SearchTree):
                     results["-1"] += 1
 
                 if -1 < r < 1:
-                    game_history = [(x[0], x[1], r, x[3],x[4]) for x in game_history]
+                    game_history = [(x[0], x[1], r, x[3], x[4]) for x in game_history]
                 else:
-                    game_history = [(x[0], x[1], r * current_player * x[3], x[3],x[4]) for x in game_history]
+                    game_history = [(x[0], x[1], r * current_player * x[3], x[3], x[4]) for x in game_history]
+
+                # append the terminal state
+                game_history.append((state * current_player, np.ones((len(pi),), dtype=np.float32) / len(pi), -r,
+                                     -current_player, self.game_manager.get_invalid_actions(state, -current_player)))
                 break
             current_player *= -1
 
@@ -82,7 +88,9 @@ class McSearchTree(SearchTree):
             game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
-        return game_history, results["1"], results["-1"], results["D"]
+        for state, pi, r, player, move_mask in game_history:
+            game_data.add_data_point(DataPoint(pi, r, None, None, player, state, move_mask))
+        return [game_data], results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
         """
