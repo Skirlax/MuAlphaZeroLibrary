@@ -259,7 +259,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
             self.optimizer = th.optim.Adam(self.parameters(), lr=muzero_alphazero_config.lr,
                                            weight_decay=muzero_alphazero_config.l2)
         if muzero_alphazero_config.lr_scheduler is not None and self.scheduler is None:
-            self.scheduler = muzero_alphazero_config.lr_scheduler(self.optimizer, **muzero_alphazero_config.lr_scheduler_kwargs)
+            self.scheduler = muzero_alphazero_config.lr_scheduler(self.optimizer,
+                                                                  **muzero_alphazero_config.lr_scheduler_kwargs)
         # memory_buffer.shuffle()
         for epoch in range(muzero_alphazero_config.epochs):
             for experience_batch in memory_buffer.batch(muzero_alphazero_config.batch_size):
@@ -296,7 +297,7 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         states, pi, v, _, masks = experience_batch[0], experience_batch[1], experience_batch[2], experience_batch[3], \
             experience_batch[4]
-        pi = [[y for y in x.values()] for x in pi]
+        pi = [[y for y in x.values()] for x in pi if isinstance(x,dict)]
         # game = [[y.frame,y.pi,y.v,y.action_mask] for y in experience_batch.datapoints]
         # states, pi, v, masks = zip(*game)
         states = th.tensor(np.array(states), dtype=th.float32, device=device)
