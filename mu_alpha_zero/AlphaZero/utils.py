@@ -187,7 +187,7 @@ def az_optuna_parameter_search(n_trials: int, target_values: list, target_game, 
         ))
         p4.start()
         last_len = 0
-        max_len = 2000
+        max_len = 500
         while len(shared_storage.get_combined_losses()) < max_len:
             if len(shared_storage.get_combined_losses()) <= last_len:
                 time.sleep(2)
