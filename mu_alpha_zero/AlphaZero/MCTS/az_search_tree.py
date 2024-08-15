@@ -78,7 +78,7 @@ class McSearchTree(SearchTree):
                     game_history = [(x[0], x[1], r * current_player * x[3], x[3], x[4]) for x in game_history]
 
                 # append the terminal state
-                game_history.append((state * -current_player, np.ones((len(pi),), dtype=np.float32) / len(pi), -r,
+                game_history.append((state * -current_player, (np.ones((len(pi),), dtype=np.float32) / len(pi)).tolist(), -r,
                                      -current_player, self.game_manager.get_invalid_actions(state, -current_player)))
                 break
             current_player *= -1

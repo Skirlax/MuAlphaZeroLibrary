@@ -99,8 +99,10 @@ class MemBuffer(GeneralMemoryBuffer):
                                    replace=False).flatten().tolist()
         items = [buf[i] for i in indeces]
         item_names = ["frame", "pi", "v", "player", "action_mask"]
-        batch = [[[getattr(y[i], item_names[i]) for y in items[i_].datapoints] for i_ in range(len(items))] for i in
-                 range(5)]
+        batch = []
+        for item in items:
+            game_batch = [[getattr(y,item_names[i]) for y in item.datapoints] for i in range(5)]
+            batch.append(game_batch)
         return batch
 
     def __call__(self, batch_size, is_eval: bool = False) -> list:
