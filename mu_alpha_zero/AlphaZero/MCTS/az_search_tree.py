@@ -79,7 +79,7 @@ class McSearchTree(SearchTree):
 
                 # append the terminal state
                 game_history.append((state * -current_player, (np.ones((len(pi),), dtype=np.float32) / len(pi)).tolist(), -r,
-                                     -current_player, self.game_manager.get_invalid_actions(state, -current_player)))
+                                     -current_player, np.zeros(len(pi))))
                 break
             current_player *= -1
 
