@@ -52,7 +52,7 @@ class McSearchTree(SearchTree):
         state = self.game_manager.reset()
         current_player = 1
         game_history = []
-        game_data = SingleGameData()
+        # game_data = SingleGameData()
         results = {"1": 0, "-1": 0, "D": 0}
         while True:
             pi, _ = self.search(network, state, current_player, device)
@@ -88,9 +88,9 @@ class McSearchTree(SearchTree):
             game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
-        for state, pi, r, player, move_mask in game_history:
-            game_data.add_data_point(DataPoint(pi, r, None, None, player, state, move_mask))
-        return [game_data], results["1"], results["-1"], results["D"]
+        # for state, pi, r, player, move_mask in game_history:
+        #     game_data.add_data_point(DataPoint(pi, r, None, None, player, state, move_mask))
+        return game_history, results["1"], results["-1"], results["D"]
 
     def search(self, network, state, current_player, device, tau=None):
         """

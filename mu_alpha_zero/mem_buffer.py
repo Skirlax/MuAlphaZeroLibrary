@@ -98,12 +98,8 @@ class MemBuffer(GeneralMemoryBuffer):
         indeces = np.random.choice(np.arange(len(buf)), size=min(len(buf), batch_size),
                                    replace=False).flatten().tolist()
         items = [buf[i] for i in indeces]
-        item_names = ["frame", "pi", "v", "player", "action_mask"]
-        batch = []
-        for item in items:
-            game_batch = [[getattr(y,item_names[i]) for y in item.datapoints] for i in range(5)]
-            batch.append(game_batch)
-        return batch
+        batch = [[items[i][x] for i in range(len(items))] for x in range(len(items[0]))]
+        return [batch]
 
     def __call__(self, batch_size, is_eval: bool = False) -> list:
         return self.batch(batch_size, is_eval=is_eval)
