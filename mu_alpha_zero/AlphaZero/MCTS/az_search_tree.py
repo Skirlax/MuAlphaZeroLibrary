@@ -227,7 +227,7 @@ class McSearchTree(SearchTree):
         pool = Pool(num_jobs)
         for i in range(num_jobs):
             pool.apply_async(c_p_self_play, args=(
-                nets[i], trees[i], copy.deepcopy(device), config, i, shared_storage, num_worker_iters
+                nets[i], trees[i], copy.deepcopy(device), config, i, shared_storage, num_worker_iters // num_jobs
             ))
 
         return pool
