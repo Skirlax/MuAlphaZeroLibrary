@@ -6,12 +6,16 @@ from mu_alpha_zero.General.utils import adjust_probabilities
 
 
 class MuZeroGame(ABC):
+    """
+    Keep state representations as Gzip if, muzero_config.use_true_game_state is True
+    """
 
     @abstractmethod
     def get_next_state(self, action: int, player: int or None) -> (
             np.ndarray or th.Tensor, int, bool):
         """
         Given a game state and an action return the next state. Currently this implementation only supports one player, so supply None.
+
         :param state: The current state of the game.
         :param action: The action to be taken.
         :param player: The player taking the action.
@@ -80,12 +84,10 @@ class MuZeroGame(ABC):
         return np.random.choice(moves, p=probs)
 
     @abstractmethod
-    def get_invalid_actions(self, state: np.ndarray, player: int):
+    def get_invalid_actions(self, player: int):
         """
-        Calculates and returns the invalid actions in the given state.
-        :return: A numpy array containing the invalid
-        actions in the current state. In this array actions marked as valid will be one, while invalid actions will
-        be 0."""
+        Returns a mask where invalid actions == 0 and valid == 1 as a numpy array over the action space. The state is managed internally.
+        """
         pass
 
     @abstractmethod

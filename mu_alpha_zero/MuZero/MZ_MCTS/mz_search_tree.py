@@ -60,7 +60,7 @@ class MuZeroSearchTree(SearchTree):
         frame = self.buffer.concat_frames(player).detach().cpu().numpy()
         data.add_data_point(
             DataPoint(None, None, 0, None, player, frame if dir_path is None else LazyArray(frame, dir_path),
-                      self.game_manager.get_invalid_actions(state, player)))
+                      self.game_manager.get_invalid_actions(player)))
         game_length = 0
         for step in range(num_steps):
             game_length += 1
@@ -88,7 +88,7 @@ class MuZeroSearchTree(SearchTree):
                 DataPoint(np.ones((len(data.datapoints[-1].pi))) / len(data.datapoints[-1].pi), 0, rew,
                           random.randint(0, len(data.datapoints[-1].pi) - 1), player,
                           frame if dir_path is None else LazyArray(frame, dir_path),
-                          self.game_manager.get_invalid_actions(state, player)))
+                          self.game_manager.get_invalid_actions(player)))
             if done:
                 # time.sleep(1)
                 # print(player)
@@ -113,6 +113,7 @@ class MuZeroSearchTree(SearchTree):
         if tau is None:
             tau = self.muzero_config.tau
 
+        games = [copy.deepcopy(self.game_manager)] if self.muzero_config.use_true_game_state_in_tree else []
         root_node = MzAlphaZeroNode(current_player=current_player)
         # print(self.buffer.buffers[current_player][-1][0][:,:,0])
         game_state = state if use_state_directly else self.buffer.concat_frames(current_player)
@@ -122,7 +123,7 @@ class MuZeroSearchTree(SearchTree):
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         if self.muzero_config.dirichlet_alpha > 0:
             pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
-        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(state, current_player), pi)
+        pi = mask_invalid_actions(self.game_manager.get_invalid_actions(current_player), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
         for simulation in range(num_simulations):
@@ -130,25 +131,38 @@ class MuZeroSearchTree(SearchTree):
             path = [current_node]
             action = None
             while current_node.was_visited():
+                done = False
                 current_node, action = current_node.get_best_child(self.min_max_q[0], self.min_max_q[1],
                                                                    self.muzero_config.gamma,
                                                                    self.muzero_config.multiple_players,
                                                                    c=self.muzero_config.c, c2=self.muzero_config.c2)
                 path.append(current_node)
+                if self.muzero_config.use_true_game_state_in_tree:
+                    game = copy.deepcopy(games[-1])
+                    _, rew, done = game.get_next_state(action, current_node.parent().current_player)
+                    games.append(game)
 
             # action = scale_action(action, self.game_manager.get_num_actions())
-
-            current_node_state_with_action = match_action_with_obs(current_node.parent().state, action,
-                                                                   self.muzero_config)
-            next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
-                                                                  predict=True)
-            next_state = scale_hidden_state(next_state)
-            reward = reward[0][0]
-            pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
-            pi = pi.flatten().tolist()
-            v = v.flatten().tolist()[0]
-            current_node.expand_node(next_state, pi, reward)
-            self.backprop(v, path)
+            if not done:
+                current_node_state_with_action = match_action_with_obs(current_node.parent().state, action,
+                                                                       self.muzero_config)
+                next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
+                                                                      predict=True)
+                next_state = scale_hidden_state(next_state)
+                reward = reward[0][0]
+                pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
+                if self.muzero_config.use_true_game_state_in_tree:
+                    reward = rew
+                    pi = mask_invalid_actions(games[-1].get_invalid_actions(current_node.current_player), pi)
+                pi = pi.flatten().tolist()
+                v = v.flatten().tolist()[0]
+                current_node.expand_node(next_state, pi, reward)
+            else:
+                if self.muzero_config.multiple_players:
+                    v = -1
+                else:
+                    v = rew
+            self.backprop(v, path, games)
 
         action_probs = root_node.get_self_action_probabilities()
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
@@ -160,7 +174,7 @@ class MuZeroSearchTree(SearchTree):
         root_node = None
         return action_probs, root_val_latent
 
-    def backprop(self, v, path):
+    def backprop(self, v: float, path: list, games: list):
         # G = v
         G_node = v
         gamma = self.muzero_config.gamma
@@ -176,6 +190,8 @@ class MuZeroSearchTree(SearchTree):
                 node.total_value += G_node
                 self.update_min_max_q(node.reward + node.get_self_value())
                 G_node = node.reward + gamma * G_node
+            if self.muzero_config.use_true_game_state_in_tree and node.select_probability != 0:
+                games.pop()
             # node.update_q(G_node)
 
     def self_play(self, net: MuZeroNet, device: th.device, num_games: int, memory: GeneralMemoryBuffer) -> tuple[

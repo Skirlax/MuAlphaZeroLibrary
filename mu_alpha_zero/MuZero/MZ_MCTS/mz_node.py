@@ -1,6 +1,9 @@
 import math
+
+import numpy as np
+
 from mu_alpha_zero.AlphaZero.MCTS.az_node import AlphaZeroNode
-import random
+import torch as th
 
 
 class MzAlphaZeroNode(AlphaZeroNode):
@@ -33,7 +36,7 @@ class MzAlphaZeroNode(AlphaZeroNode):
     def get_value_pred(self, prediction_forward: callable):
         return prediction_forward(self.state)
 
-    def expand_node(self, state, action_probabilities, im_reward) -> None:
+    def expand_node(self, state: th.Tensor,action_probabilities: dict, im_reward: float) -> None:
 
         self.state = state.clone()
         self.reward = im_reward

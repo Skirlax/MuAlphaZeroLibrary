@@ -129,6 +129,9 @@ class MuZeroConfig(Config):
     loss_gets_support: bool = False
     frame_buffer_ignores_actions: bool = False
     actions_are: Literal["columns", "rows", "board"] = "board"
+    # Will keep maximum of len(longest_path_in_tree) actual game states in memory during tree search,
+    # in order to deduce when the game is over and improve initial policy.
+    use_true_game_state_in_tree: bool = False
 
 
 @dataclass
@@ -164,4 +167,3 @@ class AlphaZeroConfig(Config):
     muzero: bool = False
     augment_with_symmetries: bool = True
     add_dirichlet_noise: bool = True
-
