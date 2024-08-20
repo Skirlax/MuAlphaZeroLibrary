@@ -78,10 +78,7 @@ class McSearchTree(SearchTree):
                     game_history = [(x[0], x[1], r * current_player * x[3], x[3], x[4]) for x in game_history]
 
                 # append the terminal state
-                player1_reward = 1 if (r == 1 and current_player == 1) else -1
-                if -1 < r < 1:
-                    player1_reward = r
-                game_history.append((state, (np.ones((len(pi),), dtype=np.float32) / len(pi)).tolist(), player1_reward,
+                game_history.append(((state * -current_player), (np.ones((len(pi),), dtype=np.float32) / len(pi)).tolist(), -r,
                                      -current_player, np.zeros(len(pi))))
                 break
             current_player *= -1
