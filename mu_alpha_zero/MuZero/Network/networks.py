@@ -225,7 +225,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         else:
             values = scalar_values
         hidden_state = self.representation_forward(init_states)
-        hidden_state = scale_hidden_state(hidden_state)
+        if muzero_config.scale_hidden_state:
+            hidden_state = scale_hidden_state(hidden_state)
         pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=muzero_config.loss_gets_support)
         pi_loss, v_loss, r_loss = 0, 0, 0
         pi_loss += self.muzero_loss(pred_pis, pis,masks=masks)
@@ -249,7 +250,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             hidden_state, pred_rs, pred_pis, pred_vs = self.forward_recurrent(
                 match_action_with_obs_batch(hidden_state, moves, muzero_config), False,
                 return_support=muzero_config.loss_gets_support)
-            hidden_state = scale_hidden_state(hidden_state)
+            if muzero_config.scale_hidden_state:
+                hidden_state = scale_hidden_state(hidden_state)
             hidden_state.register_hook(lambda grad: grad * 0.5)
             current_pi_loss = self.muzero_loss(pred_pis, pis,masks=masks)
             current_v_loss = loss_fn(pred_vs, values)

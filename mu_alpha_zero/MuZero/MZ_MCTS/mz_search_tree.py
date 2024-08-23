@@ -119,7 +119,8 @@ class MuZeroSearchTree(SearchTree):
         game_state = state if use_state_directly else self.buffer.concat_frames(current_player)
         state_ = network_wrapper.representation_forward(
             game_state.permute(2, 0, 1).unsqueeze(0).to(device)).squeeze(0)
-        state_ = scale_hidden_state(state_)
+        if self.muzero_config.scale_hidden_state:
+            state_ = scale_hidden_state(state_)
         pi, v = network_wrapper.prediction_forward(state_.unsqueeze(0), predict=True)
         if self.muzero_config.dirichlet_alpha > 0:
             pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
@@ -148,7 +149,8 @@ class MuZeroSearchTree(SearchTree):
                                                                        self.muzero_config)
                 next_state, reward = network_wrapper.dynamics_forward(current_node_state_with_action.unsqueeze(0),
                                                                       predict=True)
-                next_state = scale_hidden_state(next_state)
+                if self.muzero_config.scale_hidden_state:
+                    next_state = scale_hidden_state(next_state)
                 reward = reward[0][0]
                 pi, v = network_wrapper.prediction_forward(next_state.unsqueeze(0), predict=True)
                 if self.muzero_config.use_true_game_state_in_tree:
