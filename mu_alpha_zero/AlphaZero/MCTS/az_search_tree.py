@@ -82,7 +82,7 @@ class McSearchTree(SearchTree):
 
         # game_history = make_channels(game_history)
         if self.alpha_zero_config.augment_with_symmetries:
-            game_history = augment_experience_with_symmetries(game_history, self.game_manager.board_size)
+            game_history = self.game_manager.augment_game_history_with_symmetries(game_history)
         self.hook_manager.process_hook_executes(self, self.play_one_game.__name__, __file__, HookAt.TAIL,
                                                 args=(game_history, results))
         # for state, pi, r, player, move_mask in game_history:
