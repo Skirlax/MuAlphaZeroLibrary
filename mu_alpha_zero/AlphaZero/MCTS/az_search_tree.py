@@ -54,9 +54,13 @@ class McSearchTree(SearchTree):
         game_history = []
         # game_data = SingleGameData()
         results = {"1": 0, "-1": 0, "D": 0}
+        move_number = 0
+        tau = self.alpha_zero_config.tau
         while True:
+            if move_number > self.alpha_zero_config.zero_tau_after_first_n_moves != 0:
+                tau = 0
             pi, _ = self.search(network, state, current_player, device)
-            move = self.game_manager.select_move(pi, tau=self.alpha_zero_config.tau)
+            move = self.game_manager.select_move(pi, tau=tau)
             # self.step_root([move])
             self.step_root(None)
             # pi = [x for x in pi.values()]
@@ -79,6 +83,7 @@ class McSearchTree(SearchTree):
 
                 break
             current_player *= -1
+            move_number += 1
 
         # game_history = make_channels(game_history)
         if self.alpha_zero_config.augment_with_symmetries:
@@ -109,9 +114,9 @@ class McSearchTree(SearchTree):
         state_ = th.tensor(state_, dtype=th.float32, device=device).unsqueeze(0)
         probabilities, v = network.predict(state_, muzero=False)
         if self.alpha_zero_config.add_dirichlet_noise:
-            probabilities = probabilities + np.random.dirichlet(
-                [self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size).reshape(1,
-                                                                                                           -1)  # add noise to encourage the exploration of even the moves with probability close to 0.
+            probabilities = (
+                                    1 - self.alpha_zero_config.dirichlet_alpha) * probabilities + self.alpha_zero_config.dirichlet_alpha * np.random.dirichlet(
+                [0.03] * len(probabilities))
         probabilities = mask_invalid_actions(probabilities,
                                              self.game_manager.get_invalid_actions(state.copy(), current_player))
         probabilities = probabilities.flatten().tolist()
