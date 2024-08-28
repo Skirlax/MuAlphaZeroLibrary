@@ -24,11 +24,13 @@ from mu_alpha_zero.MuZero.utils import match_action_with_obs, resize_obs, scale_
 from mu_alpha_zero.config import MuZeroConfig
 from mu_alpha_zero.mem_buffer import MuZeroFrameBuffer, SingleGameData, DataPoint
 from mu_alpha_zero.shared_storage_manager import SharedStorage
+from typing import Optional
 
 
 class MuZeroSearchTree(SearchTree):
 
-    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig, hook_manager: HookManager or None = None):
+    def __init__(self, game_manager: MuZeroGame, muzero_config: MuZeroConfig,
+                 hook_manager: Optional[HookManager] = None):
         self.game_manager = game_manager
         self.muzero_config = muzero_config
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
@@ -43,7 +45,7 @@ class MuZeroSearchTree(SearchTree):
         return MuZeroFrameBuffer(1, self.game_manager.get_noop(), self.muzero_config.net_action_size,
                                  ignore_actions=self.muzero_config.frame_buffer_ignores_actions)
 
-    def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: str or None = None,
+    def play_one_game(self, network_wrapper: MuZeroNet, device: th.device, dir_path: Optional[str] = None,
                       calculate_avg_num_children: bool = False) -> list[SingleGameData]:
 
         self.buffer = self.init_frame_buffer()
@@ -104,8 +106,8 @@ class MuZeroSearchTree(SearchTree):
         data.compute_initial_priorities(self.muzero_config)
         return [data]
 
-    def search(self, network_wrapper, state: np.ndarray, current_player: int or None, device: th.device,
-               tau: float or None = None, calculate_avg_num_children: bool = False, use_state_directly: bool = False):
+    def search(self, network_wrapper, state: np.ndarray, current_player: Optional[int], device: th.device,
+               tau: Optional[float] = None, calculate_avg_num_children: bool = False, use_state_directly: bool = False):
         self.min_max_q = [float("inf"), -float("inf")]
         if self.buffer.__len__(current_player) == 0 and not use_state_directly:
             self.buffer.init_buffer(state, current_player)
@@ -286,7 +288,7 @@ class MuZeroSearchTree(SearchTree):
         self.hook_manager.process_hook_executes(self, self.run_on_training_end.__name__, __file__, HookAt.ALL)
 
 
-def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
+def p_self_play(net, tree, dev, num_g, mem, dir_path: Optional[str] = None):
     data = []
     for game in range(num_g):
         game_results = tree.play_one_game(net, dev, dir_path=dir_path, calculate_avg_num_children=game == num_g - 1)
@@ -299,7 +301,7 @@ def p_self_play(net, tree, dev, num_g, mem, dir_path: str or None = None):
 
 def c_p_self_play(net, tree, device, config: MuZeroConfig, p_num: int, shared_storage: SharedStorage,
                   num_worker_iters: int,
-                  dir_path: str or None = None):
+                  dir_path: Optional[str] = None):
     if p_num == 0:
         wandb.init(project=config.wandbd_project_name, name="Self play")
     net = net.to(device)
