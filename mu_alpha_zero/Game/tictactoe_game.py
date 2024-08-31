@@ -2,10 +2,8 @@ import io
 import random
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pygame as pg
-import seaborn as sns
 import torch as th
 from PIL import Image
 
@@ -373,36 +371,6 @@ class TicTacToeGameManager(AlphaZeroGame):
         :return: A tuple representing the board index (int,int).
         """
         return np.unravel_index(move, self.board.shape)
-
-    def save_screenshot_with_probabilities(self, action_probs, path):
-        if self.headless:
-            return
-        plt.figure(figsize=(15, 10))
-        labels, probabilities = zip(*action_probs.items())
-        print(probabilities)
-        labels = [f"{np.unravel_index(x, self.board.shape)[0]};{np.unravel_index(x, self.board.shape)[1]}" for x in
-                  labels]
-        sns.barplot(x=labels, y=probabilities)
-        plt.xticks(rotation=90)
-        plt.xlabel("Move")
-        plt.ylabel("Probability")
-        plt.title("Action probabilities")
-        # Save the plot to a buffer
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches="tight")
-        buf.seek(0)
-        plot_img = Image.open(buf)
-
-        # Convert the pg surface to an image
-        surface_buffer = pg.image.tostring(self.screen, 'RGBA')
-        surface_img = Image.frombytes('RGBA', self.screen.get_size(), surface_buffer)
-
-        # Concatenate the images vertically
-        total_height = plot_img.height + surface_img.height
-        combined_img = Image.new('RGB', (max(plot_img.width, surface_img.width), total_height))
-        combined_img.paste(plot_img, (0, 0))
-        combined_img.paste(surface_img, (0, plot_img.height))
-        combined_img.save(path)
 
     @staticmethod
     def get_canonical_form(board, player) -> np.ndarray:

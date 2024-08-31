@@ -6,7 +6,6 @@ from itertools import chain
 
 import numpy as np
 import numpy.random
-import pymongo
 import torch as th
 from diskcache import Deque
 from torch.utils.data import Dataset, DataLoader
@@ -16,7 +15,6 @@ from mu_alpha_zero.General.utils import find_project_root
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
 from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
-from mu_alpha_zero.MuZero.pickler import DataPickler
 from mu_alpha_zero.MuZero.utils import scale_action
 from mu_alpha_zero.config import MuZeroConfig
 
@@ -298,115 +296,3 @@ class MuZeroFrameBuffer:
 
     def __len__(self, player):
         return len(self.buffers[player])
-
-
-class MongoDBMemBuffer(GeneralMemoryBuffer):
-    def __init__(self):
-        self.db = pymongo.MongoClient("localhost", 27017).muzero
-        self.calculated_buffer_size = 0
-        self.is_disk = False
-        self.full_disk = False
-
-    def add(self, experience):
-        if not isinstance(experience, dict):
-            raise ValueError("Experience must be a dict")
-        self.db.game_data.insert(experience)
-
-    def add_list(self, experience_list):
-        self.db.game_data.insert_many(experience_list)
-
-    def batch(self, batch_size):
-        random_idx = random.randint(0, self.db.game_data.count_documents({}) - batch_size)
-        return list(self.db.game_data.find({}).skip(random_idx).limit(batch_size))
-
-    def calculate_priorities(self, batch_size, alpha, K):
-        self.calculated_buffer_size = self.db.game_data.count_documents({})
-        fields = self.db.game_data.find({}, {"_id": 0, "pred_reward": 1, "t_reward": 1})
-        ps = [abs(x["pred_reward"] - x["t_reward"]) ** alpha for x in fields]
-        # add ps to db
-        document_ids = self.db.game_data.find({}, {"_id": 1})
-        for doc_id, p in zip(document_ids, ps):
-            self.db.game_data.update_one(doc_id, {"$set": {"priority": p}})
-
-    def update_priorities_if_needed(self, alpha, K):
-        if self.calculated_buffer_size < self.db.game_data.count_documents({}):
-            self.calculate_priorities(self.calculated_buffer_size, alpha, K)
-
-    def batch_with_priorities(self, epochs, batch_size, K, alpha=1):
-        for _ in range(epochs):
-            self.update_priorities_if_needed(alpha, K)
-            test_p = list(self.db.game_data.find({}, {"priority": 1, "_id": 0}).limit(3))
-            # test_p = list(test_p)[0]["priority"]
-            priorities = [x["priority"] for x in self.db.game_data.find({}, {"priority": 1, "_id": 0})]
-            sum_p = sum(priorities)
-            priorities = [p / sum_p for p in priorities]
-            indexes = np.random.choice(np.arange(self.db.game_data.count_documents({})),
-                                       size=min(self.calculated_buffer_size, batch_size // K), replace=False,
-                                       p=priorities).tolist()
-            items = [list(self.db.game_data.find({}).skip(x).limit(K)) for x in indexes]
-            items = list(chain.from_iterable(items))
-            items = tuple(
-                [(x["probabilities"], x["vs"], (x["t_reward"], x["game_move"], x["pred_reward"]), x["game_state"]) for x
-                 in items])
-            yield items, th.tensor(priorities, dtype=th.float32)
-
-    def get_last_greatest_id(self):
-        return self.db.game_data.find_one(sort=[("_id", pymongo.DESCENDING)])["_id"]
-
-    def __len__(self):
-        return self.db.game_data.count_documents({})
-
-    def drop_game_data(self):
-        self.db.game_data.drop()
-
-    def make_fresh_instance(self):
-        return MongoDBMemBuffer()
-
-
-class PickleMemBuffer(GeneralMemoryBuffer):
-
-    def __init__(self, pickle_dir: str):
-        self.pickle_dir = pickle_dir
-        self.is_disk = True
-        self.full_disk = True
-        self.pickler = DataPickler(pickle_dir)
-
-    def add(self, experience):
-        raise NotImplementedError("Single experience addition shouldn't be performed in PickleMemBuffer, please add "
-                                  "entire bach with add_list method")
-
-    def add_list(self, experience_list):
-        self.pickler.pickle_buffer(experience_list)  # self.pickler.push_to_consumer(experience_list)
-
-    def batch(self, batch_size):
-        raise NotImplementedError("Batch method not implemented for PickleMemBuffer, please use batch_with_priorities")
-
-    def calculate_priorities(self, batch_size, alpha, K):
-        vs = self.pickler.load_index(1)
-        rews = self.pickler.load_index(2)
-        ps = [(abs(vs[i] - rews[i][2]) ** alpha, i) for i in range(len(vs))][:-K]
-        sum_p = sum([p[0] for p in ps])
-        ps = [(p[0] / sum_p, p[1]) for p in ps]
-        return {p[1]: p[0] for p in ps}
-
-    def batch_with_priorities(self, epochs, batch_size, K, alpha=1):
-        priorities = self.calculate_priorities(batch_size, alpha, K)
-        ps_probs = np.array(list(priorities.values()))
-        for _ in range(epochs):
-            random_indexes = np.random.choice(np.arange(len(priorities)),
-                                              size=min(len(priorities) // K, max(batch_size // K, 1)), replace=False,
-                                              p=list(ps_probs)).tolist()
-            batch = self.pickler.load_all(batch_size, random_indexes, K)
-            pris = [list(priorities.values())[i:i + K] for i in random_indexes]
-            tmp = list(chain.from_iterable(pris))
-            yield batch, th.tensor(tmp, dtype=th.float32)
-
-    def save(self):
-        print("Load using datapickler.load_all(float(inf),...)")
-        return self.pickle_dir
-
-    def make_fresh_instance(self):
-        return PickleMemBuffer(self.pickle_dir)
-
-    def __len__(self):
-        raise NotImplementedError("Length not implemented for PickleMemBuffer.")
