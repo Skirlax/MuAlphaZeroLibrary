@@ -23,7 +23,6 @@ from mu_alpha_zero.General.az_game import AlphaZeroGame
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.network import GeneralNetwork
 from mu_alpha_zero.General.search_tree import SearchTree
-from mu_alpha_zero.MuZero.JavaGateway.java_manager import JavaManager
 from mu_alpha_zero.config import Config
 from mu_alpha_zero.mem_buffer import MemBuffer
 from mu_alpha_zero.Hooks.hook_manager import HookManager
@@ -34,8 +33,7 @@ class Trainer:
     def __init__(self, network: GeneralNetwork, game: AlphaZeroGame, optimizer: th.optim, memory: GeneralMemoryBuffer,
                  muzero_alphazero_config: Config, checkpointer: CheckPointer, search_tree: SearchTree,
                  net_player: Player, hook_manager: HookManager or None, device, headless: bool = True,
-                 opponent_network_override: th.nn.Module or None = None, arena_override: GeneralArena or None = None,
-                 java_manager: JavaManager = None) -> None:
+                 opponent_network_override: th.nn.Module or None = None, arena_override: GeneralArena or None = None) -> None:
         self.muzero_alphazero_config = muzero_alphazero_config
         self.device = device
         self.headless = headless
@@ -46,7 +44,6 @@ class Trainer:
         self.opponent_network = self.network.make_fresh_instance() if opponent_network_override is None else opponent_network_override
         self.optimizer = optimizer
         self.memory = memory
-        self.java_manager = java_manager
         self.hook_manager = hook_manager
         self.arena = Arena(self.game_manager, self.muzero_alphazero_config,
                            self.device, hook_manager=self.hook_manager) if arena_override is None else arena_override
@@ -95,7 +92,7 @@ class Trainer:
     def create(cls, muzero_alphazero_config: Config, game: AlphaZeroGame, network: GeneralNetwork,
                search_tree: SearchTree, net_player: Player, headless: bool = True, checkpointer_verbose: bool = False,
                hook_manager: HookManager or None = None, arena_override: GeneralArena or None = None,
-               memory_override: GeneralMemoryBuffer or None = None, java_manager: JavaManager or None = None):
+               memory_override: GeneralMemoryBuffer or None = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         optimizer = th.optim.Adam(network.parameters(), lr=muzero_alphazero_config.lr,
                                   weight_decay=muzero_alphazero_config.l2)
@@ -103,19 +100,19 @@ class Trainer:
         memory = mem if memory_override is None else memory_override
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
         return cls(network, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player,
-                   hook_manager, device, headless=headless, arena_override=arena_override, java_manager=java_manager)
+                   hook_manager, device, headless=headless, arena_override=arena_override)
 
     @classmethod
     def from_state_dict(cls, path: str, muzero_alphazero_config: Config, game: AlphaZeroGame, search_tree: SearchTree,
                         headless: bool = True, hook_manager: HookManager or None = None,
-                        checkpointer_verbose: bool = False, java_manager: JavaManager or None = None):
+                        checkpointer_verbose: bool = False):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         net, optimizer, memory = build_all_from_config(muzero_alphazero_config, device)
         checkpointer = CheckPointer(muzero_alphazero_config.checkpoint_dir, verbose=checkpointer_verbose)
         net.load_state_dict(th.load(path))
         net_player = NetPlayer(game.make_fresh_instance(), **{"network": net, "monte_carlo_tree_search": search_tree})
         return cls(net, game, optimizer, memory, muzero_alphazero_config, checkpointer, search_tree, net_player,
-                   hook_manager, device, headless=headless, java_manager=java_manager)
+                   hook_manager, device, headless=headless)
 
     def train(self) -> AlphaZeroNet:
         self.opponent_network.to(self.device)

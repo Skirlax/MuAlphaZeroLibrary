@@ -100,7 +100,6 @@ SAMPLE_MZ_ARGS = {
     "beta": 1,
     "env_id": "ALE/Asteroids-v5",
     "pickle_dir": "Pickles/Data",
-    "use_java": False,
     "target_resolution": (96, 96),
     "az_net_linear_input_size": 8192,
     "log_dir": "Logs",

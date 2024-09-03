@@ -68,13 +68,12 @@ class MuZero:
 
         arena = MzArena(self.game_manager.make_fresh_instance(), self.muzero_config,
                         self.device) if arena_override is None else arena_override
-        java_manager = None
         self.trainer = Trainer.create(self.muzero_config, self.game_manager.make_fresh_instance(), network, self.tree,
                                       net_player,
                                       headless=headless,
                                       checkpointer_verbose=checkpointer_verbose, arena_override=arena,
                                       hook_manager=hook_manager,
-                                      memory_override=memory, java_manager=java_manager)
+                                      memory_override=memory)
         self.net = self.trainer.get_network()
 
     def from_checkpoint(self, network_class: Type[GeneralNetwork], memory: GeneralMemoryBuffer, path: str,
