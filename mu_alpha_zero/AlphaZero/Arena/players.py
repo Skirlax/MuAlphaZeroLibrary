@@ -1,14 +1,10 @@
-import atexit
 import copy
 import time
 from abc import ABC, abstractmethod
 
-import jpype
 import numpy as np
 
-from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet
 from mu_alpha_zero.Game.tictactoe_game import TicTacToeGameManager
-from mu_alpha_zero.General.az_game import AlphaZeroGame
 
 
 class Player(ABC):
@@ -77,7 +73,6 @@ class PerfectConnect4Player(Player):
         move = solve(bd)
         return move
 
-
     def make_fresh_instance(self):
         pass
 
@@ -102,7 +97,7 @@ class NetPlayer(Player):
                            "tau")
 
         pi, _ = self.monte_carlo_tree_search.search(self.network, board, current_player, device, tau=tau)
-        move = self.game_manager.select_move(pi,tau=tau)
+        move = self.game_manager.select_move(pi, tau=tau)
         self.monte_carlo_tree_search.step_root(None)
         if "unravel" in kwargs.keys():
             unravel = kwargs["unravel"]
@@ -118,42 +113,6 @@ class NetPlayer(Player):
 
     def set_network(self, network):
         self.network = network
-
-    def set_game_manager(self, game_manager):
-        self.game_manager = game_manager
-
-
-class TrainingNetPlayer(Player):
-    def __init__(self, network: AlphaZeroNet, game_manager: TicTacToeGameManager, args: dict):
-        raise NotImplementedError("Don't use this class yet, it produces incorrect results.")
-        self.name = self.__class__.__name__
-        self.args = self.__init_args(args)
-        self.network = network
-        self.game_manager = game_manager
-        self.traced_path = self.network.trace(self.args["board_size"])
-
-    def __init_args(self, args) -> dict:
-        for key in ["checkpoint_dir", "max_depth"]:
-            try:
-                args.pop(key)
-            except KeyError:
-                print(f"Key {key} not present.")
-        return args
-
-    def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
-        try:
-            current_player = kwargs["current_player"]
-            device = kwargs["device"]
-            tau = kwargs["tau"]
-        except KeyError:
-            raise KeyError("Missing keyword argument. Please supply kwargs: current_player, device, "
-                           "tau")
-        pi = CpSelfPlay.CmctsSearch(board, current_player, tau, self.args, self.traced_path)
-        move = self.game_manager.select_move(pi,tau=tau)
-        return self.game_manager.network_to_board(move)
-
-    def make_fresh_instance(self):
-        raise NotImplementedError
 
     def set_game_manager(self, game_manager):
         self.game_manager = game_manager
@@ -180,38 +139,6 @@ class HumanPlayer(Player):
         self.game_manager = game_manager
 
 
-class JavaMinimaxPlayer(Player):
-
-    def __init__(self, game_manager: AlphaZeroGame, **kwargs):
-        jpype.addClassPath(r"C:\Users\Skyr\IdeaProjects\Minimax\build\libs\Minimax-1.0-SNAPSHOT.jar")
-        jpype.startJVM()
-        self.game_manager = game_manager
-        self.name = self.__class__.__name__
-        self.kwargs = kwargs
-        atexit.register(self.on_shutdown)
-
-    def choose_move(self, board: np.ndarray, **kwargs) -> tuple[int, int]:
-        try:
-            depth = kwargs["depth"]
-            player = kwargs["player"]
-        except KeyError:
-            raise KeyError("Missing keyword argument. Please supply kwargs: depth, player")
-        Minimax = jpype.JClass("dev.skyr.Minimax")
-        minimax = Minimax()
-        print(self.game_manager.num_to_win)
-        ja = jpype.JArray.of(board)
-        move = minimax.run(board, player, player, depth, True, self.game_manager.num_to_win)
-        return tuple(move)
-
-    def make_fresh_instance(self):
-        pass
-
-    def on_shutdown(self):
-        jpype.shutdownJVM()
-
-    def set_game_manager(self, game_manager):
-        self.game_manager = game_manager
-
 class Connect4MinimaxPlayer(Player):
 
     def __init__(self, game_manager, **kwargs):
@@ -224,11 +151,10 @@ class Connect4MinimaxPlayer(Player):
         time.sleep(0.4)
         from mu_alpha_zero.MuZero.MinimaxOpponent.player import PlayerMM
         from mu_alpha_zero.MuZero.MinimaxOpponent.board import Board
-        bd = Board.from_game_state(board[:,:,0],(1,kwargs["move"]))
+        bd = Board.from_game_state(board[:, :, 0], (1, kwargs["move"]))
         player = PlayerMM(6, False)
         move = player.findMove(bd)
         return move
-
 
     def make_fresh_instance(self):
         return Connect4MinimaxPlayer(self.game_manager.make_fresh_instance(), **self.kwargs)
