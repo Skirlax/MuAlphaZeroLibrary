@@ -170,7 +170,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              muzero_config.batch_size, muzero_config)
         for epoch in range(muzero_config.epochs):
             sampled_game_data, grad_scales, priorities, weights = loader()
-            if len(sampled_game_data) <= 1:
+            if len(sampled_game_data) < 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(sampled_game_data, grad_scales, weights, device,
                                                                   muzero_config)
@@ -208,7 +208,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              is_eval=True)
         for epoch in range(muzero_config.eval_epochs):
             experience_batch, grad_scales, priorities, weights = loader()
-            if len(experience_batch) <= 1:
+            if len(experience_batch) < 1:
                 continue
             loss, loss_v, loss_pi, loss_r = self.calculate_losses(experience_batch, grad_scales, weights, device,
                                                                   muzero_config)
