@@ -15,8 +15,6 @@ This is a library for training and using the MuZero and AlphaZero algorithms. Th
 To see the project documentation, check the [wiki](https://github.com/Skirlax/MuAlphaZeroLibrary/wiki) page.
 
 ## ❗ Get started ❗
-### Linux Dependencies
-To install the library on Linux, you will need dependencies to build mysqlclient. Check [mysqlclient](https://github.com/PyMySQL/mysqlclient) for a command to install dependencies on your system.
 ### Python dependencies
 The library is built using python3.11, which it is the only tested version. It is recommended that you use the 3.11.* version of python, because of significant speed improvements.
 
