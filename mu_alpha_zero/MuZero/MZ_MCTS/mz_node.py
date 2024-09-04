@@ -10,6 +10,7 @@ class MzAlphaZeroNode(AlphaZeroNode):
     def __init__(self, select_probability=0, parent=None, times_visited_init=0, current_player=1):
         super().__init__(current_player, select_probability, parent, times_visited_init)
         self.reward = 0
+        self.vpt_state: dict = {}
 
     def get_best_child(self, min_q: float, max_q: float, gamma: float, multiple_players: bool, c=1.5, c2=19652):
         best_utc = -float("inf")
@@ -36,10 +37,11 @@ class MzAlphaZeroNode(AlphaZeroNode):
     def get_value_pred(self, prediction_forward: callable):
         return prediction_forward(self.state)
 
-    def expand_node(self, state: th.Tensor,action_probabilities: dict, im_reward: float) -> None:
+    def expand_node(self, state: th.Tensor, vpt_state: dict, action_probabilities: dict, im_reward: float) -> None:
 
         self.state = state.clone()
         self.reward = im_reward
+        self.vpt_state = vpt_state
         for action, probability in enumerate(action_probabilities):
             node = MzAlphaZeroNode(select_probability=probability, parent=self,
                                    current_player=self.current_player * (-1))

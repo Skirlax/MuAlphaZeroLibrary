@@ -1,5 +1,4 @@
 import copy
-import gc
 import random
 import time
 
@@ -52,6 +51,8 @@ class MuZeroSearchTree(SearchTree):
         num_steps = self.muzero_config.num_steps
         frame_skip = self.muzero_config.frame_skip
         state = self.game_manager.reset()
+        network_wrapper.value_net.vpt_block.reset(hard_reset=True)
+        network_wrapper.dynamics_net.vpt_block.reset(hard_reset=True)
         state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
         state = scale_state(state, self.muzero_config.scale_state)
         player = 1
@@ -69,6 +70,8 @@ class MuZeroSearchTree(SearchTree):
             pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
                     calculate_avg_num_children and step == 0))
             move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
+            network_wrapper.dynamics_forward(match_action_with_obs(latent, move, self.muzero_config).unsqueeze(0))
+            network_wrapper.dynamics_net.vpt_block.set_state_backup()
             # _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
@@ -128,7 +131,10 @@ class MuZeroSearchTree(SearchTree):
             pi = pi + np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
         pi = mask_invalid_actions(self.game_manager.get_invalid_actions(current_player), pi)
         pi = pi.flatten().tolist()
-        root_node.expand_node(state_, pi, 0)
+        network_wrapper.value_net.vpt_block.set_state_backup()
+        vpt_state = {"value_net": network_wrapper.value_net.vpt_block.get_hidden_state(),
+                     "dynamics_net": network_wrapper.dynamics_net.vpt_block.get_hidden_state()}
+        root_node.expand_node(state_, vpt_state, pi, 0)
         for simulation in range(num_simulations):
             current_node = root_node
             path = [current_node]
@@ -146,6 +152,8 @@ class MuZeroSearchTree(SearchTree):
                     games.append(game)
 
             # action = scale_action(action, self.game_manager.get_num_actions())
+            network_wrapper.value_net.vpt_block.set_hidden_state(current_node.parent().vpt_state["value_net"])
+            network_wrapper.dynamics_net.vpt_block.set_hidden_state(current_node.parent().vpt_state["dynamics_net"])
             if not done:
                 current_node_state_with_action = match_action_with_obs(current_node.parent().state, action,
                                                                        self.muzero_config)
@@ -160,7 +168,9 @@ class MuZeroSearchTree(SearchTree):
                     pi = mask_invalid_actions(games[-1].get_invalid_actions(current_node.current_player), pi)
                 pi = pi.flatten().tolist()
                 v = v.flatten().tolist()[0]
-                current_node.expand_node(next_state, pi, reward)
+                vpt_state = {"value_net": network_wrapper.value_net.vpt_block.get_hidden_state(),
+                             "dynamics_net": network_wrapper.dynamics_net.vpt_block.get_hidden_state()}
+                current_node.expand_node(next_state, vpt_state, pi, reward)
             else:
                 if self.muzero_config.multiple_players:
                     v = -1
@@ -169,6 +179,8 @@ class MuZeroSearchTree(SearchTree):
             self.backprop(v, path, games)
 
         action_probs = root_node.get_self_action_probabilities()
+        network_wrapper.value_net.vpt_block.reset()
+        network_wrapper.dynamics_net.vpt_block.reset()
         root_val_latent = (root_node.get_self_value(), root_node.get_latent())
         self.hook_manager.process_hook_executes(self, self.search.__name__, __file__, HookAt.TAIL,
                                                 args=(action_probs, root_val_latent, root_node))

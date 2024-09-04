@@ -216,6 +216,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                        "eval_loss_r": loss_r.item()})
 
     def calculate_losses(self, experience_batch, grad_scales, weights, device, muzero_config):
+        self.value_net.vpt_block.reset(hard_reset=True)
+        self.dynamics_net.vpt_block.reset(hard_reset=True)
         init_states, rewards, scalar_values, moves, pis, masks = self.get_batch_for_unroll_index(0, experience_batch,
                                                                                                  device)
         loss_fn = muzero_config._value_reward_loss
