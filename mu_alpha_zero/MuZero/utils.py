@@ -15,34 +15,15 @@ def add_actions_to_obs(observations: th.Tensor, actions: th.Tensor, dim=0):
 
 
 def match_action_with_obs(observations: th.Tensor, action: int, config: MuZeroConfig):
-    if config.is_atari:
-        tensor_action = th.zeros((config.net_action_size,), dtype=th.float32, device=observations.device).scatter(0,
-                                                                                                                  th.tensor(
-                                                                                                                      action),
-                                                                                                                  1)
-        tensor_action = tensor_action.expand((observations.shape[1], observations.shape[2]))
-    else:
-        if config.actions_are == "columns":
-            tensor_action = th.full((1, observations.size(1), observations.size(2)),
-                                    scale_action(action, config.net_action_size),
-                                    device=observations.device)
-
-        elif config.actions_are == "rows":
-            tensor_action = th.zeros((observations.shape[1],), device=observations.device).scatter(0, th.tensor(action,
-                                                                                                                device=observations.device),
-                                                                                                   1).unsqueeze(0)
-            tensor_action = tensor_action.expand((1, observations.shape[1], observations.shape[2]))
-        elif config.actions_are == "board":
-            # unravel to 2d
-            action = [action % observations.shape[1], action % observations.shape[2]]
-            tensor_action = th.zeros((1, observations.shape[1], observations.shape[2]), device=observations.device)[
-                action[0], action[1]] = 1
-        else:
-            raise ValueError("Invalid config.actions_are value.")
+    tensor_action = th.full((1, observations.size(1), observations.size(2)),
+                            scale_action(action, config.net_action_size),
+                            device=observations.device)
     return add_actions_to_obs(observations, tensor_action)
 
 
 def match_action_with_obs_batch(observation_batch: th.Tensor, action_batch: list[int], config: MuZeroConfig):
+    if len(observation_batch.shape) == 3:
+        observation_batch = observation_batch.unsqueeze(0)
     tensors = [match_action_with_obs(observation_batch[index], action_batch[index], config).unsqueeze(0) for index in
                range(len(action_batch))]
     return th.cat(tensors, dim=0)
