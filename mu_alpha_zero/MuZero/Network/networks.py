@@ -274,7 +274,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         v_loss *= 0.25
         loss = pi_loss + v_loss + r_loss
         if muzero_config.enable_per:
-            loss *= th.tensor(weights, dtype=loss.dtype, device=loss.device)
+            weights = th.tensor(weights, dtype=loss.dtype, device=loss.device)
+            weights = weights / weights.max()
+            loss = loss * weights
         loss = loss.mean()
         if muzero_config.enable_per:
             self.update_priorities(new_priorities, experience_batch)
