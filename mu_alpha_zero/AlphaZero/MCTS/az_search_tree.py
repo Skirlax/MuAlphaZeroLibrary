@@ -114,9 +114,9 @@ class McSearchTree(SearchTree):
         state_ = th.tensor(state_, dtype=th.float32, device=device).unsqueeze(0)
         probabilities, v = network.predict(state_, muzero=False)
         if self.alpha_zero_config.add_dirichlet_noise:
-            probabilities = (
-                                    1 - self.alpha_zero_config.dirichlet_alpha) * probabilities + self.alpha_zero_config.dirichlet_alpha * np.random.dirichlet(
-                [0.03] * len(probabilities))
+            d = np.random.dirichlet([self.alpha_zero_config.dirichlet_alpha] * self.alpha_zero_config.net_action_size)
+            probabilities = (1 - self.alpha_zero_config.epsilon) * probabilities + self.alpha_zero_config.epsilon * d
+            probabilities = probabilities.cpu().detach().numpy()
         probabilities = mask_invalid_actions(probabilities,
                                              self.game_manager.get_invalid_actions(state.copy(), current_player))
         probabilities = probabilities.flatten().tolist()

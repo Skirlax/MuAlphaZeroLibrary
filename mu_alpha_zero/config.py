@@ -59,6 +59,7 @@ class Config:
     recalculate_p_on_every_call: bool = False
     is_atari: bool = False
     wandbd_project_name: str = "mz"
+    epsilon: float = 0.75  # for dirichlet noise
 
     def to_dict(self):
         return {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
