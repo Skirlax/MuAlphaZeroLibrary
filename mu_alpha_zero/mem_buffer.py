@@ -1,8 +1,9 @@
 import itertools
+import math
 import random
-import uuid
 from collections import deque
 from itertools import chain
+from typing import Optional, Callable
 
 import numpy as np
 import numpy.random
@@ -14,7 +15,6 @@ from mu_alpha_zero.General.memory import GeneralMemoryBuffer
 from mu_alpha_zero.General.utils import find_project_root
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
-from mu_alpha_zero.MuZero.lazy_arrays import LazyArray
 from mu_alpha_zero.MuZero.utils import scale_action
 from mu_alpha_zero.config import MuZeroConfig
 
@@ -32,14 +32,15 @@ class MemDataset(Dataset):
 
 class MemBuffer(GeneralMemoryBuffer):
     def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None,
-                 hook_manager: HookManager or None = None):
+                 hook_manager: HookManager or None = None,
+                 growing_sliding_window: Optional[GrowingSlidingWindow] = None):  # noqa
         self.max_size = max_size
         self.disk = disk
         self.full_disk = full_disk
         self.dir_path = dir_path
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
-        self.buffer = self.init_buffer(dir_path)
-        self.eval_buffer = self.init_buffer(dir_path)
+        self.buffer = self.init_buffer(dir_path, growing_sliding_window)
+        self.eval_buffer = self.init_buffer(dir_path, growing_sliding_window)
         self.last_buffer_size = 0
         # self.priorities = []
         # self.eval_priorities = []
@@ -57,12 +58,14 @@ class MemBuffer(GeneralMemoryBuffer):
         else:
             self.eval_buffer.append(experience)
 
-    def init_buffer(self, dir_path: str or None):
+    def init_buffer(self, dir_path: Optional[str], growing_sliding_window: Optional[GrowingSlidingWindow]):  # noqa
         if self.disk and self.full_disk:
             if dir_path is None:
                 dir_path = f"{find_project_root()}/Pickles/Data"
             return Deque(maxlen=self.max_size, directory=dir_path)
         else:
+            if growing_sliding_window is not None:
+                return growing_sliding_window
             return deque(maxlen=self.max_size)
 
     def get_dir_path(self):
@@ -295,3 +298,43 @@ class MuZeroFrameBuffer:
 
     def __len__(self, player):
         return len(self.buffers[player])
+
+
+class GrowingSlidingWindow:
+    def __init__(self, initial_size: int, max_size: int,
+                 increment_fn: Optional[Callable[[int, int, int], int]] = None, n: Optional[int] = 5,
+                 decrease_n: bool = True):
+        self.initial_size = initial_size
+        self.max_size = max_size
+        self.increment_fn = increment_fn
+        self.buffer = deque(maxlen=initial_size)
+        self.current_step = 0
+        self.current_size = initial_size
+        self.n = n
+        self.do_decrease_n = decrease_n
+        self.actual_size = 0
+
+    def append(self, item: object):
+        self.buffer.append(item)
+        self.actual_size += 1
+        # If the buffer has been filled at least n times, increment the buffer size.
+        if self.actual_size >= self.current_size * self.n:
+            self.increment()
+            self.decrease_n()
+
+    def default_increment_fn(self, current_step: int, current_size: int, max_size: int) -> int:
+        x_mul = 10 / (1 + math.pow(2, -current_step))
+        return min(self.max_size, int(current_size * x_mul))
+
+    def increment(self):
+        self.current_step += 1
+        if self.increment_fn is not None:
+            self.current_size = self.increment_fn(self.current_step, self.current_size, self.max_size)
+        else:
+            self.current_size = self.default_increment_fn(self.current_step, self.current_size, self.max_size)
+
+        self.buffer = deque(self.buffer, maxlen=self.current_size)
+
+    def decrease_n(self):
+        if self.n - 1 >= 1 and self.do_decrease_n:
+            self.n -= 1
