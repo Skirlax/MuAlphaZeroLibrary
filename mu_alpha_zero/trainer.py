@@ -33,7 +33,8 @@ class Trainer:
     def __init__(self, network: GeneralNetwork, game: AlphaZeroGame, optimizer: th.optim, memory: GeneralMemoryBuffer,
                  muzero_alphazero_config: Config, checkpointer: CheckPointer, search_tree: SearchTree,
                  net_player: Player, hook_manager: HookManager or None, device, headless: bool = True,
-                 opponent_network_override: th.nn.Module or None = None, arena_override: GeneralArena or None = None) -> None:
+                 opponent_network_override: th.nn.Module or None = None,
+                 arena_override: GeneralArena or None = None) -> None:
         self.muzero_alphazero_config = muzero_alphazero_config
         self.device = device
         self.headless = headless
@@ -58,7 +59,7 @@ class Trainer:
                         net_player_class: Type[Player], checkpoint_path: str, checkpoint_dir: str, game: AlphaZeroGame,
                         headless: bool = True, hook_manager: HookManager or None = None,
                         checkpointer_verbose: bool = False, arena_override: GeneralArena or None = None,
-                        mem: GeneralMemoryBuffer or None = None,log_dir_override: str = None):
+                        mem: GeneralMemoryBuffer or None = None, log_dir_override: str = None):
         device = th.device("cuda" if th.cuda.is_available() else "cpu")
         checkpointer = CheckPointer(checkpoint_dir, verbose=checkpointer_verbose)
 
@@ -177,7 +178,7 @@ class Trainer:
         self.logger.pushbullet_log(LoggingMessageTemplates.TRAINING_END_PSB())
         return self.network
 
-    def train_parallel(self,use_reanalyze: bool = False, use_pitting: bool = False):
+    def train_parallel(self, use_reanalyze: bool = False, use_pitting: bool = False):
         self.muzero_alphazero_config.recalculate_p_on_every_call = True
         self.opponent_network.to(self.device)
         self.logger.log(LoggingMessageTemplates.TRAINING_START(self.muzero_alphazero_config.num_iters))
@@ -185,7 +186,8 @@ class Trainer:
         shared_storage_manager = SharedStorageManager()
         shared_storage_manager.start()
         mem = shared_storage_manager.MemBuffer(self.memory.max_size, self.memory.disk, self.memory.full_disk,
-                                               self.memory.dir_path, hook_manager=self.memory.hook_manager)
+                                               self.memory.dir_path, hook_manager=self.memory.hook_manager,
+                                               growing_sliding_window=self.memory.growing_sliding_window)
         shared_storage: SharedStorage = shared_storage_manager.SharedStorage(mem)
         shared_storage.set_stable_network_params(self.network.state_dict())
         pool = self.mcts.start_continuous_self_play(self.make_n_networks(self.muzero_alphazero_config.num_workers),
@@ -206,7 +208,7 @@ class Trainer:
                 self.muzero_alphazero_config))
             p3.start()
         if use_pitting:
-            p4 = Process(target=self.arena.continuous_pit,args=(
+            p4 = Process(target=self.arena.continuous_pit, args=(
                 self.net_player.make_fresh_instance(),
                 self.net_player.make_fresh_instance(),
                 RandomPlayer(self.game_manager.make_fresh_instance(), **{}),
