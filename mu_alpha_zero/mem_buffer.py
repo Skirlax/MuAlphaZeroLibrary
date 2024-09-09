@@ -70,6 +70,9 @@ class GrowingSlidingWindow:
         if self.n - 1 >= 1 and self.do_decrease_n:
             self.n -= 1
 
+    def __len__(self):
+        return len(self.buffer)
+
 
 class MemBuffer(GeneralMemoryBuffer):
     def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None,
