@@ -1,3 +1,4 @@
+import copy
 import itertools
 import math
 import random
@@ -81,6 +82,7 @@ class MemBuffer(GeneralMemoryBuffer):
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
         self.buffer = self.init_buffer(dir_path, growing_sliding_window)
         self.eval_buffer = self.init_buffer(dir_path, growing_sliding_window)
+        self.growing_sliding_window = growing_sliding_window
         self.last_buffer_size = 0
         # self.priorities = []
         # self.eval_priorities = []
@@ -105,7 +107,7 @@ class MemBuffer(GeneralMemoryBuffer):
             return Deque(maxlen=self.max_size, directory=dir_path)
         else:
             if growing_sliding_window is not None:
-                return growing_sliding_window
+                return copy.deepcopy(growing_sliding_window)
             return deque(maxlen=self.max_size)
 
     def get_dir_path(self):
