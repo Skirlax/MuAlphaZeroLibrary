@@ -150,9 +150,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
 
     def __init__(self, in_channels: int, num_channels: int, dropout: float, action_size: int,
                  linear_input_size: list[int], support_size: int,
-                 state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
+                 state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, num_head_channels: int,
                  is_atari: bool,
-                 num_head_channels: int,
                  latent_size: list[int] = [6, 6],
                  hook_manager: HookManager or None = None, num_blocks: int = 8, muzero: bool = False,
                  is_dynamics: bool = False, is_representation: bool = False):
@@ -171,9 +170,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
         self.v_linear_layers = v_linear_layers
-        self.linear_head_hidden_size = linear_head_hidden_size
-        self.is_atari = is_atari
         self.num_head_channels = num_head_channels
+        self.is_atari = is_atari
         self.optimizer = None
         self.scheduler = None
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
@@ -183,19 +181,15 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         self.dropout = nn.Dropout(dropout)
         self.blocks = nn.ModuleList([OriginalAlphaZeroBlock(num_channels, num_channels) for _ in range(num_blocks)])
         if not is_representation:
-            self.value_head = ValueHead(muzero, linear_input_size[0], support_size, self.num_head_channels,
-                                        v_linear_layers,
-                                        linear_head_hidden_size)
+            self.value_head = ValueHead(muzero, linear_input_size[0], support_size, num_channels,
+                                        num_head_channels)
         else:
             self.value_head = th.nn.Identity()
         if is_dynamics or is_representation:
-            self.policy_state_head = StateHead(linear_input_size[2], self.num_head_channels, latent_size,
-                                               state_linear_layers,
-                                               linear_head_hidden_size)
+            self.policy_state_head = StateHead(linear_input_size[2], num_channels, latent_size)
         else:
-            self.policy_state_head = PolicyHead(action_size, linear_input_size[1], self.num_head_channels,
-                                                pi_linear_layers,
-                                                linear_head_hidden_size)
+            self.policy_state_head = PolicyHead(action_size, linear_input_size[1], num_channels,
+                                                num_head_channels)
 
     def forward(self, x, muzero: bool = False, return_support: bool = False):
         if not muzero:
@@ -235,9 +229,8 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
         return OriginalAlphaZeroNetwork(self.in_channels, self.num_channels, self.dropout_p, self.action_size,
                                         self.linear_input_size, self.support_size,
                                         self.state_linear_layers, self.pi_linear_layers, self.v_linear_layers,
-                                        self.linear_head_hidden_size,
-                                        self.is_atari,
                                         self.num_head_channels,
+                                        self.is_atari,
                                         self.latent_size,
                                         hook_manager=self.hook_manager,
                                         num_blocks=self.num_blocks, muzero=self.muzero, is_dynamics=self.is_dynamics)
@@ -250,11 +243,10 @@ class OriginalAlphaZeroNetwork(nn.Module, GeneralAlphZeroNetwork):
                                         state_linear_layers=config.state_linear_layers,
                                         pi_linear_layers=config.pi_linear_layers,
                                         v_linear_layers=config.v_linear_layers,
-                                        linear_head_hidden_size=config.linear_head_hidden_size,
+                                        num_head_channels=config.num_head_channels,
                                         num_blocks=config.num_blocks, muzero=config.muzero,
                                         is_atari=config.is_atari,
-                                        support_size=config.support_size, latent_size=config.net_latent_size,
-                                        num_head_channels=config.num_head_channels)
+                                        support_size=config.support_size, latent_size=config.net_latent_size)
 
     def train_net(self, memory_buffer, muzero_alphazero_config: Config) -> tuple[float, list[float]]:
         if memory_buffer.train_length() <= 1:
@@ -349,7 +341,7 @@ class OriginalAlphaZeroBlock(th.nn.Module):
 
 
 class ValueHead(th.nn.Module):
-    def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int, num_layers: int,
+    def __init__(self, muzero: bool, linear_input_size: int, support_size: int, num_channels: int,
                  linear_hidden_size: int):
         super(ValueHead, self).__init__()
         self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
@@ -371,7 +363,7 @@ class ValueHead(th.nn.Module):
 
 
 class PolicyHead(th.nn.Module):
-    def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int, num_layers: int,
+    def __init__(self, action_size: int, linear_input_size_policy: int, num_channels: int,
                  linear_hidden_size: int):
         super(PolicyHead, self).__init__()
         self.conv = nn.Conv2d(num_channels, linear_hidden_size, 1)
@@ -388,8 +380,7 @@ class PolicyHead(th.nn.Module):
 
 
 class StateHead(th.nn.Module):
-    def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int], num_layers: int,
-                 linear_hidden_size: int):
+    def __init__(self, linear_input_size: int, out_channels: int, latent_size: list[int]):
         super(StateHead, self).__init__()
         self.conv = nn.Conv2d(out_channels, out_channels, 1)
         self.bn = nn.BatchNorm2d(out_channels)

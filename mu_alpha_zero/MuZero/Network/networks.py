@@ -25,7 +25,6 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                  use_original: bool, support_size: int, num_blocks: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
                  is_atari: bool,
-                 num_head_channels: int,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -43,14 +42,12 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.linear_input_size = linear_input_size
         self.support_size = support_size
         self.is_atari = is_atari
-        self.num_head_channels = num_head_channels
         self.num_blocks = num_blocks
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
         self.v_linear_layers = v_linear_layers
         self.linear_head_hidden_size = linear_head_hidden_size
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
-        # self.action_embedding = th.nn.Embedding(action_size, 256)
         if not is_atari:
             self.representation_network = OriginalAlphaZeroNetwork(in_channels=rep_input_channels,
                                                                    num_channels=num_out_channels,
@@ -60,10 +57,9 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    state_linear_layers=state_linear_layers,
                                                                    pi_linear_layers=pi_linear_layers,
                                                                    v_linear_layers=v_linear_layers,
-                                                                   linear_head_hidden_size=linear_head_hidden_size,
+                                                                   num_head_channels=linear_head_hidden_size,
                                                                    is_atari=is_atari,
                                                                    support_size=support_size, latent_size=latent_size,
-                                                                   num_head_channels=self.num_head_channels,
                                                                    num_blocks=num_blocks, muzero=True,
                                                                    is_dynamics=False,
                                                                    is_representation=True)
@@ -78,9 +74,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              state_linear_layers=state_linear_layers,
                                                              pi_linear_layers=pi_linear_layers,
                                                              v_linear_layers=v_linear_layers,
-                                                             linear_head_hidden_size=linear_head_hidden_size,
+                                                             num_head_channels=linear_head_hidden_size,
                                                              is_atari=is_atari,
-                                                             num_head_channels=self.num_head_channels,
                                                              support_size=support_size, latent_size=latent_size,
                                                              num_blocks=num_blocks, muzero=True, is_dynamics=True)
             self.prediction_network = OriginalAlphaZeroNetwork(in_channels=num_channels, num_channels=num_out_channels,
@@ -89,9 +84,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                state_linear_layers=state_linear_layers,
                                                                pi_linear_layers=pi_linear_layers,
                                                                v_linear_layers=v_linear_layers,
-                                                               linear_head_hidden_size=linear_head_hidden_size,
+                                                               num_head_channels=linear_head_hidden_size,
                                                                is_atari=is_atari,
-                                                               num_head_channels=self.num_head_channels,
                                                                linear_input_size=linear_input_size,
                                                                support_size=support_size, latent_size=latent_size,
                                                                num_blocks=num_blocks, muzero=True, is_dynamics=False)
@@ -108,7 +102,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    config.state_linear_layers, config.pi_linear_layers, config.v_linear_layers,
-                   config.linear_head_hidden_size, config.is_atari, config.num_head_channels,
+                   config.num_head_channels, config.is_atari,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
@@ -155,8 +149,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          num_blocks=self.num_blocks, use_pooling=self.use_pooling,
                          state_linear_layers=self.state_linear_layers,
                          pi_linear_layers=self.pi_linear_layers, v_linear_layers=self.v_linear_layers,
-                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari,
-                         num_head_channels=self.num_head_channels)
+                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         if memory_buffer.train_length() <= 1:
