@@ -1,18 +1,15 @@
-import time
-from typing import Tuple, List, Any
+from typing import Any
 
 import numpy as np
 import torch as th
 import torch.nn.functional as F
 import wandb
 from torch import nn, Tensor
-from torch.nn.functional import mse_loss
 
 from mu_alpha_zero.AlphaZero.Network.nnet import AlphaZeroNet as PredictionNet, OriginalAlphaZeroNetwork
 from mu_alpha_zero.AlphaZero.checkpointer import CheckPointer
 from mu_alpha_zero.AlphaZero.logger import Logger
 from mu_alpha_zero.General.memory import GeneralMemoryBuffer
-from mu_alpha_zero.General.mz_game import MuZeroGame
 from mu_alpha_zero.General.network import GeneralMuZeroNetwork
 from mu_alpha_zero.Hooks.hook_manager import HookManager
 from mu_alpha_zero.Hooks.hook_point import HookAt
@@ -28,6 +25,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                  use_original: bool, support_size: int, num_blocks: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
                  is_atari: bool,
+                 num_head_channels: int,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -45,6 +43,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.linear_input_size = linear_input_size
         self.support_size = support_size
         self.is_atari = is_atari
+        self.num_head_channels = num_head_channels
         self.num_blocks = num_blocks
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
@@ -64,6 +63,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    linear_head_hidden_size=linear_head_hidden_size,
                                                                    is_atari=is_atari,
                                                                    support_size=support_size, latent_size=latent_size,
+                                                                   num_head_channels=self.num_head_channels,
                                                                    num_blocks=num_blocks, muzero=True,
                                                                    is_dynamics=False,
                                                                    is_representation=True)
@@ -80,6 +80,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              v_linear_layers=v_linear_layers,
                                                              linear_head_hidden_size=linear_head_hidden_size,
                                                              is_atari=is_atari,
+                                                             num_head_channels=self.num_head_channels,
                                                              support_size=support_size, latent_size=latent_size,
                                                              num_blocks=num_blocks, muzero=True, is_dynamics=True)
             self.prediction_network = OriginalAlphaZeroNetwork(in_channels=num_channels, num_channels=num_out_channels,
@@ -90,6 +91,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                v_linear_layers=v_linear_layers,
                                                                linear_head_hidden_size=linear_head_hidden_size,
                                                                is_atari=is_atari,
+                                                               num_head_channels=self.num_head_channels,
                                                                linear_input_size=linear_input_size,
                                                                support_size=support_size, latent_size=latent_size,
                                                                num_blocks=num_blocks, muzero=True, is_dynamics=False)
@@ -106,7 +108,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    config.state_linear_layers, config.pi_linear_layers, config.v_linear_layers,
-                   config.linear_head_hidden_size, config.is_atari,
+                   config.linear_head_hidden_size, config.is_atari, config.num_head_channels,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
@@ -153,7 +155,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          num_blocks=self.num_blocks, use_pooling=self.use_pooling,
                          state_linear_layers=self.state_linear_layers,
                          pi_linear_layers=self.pi_linear_layers, v_linear_layers=self.v_linear_layers,
-                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
+                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari,
+                         num_head_channels=self.num_head_channels)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         if memory_buffer.train_length() <= 1:
@@ -229,7 +232,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             hidden_state = scale_hidden_state(hidden_state)
         pred_pis, pred_vs = self.prediction_forward(hidden_state, return_support=muzero_config.loss_gets_support)
         pi_loss, v_loss, r_loss = 0, 0, 0
-        pi_loss += self.muzero_loss(pred_pis, pis,masks=masks)
+        pi_loss += self.muzero_loss(pred_pis, pis, masks=masks)
         v_loss += loss_fn(pred_vs, values)
         new_priorities = [[] for x in range(pred_pis.size(0))]
         grad_scales = [[grad_scales[x][i] for x in range(len(grad_scales))] for i in range(len(grad_scales[0]))]
@@ -253,7 +256,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             if muzero_config.scale_hidden_state:
                 hidden_state = scale_hidden_state(hidden_state)
             hidden_state.register_hook(lambda grad: grad * 0.5)
-            current_pi_loss = self.muzero_loss(pred_pis, pis,masks=masks)
+            current_pi_loss = self.muzero_loss(pred_pis, pis, masks=masks)
             current_v_loss = loss_fn(pred_vs, values)
             current_r_loss = loss_fn(pred_rs, rewards)
             current_r_loss.register_hook(
@@ -312,7 +315,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             for i in range(len(game.datapoints)):
                 game.datapoints[i].priority = new_priorities[idx][i]
 
-    def muzero_loss(self, y_hat, y,masks: th.Tensor or None = None) -> th.Tensor:
+    def muzero_loss(self, y_hat, y, masks: th.Tensor or None = None) -> th.Tensor:
         # if masks is not None:
         #     y_hat = y_hat * masks.reshape(y_hat.shape)
         return -th.sum(y * y_hat, dim=1).unsqueeze(1)

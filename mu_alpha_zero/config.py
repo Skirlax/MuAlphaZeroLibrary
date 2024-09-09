@@ -15,6 +15,7 @@ import torch.optim
 class Config:
     num_net_channels: int = 256
     num_net_in_channels: int = 1
+    num_head_channels: int = 32
     net_dropout: float = 0.3
     net_action_size: int = 14
     state_linear_layers = 10
