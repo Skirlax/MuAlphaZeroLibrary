@@ -73,6 +73,15 @@ class GrowingSlidingWindow:
     def __len__(self):
         return len(self.buffer)
 
+    def __getitem__(self, item):
+        return self.buffer[item]
+
+    def __setitem__(self, key, value):
+        self.buffer[key] = value
+
+    def __delitem__(self, key):
+        del self.buffer[key]
+
 
 class MemBuffer(GeneralMemoryBuffer):
     def __init__(self, max_size, disk: bool = False, full_disk: bool = False, dir_path: str = None,
