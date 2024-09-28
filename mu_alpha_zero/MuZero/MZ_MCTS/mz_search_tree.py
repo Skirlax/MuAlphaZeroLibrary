@@ -66,17 +66,22 @@ class MuZeroSearchTree(SearchTree):
         game_length = 0
         for step in range(num_steps):
             game_length += 1
-            pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
-                    calculate_avg_num_children and step == 0))
-            move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
-            # _, pred_v = network_wrapper.prediction_forward(latent.unsqueeze(0), predict=True)
+            if self.muzero_config.both_play_at_once:
+                pi1, (v1, latent1) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
+                        calculate_avg_num_children and step == 0))
+                move1 = self.game_manager.select_move(pi1, tau=self.muzero_config.tau)
+                pi2, (v2, latent2) = self.search(network_wrapper, state, -player, device, calculate_avg_num_children=(
+                        calculate_avg_num_children and step == 0))
+                move2 = self.game_manager.select_move(pi2, tau=self.muzero_config.tau)
+                move = [move1, move2]
+            else:
+                pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
+                        calculate_avg_num_children and step == 0))
+                move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
             state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
 
-            # data.append(
-            #     (pi, v, (rew, move, float(pred_v[0]), player),
-            #      ))
             if self.muzero_config.multiple_players:
                 player = -player
             self.buffer.add_frame(state, scale_action(move, self.game_manager.get_num_actions()), player)

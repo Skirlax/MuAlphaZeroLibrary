@@ -134,6 +134,7 @@ class MuZeroConfig(Config):
     # Will keep maximum of len(longest_path_in_tree) actual game states in memory during tree search,
     # in order to deduce when the game is over and improve initial policy.
     use_true_game_state_in_tree: bool = False
+    both_play_at_once: bool = False
 
 
 @dataclass
