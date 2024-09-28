@@ -24,7 +24,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                  num_out_channels: int, linear_input_size: int or list[int], rep_input_channels: int,
                  use_original: bool, support_size: int, num_blocks: int,
                  state_linear_layers: int, pi_linear_layers: int, v_linear_layers: int, linear_head_hidden_size: int,
-                 is_atari: bool,
+                 rewards_continuous: bool, use_reducing_representation_net: bool,
                  hook_manager: HookManager or None = None, use_pooling: bool = True):
         super(MuZeroNet, self).__init__()
         self.input_channels = input_channels
@@ -41,14 +41,15 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         self.num_out_channels = num_out_channels
         self.linear_input_size = linear_input_size
         self.support_size = support_size
-        self.is_atari = is_atari
+        self.rewards_continuous = rewards_continuous
+        self.use_reducing_representation_net = use_reducing_representation_net
         self.num_blocks = num_blocks
         self.state_linear_layers = state_linear_layers
         self.pi_linear_layers = pi_linear_layers
         self.v_linear_layers = v_linear_layers
         self.linear_head_hidden_size = linear_head_hidden_size
         self.hook_manager = hook_manager if hook_manager is not None else HookManager()
-        if not is_atari:
+        if not use_reducing_representation_net:
             self.representation_network = OriginalAlphaZeroNetwork(in_channels=rep_input_channels,
                                                                    num_channels=num_out_channels,
                                                                    dropout=dropout,
@@ -58,7 +59,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                    pi_linear_layers=pi_linear_layers,
                                                                    v_linear_layers=v_linear_layers,
                                                                    num_head_channels=linear_head_hidden_size,
-                                                                   is_atari=is_atari,
+                                                                   rewards_continuous=rewards_continuous,
                                                                    support_size=support_size, latent_size=latent_size,
                                                                    num_blocks=num_blocks, muzero=True,
                                                                    is_dynamics=False,
@@ -75,7 +76,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                              pi_linear_layers=pi_linear_layers,
                                                              v_linear_layers=v_linear_layers,
                                                              num_head_channels=linear_head_hidden_size,
-                                                             is_atari=is_atari,
+                                                             rewards_continuous=rewards_continuous,
                                                              support_size=support_size, latent_size=latent_size,
                                                              num_blocks=num_blocks, muzero=True, is_dynamics=True)
             self.prediction_network = OriginalAlphaZeroNetwork(in_channels=num_channels, num_channels=num_out_channels,
@@ -85,7 +86,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                                                                pi_linear_layers=pi_linear_layers,
                                                                v_linear_layers=v_linear_layers,
                                                                num_head_channels=linear_head_hidden_size,
-                                                               is_atari=is_atari,
+                                                               rewards_continuous=rewards_continuous,
                                                                linear_input_size=linear_input_size,
                                                                support_size=support_size, latent_size=latent_size,
                                                                num_blocks=num_blocks, muzero=True, is_dynamics=False)
@@ -102,7 +103,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                    config.net_latent_size, config.num_net_out_channels, config.az_net_linear_input_size,
                    config.rep_input_channels, config.use_original, config.support_size, config.num_blocks,
                    config.state_linear_layers, config.pi_linear_layers, config.v_linear_layers,
-                   config.num_head_channels, config.is_atari,
+                   config.num_head_channels, config.rewards_continuous, config.use_reducing_representation_net,
                    hook_manager=hook_manager, use_pooling=config.use_pooling)
 
     def dynamics_forward(self, x: th.Tensor, predict: bool = False, return_support: bool = False,
@@ -149,7 +150,8 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
                          num_blocks=self.num_blocks, use_pooling=self.use_pooling,
                          state_linear_layers=self.state_linear_layers,
                          pi_linear_layers=self.pi_linear_layers, v_linear_layers=self.v_linear_layers,
-                         linear_head_hidden_size=self.linear_head_hidden_size, is_atari=self.is_atari)
+                         linear_head_hidden_size=self.linear_head_hidden_size, rewards_continuous=self.rewards_continuous,
+                         use_reducing_representation_net=self.use_reducing_representation_net)
 
     def train_net(self, memory_buffer: GeneralMemoryBuffer, muzero_config: MuZeroConfig) -> tuple[float, list[float]]:
         if memory_buffer.train_length() <= 1:
@@ -217,7 +219,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         loss_fn = muzero_config._value_reward_loss
         # rewards = scalar_to_support(rewards, muzero_config.support_size)
         if muzero_config.loss_gets_support:
-            values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.is_atari)
+            values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.rewards_continuous)
         else:
             values = scalar_values
         hidden_state = self.representation_forward(init_states)
@@ -232,14 +234,14 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
         if muzero_config.enable_per:
             self.populate_priorities((th.abs(support_to_scalar(pred_vs,
                                                                muzero_config.support_size,
-                                                               muzero_config.is_atari) - scalar_values) ** muzero_config.alpha).reshape(
+                                                               muzero_config.rewards_continuous) - scalar_values) ** muzero_config.alpha).reshape(
                 -1).tolist(), new_priorities)
         for i in range(1, muzero_config.K + 1):
             _, rewards, scalar_values, moves, pis, masks = self.get_batch_for_unroll_index(i, experience_batch,
                                                                                            device)
             if muzero_config.loss_gets_support:
-                rewards = scalar_to_support(rewards, muzero_config.support_size, muzero_config.is_atari)
-                values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.is_atari)
+                rewards = scalar_to_support(rewards, muzero_config.support_size, muzero_config.rewards_continuous)
+                values = scalar_to_support(scalar_values, muzero_config.support_size, muzero_config.rewards_continuous)
             else:
                 values = scalar_values
 
@@ -264,7 +266,7 @@ class MuZeroNet(th.nn.Module, GeneralMuZeroNetwork):
             if muzero_config.enable_per:
                 self.populate_priorities((th.abs(support_to_scalar(pred_vs,
                                                                    muzero_config.support_size,
-                                                                   muzero_config.is_atari) - scalar_values) ** muzero_config.alpha).reshape(
+                                                                   muzero_config.rewards_continuous) - scalar_values) ** muzero_config.alpha).reshape(
                     -1).tolist(), new_priorities)
         # TODO: Multiply v by 0.25 when reanalyze implemented.
         v_loss *= 0.25

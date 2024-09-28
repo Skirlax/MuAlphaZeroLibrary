@@ -57,7 +57,7 @@ class Config:
     num_worker_iters: int = 100_000
     enable_frame_buffer: bool = True
     recalculate_p_on_every_call: bool = False
-    is_atari: bool = False
+    rewards_continuous: bool = False
     wandbd_project_name: str = "mz"
     epsilon: float = 0.75  # for dirichlet noise
 
@@ -135,6 +135,7 @@ class MuZeroConfig(Config):
     # in order to deduce when the game is over and improve initial policy.
     use_true_game_state_in_tree: bool = False
     both_play_at_once: bool = False
+    use_reducing_representation_net: bool = True
 
 
 @dataclass
