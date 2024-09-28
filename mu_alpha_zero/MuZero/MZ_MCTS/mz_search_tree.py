@@ -66,27 +66,25 @@ class MuZeroSearchTree(SearchTree):
         game_length = 0
         for step in range(num_steps):
             game_length += 1
-            if self.muzero_config.both_play_at_once:
-                pi1, (v1, latent1) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
-                        calculate_avg_num_children and step == 0))
-                move1 = self.game_manager.select_move(pi1, tau=self.muzero_config.tau)
-                pi2, (v2, latent2) = self.search(network_wrapper, state, -player, device, calculate_avg_num_children=(
-                        calculate_avg_num_children and step == 0))
-                move2 = self.game_manager.select_move(pi2, tau=self.muzero_config.tau)
-                move = [move1, move2]
+            pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
+                    calculate_avg_num_children and step == 0))
+            move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
+            if player == -1 and self.muzero_config.both_play_at_once:
+                states,rews,done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
+                data.datapoints[-1].rew = rews[0]
+                state = states[0]
+                rew = rews[1]
             else:
-                pi, (v, latent) = self.search(network_wrapper, state, player, device, calculate_avg_num_children=(
-                        calculate_avg_num_children and step == 0))
-                move = self.game_manager.select_move(pi, tau=self.muzero_config.tau)
-            state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
+                state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
             state = scale_state(state, self.muzero_config.scale_state)
 
             if self.muzero_config.multiple_players:
                 player = -player
             self.buffer.add_frame(state, scale_action(move, self.game_manager.get_num_actions()), player)
-            self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player),
-                                  scale_action(move, self.game_manager.get_num_actions()), -player)
+            if not self.muzero_config.both_play_at_once:
+                self.buffer.add_frame(self.game_manager.get_state_for_passive_player(state, -player),
+                                      scale_action(move, self.game_manager.get_num_actions()), -player)
             data.datapoints[-1].v = v
             data.datapoints[-1].pi = [x for x in pi.values()]
             data.datapoints[-1].move = move
@@ -97,12 +95,7 @@ class MuZeroSearchTree(SearchTree):
                           frame if dir_path is None else LazyArray(frame, dir_path),
                           self.game_manager.get_invalid_actions(player)))
             if done:
-                # time.sleep(1)
-                # print(player)
-                # print(v)
                 break
-            # self.game_manager.render()
-            # time.sleep(0.5)
 
         try:
             wandb.log({"Game length": game_length})
