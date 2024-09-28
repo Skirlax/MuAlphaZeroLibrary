@@ -330,6 +330,8 @@ class MuZeroFrameBuffer:
         self.buffers = {1: deque(maxlen=frame_buffer_size), -1: deque(maxlen=frame_buffer_size)}
 
     def add_frame(self, frame, action, player):
+        if len(self.buffers[player]) == 0:
+            self.init_buffer(frame, player)
         if self.ignore_actions:
             self.buffers[player].append(frame)
             return

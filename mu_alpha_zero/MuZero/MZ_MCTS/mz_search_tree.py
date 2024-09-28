@@ -56,7 +56,7 @@ class MuZeroSearchTree(SearchTree):
         state = scale_state(state, self.muzero_config.scale_state)
         player = 1
         self.buffer.init_buffer(state, player)
-        if self.muzero_config.multiple_players:
+        if self.muzero_config.multiple_players and not self.muzero_config.both_play_at_once:
             self.buffer.init_buffer(self.game_manager.get_state_for_passive_player(state, -player), -player)
         data = SingleGameData()
         frame = self.buffer.concat_frames(player).detach().cpu().numpy()
