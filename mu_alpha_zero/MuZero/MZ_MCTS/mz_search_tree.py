@@ -125,7 +125,6 @@ class MuZeroSearchTree(SearchTree):
         if self.muzero_config.dirichlet_alpha > 0:
             d = np.random.dirichlet([self.muzero_config.dirichlet_alpha] * self.muzero_config.net_action_size)
             pi = (1 - self.muzero_config.epsilon) * pi + self.muzero_config.epsilon * d
-            pi = pi.cpu().detach().numpy()
         pi = mask_invalid_actions(self.game_manager.get_invalid_actions(current_player), pi)
         pi = pi.flatten().tolist()
         root_node.expand_node(state_, pi, 0)
