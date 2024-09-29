@@ -74,6 +74,10 @@ class MuZeroSearchTree(SearchTree):
                 data.datapoints[-1].rew = rews[0]
                 state = states[0]
                 rew = rews[1]
+                try:
+                    wandb.log({"Reward": rew})
+                except Exception:
+                    pass
             else:
                 state, rew, done = self.game_manager.frame_skip_step(move, player, frame_skip=frame_skip)
             state = resize_obs(state, self.muzero_config.target_resolution, self.muzero_config.resize_images)
